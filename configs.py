@@ -17,11 +17,6 @@ DRIVER_PATH = "chromedriver.exe"
 USERNAME = "jpjp1441@gmail.com"
 PASSWORD = "Savassi1!"  # Use environment variables or config files for better security
 
-
-
-
-
-
 def safe_click(driver, xpath): 
     """Attempts to find and click an element safely without crashing."""
     try:
