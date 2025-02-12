@@ -23,7 +23,7 @@ PASSWORD = "Savassi1!"  # Use environment variables or config files for better s
 
 
 
-def safe_click(driver, xpath):
+def safe_click(driver, xpath): 
     """Attempts to find and click an element safely without crashing."""
     try:
         element = driver.find_element(By.XPATH, xpath)
