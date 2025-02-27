@@ -1,0 +1,202 @@
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2980b9;
+  --success-color: #10b981;
+  --error-color: #e74c3c;
+  --warning-color: #f1c40f;
+  --background-color: #f8f9fa;
+  --text-color: #333;
+  --shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* === General Styles === */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+  color: var(--text-color);
+}
+
+/* === Kanban Board Layout === */
+.kanban-board {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  overflow-x: auto;
+  align-items: flex-start;
+}
+
+/* === Kanban Columns === */
+.kanban-column {
+  flex: 1;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  min-height: 500px;
+  min-width: 280px;
+  flex-shrink: 0;
+}
+
+.kanban-title {
+  font-size: 18px;
+  font-weight: bold;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eaeaea;
+}
+
+/* === Cards === */
+.kanban-card {
+  background: white;
+  border-left: 5px solid var(--primary-color);
+  padding: 12px 15px;
+  margin: 20px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.kanban-card:hover {
+  transform: translateY(-3px);
+}
+
+/* === Buttons === */
+.button {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  color: white;
+  background: var(--primary-color);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--secondary-color);
+}
+
+.button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+}
+
+.button-green {
+  background: var(--success-color);
+}
+
+.button-green:hover {
+  background: #059669;
+}
+
+/* === Responsive Design === */
+@media (max-width: 768px) {
+  .kanban-board {
+    padding: 1rem;
+  }
+
+  .kanban-column {
+    min-width: 250px;
+  }
+}
+
+.custom-input {
+  width: 300px; /* Fixed width (adjust as needed) */
+  max-width: 80%; /* Ensures it doesn't overflow on smaller screens */
+  padding: 10px 15px; /* Comfortable padding */
+  font-size: 16px; /* Readable font size */
+  font-family: 'Arial', sans-serif; /* Consistent font */
+  color: #333; /* Dark text color */
+  background-color: #f9f9f9; /* Light background */
+  border: 2px solid #ddd; /* Subtle border */
+  border-radius: 8px; /* Rounded corners */
+  outline: none; /* Remove default outline */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+  display: block; /* Ensures margin: auto works for centering */
+  margin: 0 auto; /* Centers the input horizontally */
+}
+
+.custom-input:focus {
+  border-color: #007bff; /* Highlight border on focus */
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3); /* Add a glow effect */
+}
+
+.custom-input::placeholder {
+  color: #999; /* Light placeholder text */
+  font-style: italic; /* Optional: Italic placeholder */
+}
+
+.custom-input:hover {
+  border-color: #bbb; /* Slightly darker border on hover */
+}
+.kanban-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 400px;
+}
+
+.kanban-form input {
+  width: 90%;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kanban-form input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+}
+
+.kanban-form button {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.kanban-form button:hover {
+  background: #2980b9;
+}
+.title-container {
+  text-align: center;
+  margin: 50px auto;
+}
+
+h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: #1E1E1E;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0px;
+  
+}
+
+h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: #555;
+  margin: 0;
+}
