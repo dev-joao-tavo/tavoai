@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
-import Conversation from "./pages/Conversation";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -9,7 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 
 function App() {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn } = useAuth();
 
   console.log("App re-rendered. isLoggedIn:", isLoggedIn); // Debugging
 

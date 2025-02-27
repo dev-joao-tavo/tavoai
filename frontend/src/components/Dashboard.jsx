@@ -2,15 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Card from "./Card";
-import React from 'react';
-import useAuth from '../hooks/useAuth';
 
 const API_BASE_URL = "https://api.tavoai.com"; 
 const STATUSES = ["todo", "in-progress", "done"];
 
 const Dashboard = () => {
-  const { isLoggedIn, logout } = useAuth();
-  const [boards, setBoards] = useState([]);
+  const [setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [cards, setCards] = useState({ todo: [], "in-progress": [], done: [] });
   const [contacts, setContacts] = useState([]);
@@ -171,14 +168,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="kanban-board-container">
+    <div className="dashboard-container">
       {/* Improved Form */}
       <div class="title-container">
           <h1>Tavo AI</h1>
           <h2>Your Smart Assistant</h2>
       </div>
 
-      <form onSubmit={handleAddCard} className="kanban-form">
+      <form onSubmit={handleAddCard} className="dashboard-form">
       <input
           type="text"
           placeholder="Name"
@@ -199,10 +196,10 @@ const Dashboard = () => {
       {isLoading ? (
         <div className="loading-spinner">Loading...</div>
       ) : (
-        <div className="kanban-board">
+        <div className="dashboard">
           {STATUSES.map((status) => (
-            <div key={status} className="kanban-column">
-              <h2 className="kanban-title">
+            <div key={status} className="dashboard-column">
+              <h2 className="dashboard-title">
                 {status.replace("-", " ").toUpperCase()}
               </h2>
 
@@ -228,7 +225,7 @@ const Dashboard = () => {
               </form>
               <br />
 
-              <div className="kanban-cards">
+              <div className="dashboard-cards">
                 {cards[status].map((card) => (
                   <Card
                     key={card.id}

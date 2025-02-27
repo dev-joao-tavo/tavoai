@@ -18,8 +18,8 @@ body {
   color: var(--text-color);
 }
 
-/* === Kanban Board Layout === */
-.kanban-board {
+/* === dashboard Board Layout === */
+.dashboard-board {
   display: flex;
   gap: 20px;
   padding: 20px;
@@ -28,8 +28,8 @@ body {
   align-items: flex-start;
 }
 
-/* === Kanban Columns === */
-.kanban-column {
+/* === dashboard Columns === */
+.dashboard-column {
   flex: 1;
   background: white;
   padding: 10px;
@@ -40,7 +40,7 @@ body {
   flex-shrink: 0;
 }
 
-.kanban-title {
+.dashboard-title {
   font-size: 18px;
   font-weight: bold;
   padding-bottom: 10px;
@@ -48,7 +48,7 @@ body {
 }
 
 /* === Cards === */
-.kanban-card {
+.dashboard-card {
   background: white;
   border-left: 5px solid var(--primary-color);
   padding: 12px 15px;
@@ -61,7 +61,7 @@ body {
   gap: 5px;
 }
 
-.kanban-card:hover {
+.dashboard-card:hover {
   transform: translateY(-3px);
 }
 
@@ -96,11 +96,11 @@ body {
 
 /* === Responsive Design === */
 @media (max-width: 768px) {
-  .kanban-board {
+  .dashboard-board {
     padding: 1rem;
   }
 
-  .kanban-column {
+  .dashboard-column {
     min-width: 250px;
   }
 }
@@ -137,7 +137,7 @@ body {
 }
 
 /* === Form Styles === */
-.kanban-form {
+.dashboard-form {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -150,7 +150,7 @@ body {
   max-width: 400px;
 }
 
-.kanban-form input {
+.dashboard-form input {
   width: 100%;
   padding: 10px 15px;
   font-size: 16px;
@@ -160,12 +160,12 @@ body {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.kanban-form input:focus {
+.dashboard-form input:focus {
   border-color: #3498db;
   box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
 }
 
-.kanban-form button {
+.dashboard-form button {
   width: 100%;
   padding: 10px;
   font-size: 16px;
@@ -177,6 +177,6 @@ body {
   transition: background 0.3s ease;
 }
 
-.kanban-form button:hover {
+.dashboard-form button:hover {
   background: #2980b9;
 }

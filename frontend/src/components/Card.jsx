@@ -13,14 +13,14 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
   const contact = contacts.find((contact) => Number(contact.ID) === Number(card.contact_ID));
 
   return (
-    <div className="kanban-card bg-white p-4 rounded-lg shadow-md mb-4">
+    <div className="dashboard-card bg-white p-4 rounded-lg shadow-md mb-4">
       {/* Card Header */}
       <div className="card-header flex justify-between items-center mb-2">
         <h3 className="text-lg font-semibold text-gray-800">{card.title}</h3>
 
         {/* Dropdown Menu */}
         <select
-          className="kanban-dropdown p-1 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
+          className="dashboard-dropdown p-1 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
           value={selectedStatus}
           onChange={handleStatusChange}
         >
@@ -31,7 +31,7 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
       </div>
 
       {/* Contact Information */}
-      <p className="kanban-contact-info text-sm text-gray-600 mb-2">
+      <p className="dashboard-contact-info text-sm text-gray-600 mb-2">
         {contact ? `Phone number: ${contact.phone_number}` : "No contact found"}
       </p>
 
