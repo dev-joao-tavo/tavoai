@@ -11,4 +11,4 @@ def client():
 def test_index(client):
     request, response = client.get('/')
     assert response.status == 200
-    assert 'Welcome' in response.text  # Replace with your actual response logic
+    assert 'Welcome!' in response.text  # Replace with your actual response logic
