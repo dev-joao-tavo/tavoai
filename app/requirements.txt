@@ -1,0 +1,12 @@
+sanic
+sanic_ext
+selenium
+bs4
+openai
+sqlalchemy
+asyncpg
+bcrypt
+sanic_cors
+passlib
+jwt
+pyjwt
