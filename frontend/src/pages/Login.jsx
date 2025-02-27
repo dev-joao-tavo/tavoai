@@ -13,42 +13,36 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!email || !password) {
-      setError("Please fill in all fields.");
+      setError('Please fill in all fields.');
       return;
     }
-  
+
     setIsLoading(true);
-    setError("");
-  
+    setError('');
+
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        alert(data.message || "Login successful!");
-        console.log("Token received:", data.token); // Debugging
-        login(data.token); // Call the login function from useAuth
-  
-        // Delay the navigate call slightly
-        setTimeout(() => {
-          console.log("Redirecting to /dashboard"); // Debugging
-          navigate("/dashboard"); // Redirect to dashboard
-        }, 100); // 100ms delay
+        alert(data.message || 'Login successful!');
+        login(data.token); // Save token and update state
+        navigate('/dashboard'); // Redirect to dashboard
       } else {
-        setError(data.message || "Invalid login credentials.");
+        setError(data.message || 'Invalid login credentials.');
       }
     } catch (error) {
-      console.error("Login error:", error);
-      setError("Something went wrong. Please try again.");
+      console.error('Login error:', error);
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -83,6 +77,7 @@ const Login = () => {
               type="button"
               className="toggle-password"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>

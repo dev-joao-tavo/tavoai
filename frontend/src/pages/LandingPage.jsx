@@ -1,7 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import './LandingPage.css';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="landing-page">
       <header className="hero">
@@ -9,9 +13,10 @@ const LandingPage = () => {
           <h1 className="brand-title">TavoAI</h1>
           <p>Simplifique suas conversas no WhatsApp com inteligência e organização.</p>
           <div className="buttons">
-            <button className="cta-button" onClick={() => window.location.href='/login'}>Comece Agora</button>
+            <button className="cta-button" onClick={() => navigate('/login')}>Comece Agora</button>
+
           </div>
-          <button className="login-home-page-button" onClick={() => window.location.href='/login'}>Login</button>
+          <button className="login-home-page-button" onClick={() => navigate('/login')}>Login</button>
 
         </div>
       </header>
@@ -65,7 +70,7 @@ const LandingPage = () => {
               <li>Mensagens em massa</li>
               <li>Suporte padrão</li>
             </ul>
-            <button className="cta-button" onClick={() => window.location.href='/login'}>Escolher</button>
+            <button className="cta-button" onClick={() => navigate('/login')}>Escolher</button>
           </div>
           <div className="plan">
             <h3>Pro</h3>
@@ -75,7 +80,7 @@ const LandingPage = () => {
               <li>Análises avançadas</li>
               <li>Suporte prioritário</li>
             </ul>
-            <button className="cta-button" onClick={() => window.location.href='/login'}>Escolher</button>
+            <button className="cta-button" onClick={() => navigate('/login')}>Escolher</button>
           </div>
         </div>
       </section>

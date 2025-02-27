@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import axios from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Card from "./Card";
+import React from 'react';
+import useAuth from '../hooks/useAuth';
 
 const API_BASE_URL = "https://api.tavoai.com"; 
 const STATUSES = ["todo", "in-progress", "done"];
 
-const KanbanBoard = () => {
+const Dashboard = () => {
+  const { isLoggedIn, logout } = useAuth();
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [cards, setCards] = useState({ todo: [], "in-progress": [], done: [] });
@@ -245,4 +248,4 @@ const KanbanBoard = () => {
   );
 };
 
-export default KanbanBoard;
+export default Dashboard;

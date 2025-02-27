@@ -1,5 +1,5 @@
 // src/hooks/useAuth.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const useAuth = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {

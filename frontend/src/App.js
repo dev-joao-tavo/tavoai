@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import KanbanBoard from "./components/KanbanBoard";
+import Dashboard from "./components/Dashboard";
 import Conversation from "./pages/Conversation";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -18,6 +18,14 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route
+          path="/"
+          element={
+            <PublicRoute isLoggedIn={isLoggedIn}>
+              <LandingPage />
+            </PublicRoute>
+          }
+        />
+        <Route
           path="/login"
           element={
             <PublicRoute isLoggedIn={isLoggedIn}>
@@ -33,40 +41,19 @@ function App() {
             </PublicRoute>
           }
         />
-        <Route
-          path="/"
-          element={
-            <PublicRoute isLoggedIn={isLoggedIn}>
-              <LandingPage />
-            </PublicRoute>
-          }
-        />
 
-        {/* Protected Routes */}
+        {/* Protected Route */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
-              <KanbanBoard onLogout={logout} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/conversation/:cardId"
-          element={
-            <ProtectedRoute isLoggedIn={isLoggedIn}>
-              <Conversation />
+              <Dashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* Catch-all Route */}
-        <Route
-          path="*"
-          element={
-            <Navigate to={isLoggedIn ? "/dashboard" : "/"} replace />
-          }
-        />
+        {/* Fallback Route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
