@@ -1,0 +1,106 @@
+from sanic.response import json
+from sanic import Sanic, response
+from sanic.exceptions import BadRequest
+from random import randint
+from db import SessionLocal
+from sqlalchemy import text  # Import text from sqlalchemy
+
+app = Sanic.get_app()
+
+
+@app.post("/addCardandContact")
+async def add_card_and_contact(request):
+    # Extract data from the request body
+    phone_number = request.json.get("phone_number")
+    contact_name = request.json.get("contact_name")
+
+    # Validate required fields
+    if not phone_number or not contact_name:
+        raise BadRequest("Missing phone_number or contact_name")
+
+    async with SessionLocal() as session:
+        try:
+            # Generate a random contact ID
+            contact_id = randint(10, 9999)
+            contact = {
+                "id": contact_id,
+                "phone_number": phone_number,
+                "contact_name": contact_name,
+            }
+
+            # Insert contact into the database
+            await session.execute(
+                text("INSERT INTO contacts (id, phone_number, contact_name) VALUES (:id, :phone_number, :contact_name) ON CONFLICT (id) DO NOTHING"),
+                contact,
+            )
+
+            # Generate a random card ID
+            card_id = randint(10, 9999)
+            card = {
+                "id": card_id,
+                "title": contact_name,
+                "status": "todo",
+                "board_id": 3,
+                "contact_ID": contact_id,
+            }
+
+            # Insert card into the database
+            await session.execute(
+                text("INSERT INTO cards (id, title, status, board_id, contact_ID) VALUES (:id, :title, :status, :board_id, :contact_ID) ON CONFLICT (id) DO NOTHING"),
+                card,
+            )
+
+            # Commit the transaction
+            await session.commit()
+
+            # Return a success response
+            return json({"message": "Card and contact added successfully", "card": card})
+
+        except Exception as e:
+            # Rollback the transaction in case of error
+            await session.rollback()
+            return json({"error": str(e)}, status=500)
+
+
+@app.delete("/removeCardandContact")
+async def remove_card_and_contact(request):
+    # Extract data from the request body
+    card_id = request.json.get("card_id")
+
+    # Validate required field
+    if not card_id:
+        raise BadRequest("Missing card_id")
+
+    async with SessionLocal() as session:
+        try:
+            # Retrieve the contact ID associated with the card
+            result = await session.execute(
+                text("SELECT contact_ID FROM cards WHERE id = :card_id"),
+                {"card_id": card_id},
+            )
+            contact_id = result.scalar()  # Extract the single value
+
+            if not contact_id:
+                return response.json({"error": "Card not found or has no associated contact"}, status=404)
+
+            # Delete the card first
+            await session.execute(
+                text("DELETE FROM cards WHERE id = :card_id"),
+                {"card_id": card_id},
+            )
+
+            # Delete the contact (if needed)
+            await session.execute(
+                text("DELETE FROM contacts WHERE id = :contact_id"),
+                {"contact_id": contact_id},
+            )
+
+            # Commit the transaction
+            await session.commit()
+
+            return response.json({"message": "Card and contact deleted successfully"})
+
+        except Exception as e:
+            # Rollback transaction in case of an error
+            await session.rollback()
+            return response.json({"error": str(e)}, status=500)
