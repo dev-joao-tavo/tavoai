@@ -63,7 +63,7 @@ async def signup(request):
     data = request.json
     email = data.get("email")
     username = data.get("username")
-    username = randint(1,999999)
+    username = str(randint(1,999999))
     password = data.get("password")
 
     if not email or not username or not password:
