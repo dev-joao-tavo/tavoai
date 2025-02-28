@@ -25,7 +25,7 @@ const LandingPage = () => {
         <div className="feature-grid">
           <div className="feature">
             <h3>Conversas Organizadas</h3>
-            <p>Gerencie todas as suas conversas de forma centralizada.</p>
+            <p>Gerencie todas as suas conversas com clientes de forma centralizada.</p>
           </div>
           <div className="feature">
             <h3>Mensagens em Massa</h3>
