@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import declarative_base
 
 # PostgreSQL connection string
-DATABASE_URL = "postgresql+asyncpg://tavoaiuser:Savassi1!@tavoai-database.cgromq4eqxfc.us-east-1.rds.amazonaws.com:5432/tavoai_database"
+DATABASE_URL = "postgresql+asyncpg://tavoaiuser:Savassi1!@tavoai-database.cgromq4eqxfc.us-east-1.rds.amazonaws.com:5432/tavoai-database"
 # Create async engine
 engine = create_async_engine(DATABASE_URL, echo=True)
 
