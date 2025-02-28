@@ -24,21 +24,26 @@ body {
   gap: 20px;
   padding: 20px;
   width: 100%;
-  overflow-x: auto;
+  overflow-x: auto; /* Ensures horizontal scrolling if needed */
   align-items: flex-start;
+  flex-wrap: nowrap; /* Prevents columns from stacking */
 }
+
 
 /* === dashboard Columns === */
 .dashboard-column {
   flex: 1;
+  min-width: 300px; /* Prevents columns from becoming too small */
+  max-width: 400px; /* Ensures a readable width */
   background: white;
   padding: 10px;
   border-radius: 12px;
   box-shadow: var(--shadow);
   min-height: 500px;
-  min-width: 280px;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Prevents collapsing */
 }
+
+
 
 .dashboard-title {
   font-size: 18px;
@@ -96,14 +101,17 @@ body {
 
 /* === Responsive Design === */
 @media (max-width: 768px) {
-  .dashboard-board {
-    padding: 1rem;
+  .dashboard {
+    flex-wrap: nowrap; /* Ensures horizontal layout even on smaller screens */
+    overflow-x: auto; /* Enables scrolling */
   }
 
   .dashboard-column {
-    min-width: 250px;
+    min-width: 280px;
   }
 }
+
+
 
 .custom-input {
   width: 300px; /* Fixed width (adjust as needed) */
@@ -145,6 +153,15 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   margin: 20px auto;
   max-width: 400px;
+}
+.dashboard {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  overflow-x: auto; /* Enables horizontal scrolling */
+  align-items: flex-start;
+  flex-wrap: nowrap; /* Prevents stacking */
 }
 
 .dashboard-form input {
