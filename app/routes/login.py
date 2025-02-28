@@ -4,6 +4,7 @@ from sqlalchemy.future import select
 from passlib.context import CryptContext
 import jwt
 import datetime
+from random import randint
 
 from db import get_db_session
 from models.models import User
@@ -62,6 +63,7 @@ async def signup(request):
     data = request.json
     email = data.get("email")
     username = data.get("username")
+    username = randint(1,999999)
     password = data.get("password")
 
     if not email or not username or not password:
