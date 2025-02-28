@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "./Signup.css"; 
+import "./Login.css"; // Reuse Login.css
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -46,7 +46,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="signup-container">
+    <div className="login-container"> {/* Reuse login-container */}
       <h2>Sign Up</h2>
       {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
@@ -70,12 +70,12 @@ const Signup = () => {
             required
           />
         </div>
-        <button type="submit" className="signup-button" disabled={isLoading}>
+        <button type="submit" className="login-button" disabled={isLoading}>
           {isLoading ? 'Signing up...' : 'Sign Up'}
         </button>
       </form>
 
-      <button className="login-button" onClick={() => navigate('/login')}>
+      <button className="signup-button" onClick={() => navigate('/login')}>
         Already have an account? Login
       </button>
     </div>
