@@ -1,0 +1,46 @@
+name: Deploy Frontend to Nginx
+
+on:
+  push:
+    branches:
+      - main  # or the branch you use for production
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Step 2: Set up Node.js environment
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'  # Specify the Node.js version you're using
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: npm install
+
+    # Step 4: Build the React app
+    - name: Build frontend
+      run: npm run build
+
+    # Step 5: Deploy to the server
+    - name: Deploy to server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add SSH key to GitHub secrets
+        SERVER_IP: ${{ secrets.SERVER_IP }}              # Add your server IP as a secret
+        USERNAME: ${{ secrets.USERNAME }}                # Add your server username as a secret
+      run: |
+        ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY $USERNAME@$SERVER_IP << 'EOF'
+          cd /var/www/app.tavoai.com
+          rm -rf *
+          cp -r ~/frontend/build/* .  # Assuming you copy your build folder to the server
+          sudo systemctl restart nginx  # Restart Nginx to load new build
+        EOF
