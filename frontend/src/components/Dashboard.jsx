@@ -46,17 +46,26 @@ const Dashboard = () => {
   const fetchBoards = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/boards`);
+      const token = localStorage.getItem("token");
+  
+      // Include the token in the request headers
+      const response = await axios.get(`${API_BASE_URL}/boards`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
       if (response.data.boards.length > 0) {
         setBoards(response.data.boards);
-        setSelectedBoard(response.data.boards[0].id);
+        setSelectedBoard(response.data.boards[0].id); // Optionally select the first board by default
       }
     } catch (error) {
       console.error("Error fetching boards:", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
+  
 
   const fetchCards = async (boardId = 3) => {
     setIsLoading(true);
@@ -83,12 +92,22 @@ const Dashboard = () => {
     }
   };
 
-  const addCard = async (boardId = 3, title, description, status = "todo") => {
+  const addCard = async (boardId, title, description, status = "todo") => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/addCardandContact`, {
-        phone_number: description,
-        contact_name: title,
-      });
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API_BASE_URL}/addCardandContact`,
+        {
+          phone_number: description,
+          contact_name: title,
+          board_id: boardId,  // Send board_id to associate card with board
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const newCard = response.data.card;
       setCards((prevCards) => ({
         ...prevCards,
@@ -98,7 +117,7 @@ const Dashboard = () => {
       console.error("Error adding card:", error);
     }
   };
-
+  
   const deleteCard = async (cardId) => {
     try {
       await axios.delete(`${API_BASE_URL}/removeCardandContact`, {

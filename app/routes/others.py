@@ -1,8 +1,10 @@
 
 from sanic import Sanic, response
+from sanic.request import Request
 
 from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
+from sanic.exceptions import Unauthorized
 
 app = Sanic.get_app()
 
@@ -56,15 +58,41 @@ async def get_cards(request, board_id):
     except ValueError:
         return response.json({"error": "Invalid board_id"}, status=400)
 
-@app.route("/boards", methods=["GET"])
-async def get_boards(request):
-    async with SessionLocal() as session:
-        result = await session.execute(text("SELECT id, name FROM boards"))
-        boards = result.fetchall()
+SECRET_KEY = "your_secret_key_here"
 
-    boards_list = [{"id": row[0], "name": row[1]} for row in boards]
+# Helper function to decode the JWT and get the current user
+def get_user_from_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload["id"]  # assuming the token contains 'id' of the user
+    except jwt.ExpiredSignatureError:
+        raise Unauthorized("Token has expired.")
+    except jwt.InvalidTokenError:
+        raise Unauthorized("Invalid token.")
+
+# Define the route to fetch boards
+@app.route("/boards", methods=["GET"])
+async def get_boards(request: Request):
+    # Extract the JWT token from the request headers
+    token = request.headers.get("Authorization")
+    if not token:
+        raise Unauthorized("Authorization token is missing.")
+    
+    # Remove 'Bearer ' prefix if it exists
+    if token.startswith("Bearer "):
+        token = token[7:]
+
+    user_id = get_user_from_token(token)
+
+    # Now query boards for the specific user
+    async with SessionLocal() as session:
+        result = await session.execute(select(Board).filter(Board.user_id == user_id))
+        boards = result.scalars().all()
+
+    boards_list = [{"id": board.id, "name": board.name} for board in boards]
 
     return response.json({"boards": boards_list})
+
    
 @app.route("/cards/<card_id>/reorder", methods=["POST"])
 async def reorder_messages(request, card_id):
