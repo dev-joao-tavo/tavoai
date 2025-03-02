@@ -29,7 +29,7 @@ const LandingPage = () => {
           </div>
           <div className="feature">
             <h3>Mensagens em Massa</h3>
-            <p>Envie mensagens para múltiplos clientes com um clique.</p>
+            <p>Envie mensagens para múltiplas pessoas com um clique.</p>
           </div>
           <div className="feature">
             <h3>Fluxo de Trabalho Eficiente</h3>
