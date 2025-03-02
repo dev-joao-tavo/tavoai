@@ -4,6 +4,7 @@ from sanic.exceptions import BadRequest
 from random import randint
 from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
+from models.models import Board
 
 app = Sanic.get_app()
 
@@ -13,13 +14,22 @@ async def add_card_and_contact(request):
     # Extract data from the request body
     phone_number = request.json.get("phone_number")
     contact_name = request.json.get("contact_name")
+    board_id = request.json.get("board_id")  # New field for board_id
+    status = request.json.get("status")  # New field for status
 
     # Validate required fields
-    if not phone_number or not contact_name:
-        raise BadRequest("Missing phone_number or contact_name")
+    if not phone_number or not contact_name or not board_id or not status:
+        raise BadRequest("Missing phone_number, contact_name, board_id, or status")
 
     async with SessionLocal() as session:
         try:
+            # Check if the board exists
+            board = await session.execute(Board).where(Board.id == board_id)
+            board = board.scalars().first()
+
+            if not board:
+                raise Exception(f"Board with id={board_id} does not exist")
+
             # Generate a random contact ID
             contact_id = randint(10, 9999)
             contact = {
@@ -39,8 +49,8 @@ async def add_card_and_contact(request):
             card = {
                 "id": card_id,
                 "title": contact_name,
-                "status": "todo",
-                "board_id": 3,
+                "status": status,  # Use the status from the frontend
+                "board_id": board_id,  # Use the board_id from the frontend
                 "contact_ID": contact_id,
             }
 
@@ -60,6 +70,7 @@ async def add_card_and_contact(request):
             # Rollback the transaction in case of error
             await session.rollback()
             return json({"error": str(e)}, status=500)
+
 
 
 @app.delete("/removeCardandContact")

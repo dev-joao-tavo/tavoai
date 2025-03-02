@@ -57,7 +57,7 @@ const Dashboard = () => {
   
       if (response.data.boards.length > 0) {
         setBoards(response.data.boards);
-        setSelectedBoard(response.data.boards[0].id); // Optionally select the first board by default
+        setSelectedBoard(response.data.boards[0].id); // Select the first board by default
       }
     } catch (error) {
       console.error("Error fetching boards:", error);
@@ -67,7 +67,7 @@ const Dashboard = () => {
   };  
   
 
-  const fetchCards = async (boardId = 3) => {
+  const fetchCards = async (boardId) => {
     setIsLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/boards/${boardId}/cards`);
@@ -101,6 +101,7 @@ const Dashboard = () => {
           phone_number: description,
           contact_name: title,
           board_id: boardId,  // Send board_id to associate card with board
+          status: status,  // Send the status to set the card's status
         },
         {
           headers: {
@@ -117,6 +118,7 @@ const Dashboard = () => {
       console.error("Error adding card:", error);
     }
   };
+  
   
   const deleteCard = async (cardId) => {
     try {
@@ -181,9 +183,14 @@ const Dashboard = () => {
 
   const handleAddCard = async (e) => {
     e.preventDefault();
-    await addCard(selectedBoard, newCardTitle, newCardDescription);
-    setNewCardTitle("");
-    setNewCardDescription("");
+    if (selectedBoard) {
+      await addCard(selectedBoard, newCardTitle, newCardDescription);
+      fetchCards(selectedBoard); // Re-fetch cards for the selected board
+      setNewCardTitle("");
+      setNewCardDescription("");
+    } else {
+      alert("Please select a board first.");
+    }
   };
 
   return (
