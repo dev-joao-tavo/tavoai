@@ -5,6 +5,7 @@ from sanic.request import Request
 from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
 from sanic.exceptions import Unauthorized
+from utils.utils import SECRET_KEY
 
 app = Sanic.get_app()
 
@@ -58,7 +59,6 @@ async def get_cards(request, board_id):
     except ValueError:
         return response.json({"error": "Invalid board_id"}, status=400)
 
-SECRET_KEY = "your_secret_key_here"
 
 # Helper function to decode the JWT and get the current user
 def get_user_from_token(token: str):

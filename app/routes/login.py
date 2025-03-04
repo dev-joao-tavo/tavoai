@@ -13,7 +13,7 @@ auth_bp = Blueprint("auth", url_prefix="/api")
 CORS(auth_bp)  # Enable CORS for the auth blueprint
 
 # Define the secret key and password context
-SECRET_KEY = "your_secret_key_here"
+from utils.utils import SECRET_KEY
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Helper functions
