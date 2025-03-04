@@ -103,4 +103,4 @@ def initialize_driver():
     service = Service(r"C:\Users\jpjp1\Documents\SNDN\app\services\chromedriver.exe")
     chrome_options.add_argument("--profile-directory=Profile 5") #e.g. Profile for selenium
 
-    return webdriver.Chrome(service=service, options=chrome_options)""""""
+    return webdriver.Chrome(service=service, options=chrome_options)"""
