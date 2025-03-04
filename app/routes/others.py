@@ -5,7 +5,7 @@ from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
 from sanic.exceptions import Unauthorized
 from utils.utils import SECRET_KEY
-
+from models.models import Board
 app = Sanic.get_app()
 
 
