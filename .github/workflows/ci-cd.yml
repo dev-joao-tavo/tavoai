@@ -1,0 +1,32 @@
+name: Deploy App
+
+on:
+  push:
+    branches:
+      - main  # Runs only when pushing to main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Backend Dependencies
+        run: |
+          cd ~/tavoai/backend
+          pip install -r requirements.txt
+
+      - name: Restart Backend
+        run: pm2 restart sanic-app
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd ~/tavoai/frontend
+          npm install
+          npm run build
+          sudo cp -r build/* /home/ubuntu/tavoai/frontend/build
+
+      - name: Restart NGINX
+        run: sudo systemctl restart nginx
