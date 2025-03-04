@@ -16,14 +16,17 @@ jobs:
       - name: Install Backend Dependencies
         run: |
           cd ~/tavoai/app
+          source venv/bin/activate
           pip install -r requirements.txt
 
       - name: Start or Restart Backend
         run: |
+          cd ~/tavoai/app
+          source venv/bin/activate
           if pm2 list | grep -q "sanic-app"; then
             pm2 restart sanic-app
           else
-            pm2 start ~/tavoai/app/main.py --name sanic-app --interpreter python3 -- start --host=0.0.0.0 --port=8000 --workers=4
+            pm2 start main.py --name sanic-app --interpreter $(which python) -- start --host=0.0.0.0 --port=8000 --workers=4
           fi
 
       - name: Install Frontend Dependencies
