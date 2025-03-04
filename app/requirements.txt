@@ -9,5 +9,4 @@ bcrypt
 sanic_cors
 passlib
 jwt
-pyjwt
-tmux 
+pyjwt 
