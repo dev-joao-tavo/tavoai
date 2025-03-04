@@ -5,6 +5,7 @@ from random import randint
 from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
 from models.models import Board
+from db import get_db_session
 
 app = Sanic.get_app()
 
@@ -21,7 +22,9 @@ async def add_card_and_contact(request):
     if not phone_number or not contact_name or not board_id or not status:
         raise BadRequest(f"Missing phone_number: {phone_number}, contact_name: {contact_name}, board_id: {board_id}, or status: {status}")
 
-    async with SessionLocal() as session:
+
+
+    async with get_db_session() as session:  # Use async with here
         try:
             # Check if the board exists
             board = await session.execute(Board).where(Board.id == board_id)
