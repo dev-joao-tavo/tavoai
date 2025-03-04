@@ -15,7 +15,7 @@ jobs:
 
       - name: Install Backend Dependencies
         run: |
-          cd ~/tavoai/backend
+          cd ~/tavoai/app
           pip install -r requirements.txt
 
       - name: Restart Backend
