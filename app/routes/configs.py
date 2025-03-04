@@ -87,6 +87,9 @@ def initialize_driver():
     chrome_options.add_argument("--no-sandbox")  # Required for running as root
     chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
+    # Specify the Chromium binary location
+    chrome_options.binary_location = "/usr/bin/chromium-browser"
+
     # Initialize the WebDriver with the path to chromedriver
     service = Service("/home/ubuntu/tavoai/app/services/chromedriver")
     driver = webdriver.Chrome(service=service, options=chrome_options)
