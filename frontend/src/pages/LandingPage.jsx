@@ -11,7 +11,7 @@ const LandingPage = () => {
       <header className="hero">
         <div className="container">
           <h1 className="brand-title">TavoAI</h1>
-          <p>Simplifique suas conversas no WhatsApp com inteligência e organização.</p>
+          <p>Organize suas conversas no WhatsApp com inteligência e simplicidade.</p>
           <div className="buttons">
             <button className="cta-button" onClick={() => navigate('/login')}>Comece Agora</button>
 
