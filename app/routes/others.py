@@ -6,6 +6,8 @@ from sqlalchemy import text  # Import text from sqlalchemy
 from sanic.exceptions import Unauthorized
 from utils.utils import SECRET_KEY
 from models.models import Board
+from sqlalchemy.future import select
+
 app = Sanic.get_app()
 
 
