@@ -47,9 +47,7 @@ const Dashboard = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-  
-      // Include the token in the request headers
-      const response = await axios.get(`${API_BASE_URL}/boards`, {
+        const response = await axios.get(`${API_BASE_URL}/boards`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -100,8 +98,8 @@ const Dashboard = () => {
         {
           phone_number: description,
           contact_name: title,
-          board_id: boardId,  // Send board_id to associate card with board
-          status: status,  // Send the status to set the card's status
+          board_id: boardId,  
+          status: status,
         },
         {
           headers: {
@@ -195,7 +193,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Improved Form */}
       <div class="title-container">
           <h1>Tavo AI</h1>
           <h2>Your Smart Assistant</h2>

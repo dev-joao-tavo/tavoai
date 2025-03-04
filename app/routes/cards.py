@@ -14,12 +14,12 @@ async def add_card_and_contact(request):
     # Extract data from the request body
     phone_number = request.json.get("phone_number")
     contact_name = request.json.get("contact_name")
-    board_id = request.json.get("board_id")  # New field for board_id
-    status = request.json.get("status")  # New field for status
+    board_id = request.json.get("board_id")  
+    status = request.json.get("status")  
 
     # Validate required fields
     if not phone_number or not contact_name or not board_id or not status:
-        raise BadRequest("Missing phone_number, contact_name, board_id, or status")
+        raise BadRequest(f"Missing phone_number: {phone_number}, contact_name: {contact_name}, board_id: {board_id}, or status: {status}")
 
     async with SessionLocal() as session:
         try:

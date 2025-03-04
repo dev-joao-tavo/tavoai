@@ -53,9 +53,6 @@ def login(driver):
     # Wait for the dashboard to load
     time.sleep(5)
 
-
-
-
 def get_ids_from_stage(driver, stage_id):
     """Retrieve all data-ids from a specified pipeline stage."""
     time.sleep(2)
@@ -73,7 +70,6 @@ def get_ids_from_stage(driver, stage_id):
 
     print(f"{len(ids)} leads were found on this stage: {stage_id}  \n")
     return ids
-
 
 def initialize_driver():
     chrome_options = Options()
