@@ -16,7 +16,7 @@ const Conversation = () => {
       .then((response) => {
         setMessages(response.data.messages || []);
       })
-      .catch((error) => console.error("Error fetching messages:", error))
+      .catch((error) => console.error("Error fetching messagesS:", error))
       .finally(() => setIsLoading(false));
   }, [cardId]);
 
