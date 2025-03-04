@@ -1,6 +1,6 @@
 
 from sanic import Sanic, response
-
+import jwt
 from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
 from sanic.exceptions import Unauthorized
