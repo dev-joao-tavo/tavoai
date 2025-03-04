@@ -72,6 +72,28 @@ def get_ids_from_stage(driver, stage_id):
     return ids
 
 def initialize_driver():
+    # Set up Chrome options
+    chrome_options = Options()
+
+    # Specify the Chrome user data directory
+    chrome_user_dir = "/home/ubuntu/chrome_user_data"  # Custom directory for Chrome user data
+    chrome_options.add_argument("--user-data-dir=" + chrome_user_dir)
+
+    # Specify the profile directory (optional)
+    chrome_options.add_argument("--profile-directory=Profile 5")  # e.g., Profile for selenium
+
+    # Add headless mode and other options for server environments
+    chrome_options.add_argument("--headless")  # Run in headless mode
+    chrome_options.add_argument("--no-sandbox")  # Required for running as root
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+
+    # Initialize the WebDriver with the path to chromedriver
+    service = Service("/home/ubuntu/tavoai/app/services/chromedriver")
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    return driver
+"""
+def initialize_driver():
     chrome_options = Options()
 
     chrome_user_dir = r"C:\Users\jpjp1\AppData\Local\Google\Chrome\User Data"
@@ -81,4 +103,4 @@ def initialize_driver():
     service = Service(r"C:\Users\jpjp1\Documents\SNDN\app\services\chromedriver.exe")
     chrome_options.add_argument("--profile-directory=Profile 5") #e.g. Profile for selenium
 
-    return webdriver.Chrome(service=service, options=chrome_options)
+    return webdriver.Chrome(service=service, options=chrome_options)""""""
