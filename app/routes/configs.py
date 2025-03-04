@@ -71,6 +71,10 @@ def get_ids_from_stage(driver, stage_id):
     print(f"{len(ids)} leads were found on this stage: {stage_id}  \n")
     return ids
 
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+
 def initialize_driver():
     # Set up Chrome options
     chrome_options = Options()
@@ -87,15 +91,14 @@ def initialize_driver():
     chrome_options.add_argument("--no-sandbox")  # Required for running as root
     chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-    # Specify the Chromium binary location
-    chrome_options.binary_location = "/usr/bin/chromium-browser"
+    # Specify the Chrome for Testing binary location
+    chrome_options.binary_location = "/usr/local/bin/chrome-for-testing"
 
     # Initialize the WebDriver with the path to chromedriver
-    service = Service("/home/ubuntu/tavoai/app/services/chromedriver")
+    service = Service("/usr/local/bin/chromedriver")  # Updated path to ChromeDriver
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     return driver
-
 #def initialize_driver():
 #    chrome_options = Options()
 #
