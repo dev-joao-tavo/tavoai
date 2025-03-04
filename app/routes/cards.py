@@ -6,6 +6,7 @@ from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
 from models.models import Board
 from db import get_db_session
+from sqlalchemy.future import select
 
 app = Sanic.get_app()
 
@@ -26,9 +27,8 @@ async def add_card_and_contact(request):
 
     async with get_db_session() as session:  # Use async with here
         try:
-            # Check if the board exists
-            board = await session.execute(Board).where(Board.id == board_id)
-            board = board.scalars().first()
+            result = await session.execute(select(Board).where(Board.id == board_id))
+            board = result.scalars().first()
 
             if not board:
                 raise Exception(f"Board with id={board_id} does not exist")
