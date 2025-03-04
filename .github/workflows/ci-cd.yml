@@ -13,10 +13,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Backend Dependencies
+      - name: Set up Python
         run: |
           cd ~/tavoai/app
+          python3 -m venv venv
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Start or Restart Backend
@@ -28,6 +30,11 @@ jobs:
           else
             pm2 start main.py --name sanic-app --interpreter $(which python) -- start --host=0.0.0.0 --port=8000 --workers=4
           fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Specify the Node.js version you need
 
       - name: Install Frontend Dependencies
         run: |
