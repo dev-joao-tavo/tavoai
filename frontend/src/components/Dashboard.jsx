@@ -114,7 +114,7 @@ const Dashboard = () => {
         [status]: [...prevCards[status], newCard],
       }));
     } catch (error) {
-      console.error("Error adding card:", error);
+      console.error("Error adding card::", error);
     }
   };
   
