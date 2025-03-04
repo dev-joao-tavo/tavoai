@@ -18,8 +18,13 @@ jobs:
           cd ~/tavoai/app
           pip install -r requirements.txt
 
-      - name: Restart Backend
-        run: pm2 restart sanic-app
+      - name: Start or Restart Backend
+        run: |
+          if pm2 list | grep -q "sanic-app"; then
+            pm2 restart sanic-app
+          else
+            pm2 start ~/tavoai/app/main.py --name sanic-app --interpreter python3 -- start --host=0.0.0.0 --port=8000 --workers=4
+          fi
 
       - name: Install Frontend Dependencies
         run: |
