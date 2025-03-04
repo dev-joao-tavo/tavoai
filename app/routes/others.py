@@ -63,7 +63,7 @@ async def get_cards(request, board_id):
 def get_user_from_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return payload["id"]  # assuming the token contains 'id' of the user
+        return payload["user_id"]  # assuming the token contains 'user_id' of the user
     except jwt.ExpiredSignatureError:
         raise Unauthorized("Token has expired.")
     except jwt.InvalidTokenError:
