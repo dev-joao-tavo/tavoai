@@ -1,6 +1,5 @@
 
 from sanic import Sanic, response
-from sanic.request import Request
 
 from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
@@ -72,11 +71,11 @@ def get_user_from_token(token: str):
 
 # Define the route to fetch boards
 @app.route("/boards", methods=["GET"])
-async def get_boards(request: Request):
+async def get_boards(request):
     # Extract the JWT token from the request headers
     token = request.headers.get("Authorization")
     if not token:
-        raise Unauthorized("Authorization token is missing.")
+        raise Unauthorized(f"Authorization token is missing. Token: {token}; Headers: {request.headers}")
     
     # Remove 'Bearer ' prefix if it exists
     if token.startswith("Bearer "):

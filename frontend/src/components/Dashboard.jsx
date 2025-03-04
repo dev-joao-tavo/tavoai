@@ -47,6 +47,7 @@ const Dashboard = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
+        console.log(`Bearer ${token}`)
         const response = await axios.get(`${API_BASE_URL}/boards`, {
         headers: {
           Authorization: `Bearer ${token}`,
