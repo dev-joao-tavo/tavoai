@@ -92,15 +92,15 @@ def initialize_driver():
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     return driver
-"""
-def initialize_driver():
-    chrome_options = Options()
 
-    chrome_user_dir = r"C:\Users\jpjp1\AppData\Local\Google\Chrome\User Data"
-
-    chrome_options.add_argument("--user-data-dir="+chrome_user_dir )
-
-    service = Service(r"C:\Users\jpjp1\Documents\SNDN\app\services\chromedriver.exe")
-    chrome_options.add_argument("--profile-directory=Profile 5") #e.g. Profile for selenium
-
-    return webdriver.Chrome(service=service, options=chrome_options)"""
+#def initialize_driver():
+#    chrome_options = Options()
+#
+#    chrome_user_dir = r"C:\Users\jpjp1\AppData\Local\Google\Chrome\User Data"
+#
+#    chrome_options.add_argument("--user-data-dir="+chrome_user_dir )
+#
+#    service = Service(r"C:\Users\jpjp1\Documents\SNDN\app\services\chromedriver.exe")
+#    chrome_options.add_argument("--profile-directory=Profile 5") #e.g. Profile for selenium
+#
+#    return webdriver.Chrome(service=service, options=chrome_options)
