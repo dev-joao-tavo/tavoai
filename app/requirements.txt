@@ -8,5 +8,4 @@ asyncpg
 bcrypt
 sanic_cors
 passlib
-jwt
 pyjwt 
