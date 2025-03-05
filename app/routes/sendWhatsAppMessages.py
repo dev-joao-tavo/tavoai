@@ -43,7 +43,7 @@ import qrcode_terminal
 async def send_whatsapp_message(phone_number: str, message_text: str):
     async with async_playwright() as p:
         # Ensure we launch a browser, not a browser context
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
 
         # Create a new browser context
         context = await browser.new_context(
