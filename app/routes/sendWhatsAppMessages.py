@@ -76,21 +76,18 @@ async def get_qrcode(phone, message_text):
             # Verify the QR code element
             if await qr_code.is_visible():
                 print("QR code is visible on the page.")
+                # Take a screenshot of the QR code
+                await qr_code.screenshot(path='qrcode.png')
+                print("QR code saved as 'qrcode.png'")
             else:
                 raise Exception("QR code is not visible.")
 
-            # Take a screenshot of the QR code
-            await qr_code.screenshot(path='qrcode.png')
-            print("QR code saved as 'qrcode.png'")
+
 
         except Exception as e:
             print(f"An error occurred: {e}")
 
         finally:
-            # Close the browser
-            await page.screenshot(path='whatsapp_page_before_closing.png')
-            print("Screenshot of the page saved as 'whatsapp_page_before_closing.png'")
-
             await browser.close()
 
 
