@@ -37,7 +37,6 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
 
 # **Async Function: Send WhatsApp Message**
 import asyncio
-from playwright.async_api import async_playwright
 import qrcode_terminal
 
 async def send_whatsapp_message(browser, phone_number: str, message_text: str):
@@ -52,10 +51,10 @@ async def send_whatsapp_message(browser, phone_number: str, message_text: str):
         await page.goto("https://web.whatsapp.com")
         print("Opened WhatsApp Web.")
 
-        # Wait for QR code to appear
+        # Wait for QR code to appear and log it
         try:
             qr_code_selector = 'canvas[aria-label="Scan me!"]'
-            await page.wait_for_selector(qr_code_selector, timeout=30000)
+            await page.wait_for_selector(qr_code_selector, timeout=10000)
             print("QR code loaded. Displaying in terminal...")
 
             # Extract QR code data and display it in the terminal
@@ -63,55 +62,14 @@ async def send_whatsapp_message(browser, phone_number: str, message_text: str):
                 const canvas = document.querySelector('canvas[aria-label="Scan me!"]');
                 return canvas.toDataURL();
             }''')
-
-            # Decode the QR code data URL and display it in the terminal
             qrcode_terminal.draw(qr_code_data)
         except Exception as e:
             print("Failed to load QR code.")
             await page.close()
             return phone_number, "failed: QR code not found"
 
-        # Wait for the chat list to appear (indicating successful login)
-        try:
-            await page.wait_for_selector('div[aria-label="Chat list"]', timeout=120000)  # 2 minutes timeout
-            print("Logged in successfully. Navigating to the chat...")
-        except Exception as e:
-            print("Failed to log in. QR code not scanned or login timed out.")
-            await page.close()
-            return phone_number, "failed: login timeout"
-
-        # Navigate to the specific chat
-        await page.goto(f"https://web.whatsapp.com/send?phone={phone_number}")
-        print(f"Navigated to chat with {phone_number}.")
-
-        # Wait for the message input box to appear
-        try:
-            message_box = await page.wait_for_selector('div[aria-label="Digite uma mensagem"]', timeout=30000)
-            await message_box.fill(message_text)
-            print("Message typed.")
-        except Exception as e:
-            print("Failed to find the message input box.")
-            await page.close()
-            return phone_number, "failed: message input box not found"
-
-        # Click the send button
-        try:
-            send_button = await page.wait_for_selector('button[aria-label="Enviar"]', timeout=10000)
-            await send_button.click()
-            print("Message sent.")
-        except Exception as e:
-            print("Failed to find the send button.")
-            await page.close()
-            return phone_number, "failed: send button not found"
-
-        # Wait for a few seconds to ensure the message is sent
-        await asyncio.sleep(3)
-
-        # Close the page
-        await page.close()
-        print("Page closed.")
-
-        return phone_number, "success"
+        await page.wait_for_selector('div[aria-label="Chat list"]', timeout=120000)
+        print("Logged in successfully. Navigating to the chat...")
 
     except Exception as e:
         print(f"An error occurred: {e}")
