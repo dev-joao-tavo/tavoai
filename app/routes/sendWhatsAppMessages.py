@@ -129,14 +129,16 @@ async def send_whatsapp_messages(request):
         return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
 
     # **Initialize Async Playwright Browser**
-    browser = await initialize_browser(user_id, board.user_id)
+    #browser = await initialize_browser(user_id, board.user_id)
 
     # **Send Messages Concurrently**
-    tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
+    #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
+    tasks = [send_whatsapp_message(phone, message_text) for phone in phone_numbers]
+    
     results = await asyncio.gather(*tasks)
 
     # **Close Browser**
-    await browser.close()
+    #await browser.close()
 
     successful_sends = [phone for phone, status in results if status == "success"]
     failed_sends = [phone for phone, status in results if status == "failed"]
