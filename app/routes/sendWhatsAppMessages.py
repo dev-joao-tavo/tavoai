@@ -39,9 +39,12 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
 # **Async Function: Send WhatsApp Message**
 import asyncio
 import qrcode_terminal
+import os
 
 async def send_whatsapp_message(phone_number: str, message_text: str):
     async with async_playwright() as p:
+        os.environ["DISPLAY"] = ":99"  # Assign a virtual display
+
         # Ensure we launch a browser, not a browser context
         browser = await p.chromium.launch(headless=False)
 
