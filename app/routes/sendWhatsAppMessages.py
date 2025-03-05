@@ -80,7 +80,7 @@ async def send_whatsapp_messages(request):
         board = result.scalars().all()
 
     try:
-        phone_numbers = await get_phone_numbers_by_status_and_board(status, board.id)
+        phone_numbers = await get_phone_numbers_by_status_and_board(status, board[0].id)
         if not phone_numbers:
             return response.json(
                 {"error": f"No contacts found for status: {status} and board_id: {board[0].id}"},
