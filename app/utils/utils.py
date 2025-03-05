@@ -19,6 +19,7 @@ async def generate_token(user):
         "user_id": user.id,  # Use user_id in the payload for identifying the user
         "email": user.email,
         "username": user.username,  # Including username can be useful for front-end
+        "chrome_profile":user.chrome_profile,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expiration
     }
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")

@@ -10,6 +10,9 @@ from bs4 import BeautifulSoup
 from random import randint
 from selenium.webdriver.support.ui import WebDriverWait
 import time
+from models.models import User
+from db import get_db_session
+from sqlalchemy.future import select
 
 # Constants
 LOGIN_URL = "https://savassi.kommo.com/leads/pipeline/"
@@ -71,34 +74,36 @@ def get_ids_from_stage(driver, stage_id):
     print(f"{len(ids)} leads were found on this stage: {stage_id}  \n")
     return ids
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+async def initialize_driver(user_id):
+    async with get_db_session() as session:  # Use async with here
+        result = await session.execute(select(User).where(User.id == user_id))
+        user = result.scalars().first()
+ 
+        chrome_profile = user.chrome_profile
 
-def initialize_driver():
-    # Set up Chrome options
-    chrome_options = Options()
+        # Set up Chrome options
+        chrome_options = Options()
 
-    # Specify the Chrome user data directory
-    chrome_user_dir = "/home/ubuntu/chrome_user_data"  # Custom directory for Chrome user data
-    chrome_options.add_argument("--user-data-dir=" + chrome_user_dir)
+        # Specify the Chrome user data directory
+        chrome_user_dir = "/home/ubuntu/chrome_user_data"  # Custom directory for Chrome user data
+        chrome_options.add_argument(f"--user-data-dir={chrome_user_dir}")
 
-    # Specify the profile directory (optional)
-    chrome_options.add_argument("--profile-directory=Profile 5")  # e.g., Profile for selenium
+        # Specify the profile directory (optional)
+        chrome_options.add_argument(f"--profile-directory={chrome_profile}")  # e.g., Profile for selenium
 
-    # Add headless mode and other options for server environments
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    chrome_options.add_argument("--no-sandbox")  # Required for running as root
-    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+        # Add headless mode and other options for server environments
+        chrome_options.add_argument("--headless")  # Run in headless mode
+        chrome_options.add_argument("--no-sandbox")  # Required for running as root
+        chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-    # Specify the Chrome for Testing binary location
-    chrome_options.binary_location = "/usr/local/bin/chrome-for-testing"
+        # Specify the Chrome for Testing binary location
+        chrome_options.binary_location = "/usr/local/bin/chrome-for-testing"
 
-    # Initialize the WebDriver with the path to chromedriver
-    service = Service("/usr/local/bin/chromedriver")  # Updated path to ChromeDriver
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+        # Initialize the WebDriver with the path to chromedriver
+        service = Service("/usr/local/bin/chromedriver")  # Updated path to ChromeDriver
+        driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    return driver
+        return driver
 #def initialize_driver():
 #    chrome_options = Options()
 #

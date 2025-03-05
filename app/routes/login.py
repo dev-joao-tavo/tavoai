@@ -37,6 +37,7 @@ async def signup(request):
     email = data.get("email")
     username = str(randint(1, 999999))  # Ensure unique username
     password = data.get("password")
+    chrome_profile = "chrome_profile"
 
     if not email or not password:
         return response.json({"message": "Email and password are required"}, status=400)
@@ -48,7 +49,7 @@ async def signup(request):
             return response.json({"message": "Email already in use"}, status=400)
 
         # Create new user
-        new_user = User(email=email, username=username, password_hash=hash_password(password))
+        new_user = User(email=email, username=username, password_hash=hash_password(password),chrome_profile=chrome_profile)
         session.add(new_user)
         await session.flush()  # Ensure new_user gets an ID
 
