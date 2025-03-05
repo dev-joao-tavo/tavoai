@@ -94,7 +94,7 @@ async def send_whatsapp_messages(request):
         return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
 
     # Initialize the Selenium driver in a separate thread
-    driver = await asyncio.to_thread(initialize_driver(user_id, user.chrome_profile))
+    driver = await asyncio.to_thread(initialize_driver(user_id, user[0].chrome_profile))
 
     # Send the message to each phone number
     successful_sends = []
