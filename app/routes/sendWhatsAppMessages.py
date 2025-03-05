@@ -8,6 +8,7 @@ from routes.configs import initialize_browser
 from models.models import Card, Contact, Board
 from routes.others import get_user_from_token
 from sanic.exceptions import Unauthorized
+from playwright.async_api import async_playwright
 
 app = Sanic.get_app()
 
@@ -39,84 +40,48 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
 import asyncio
 import qrcode_terminal
 
-async def send_whatsapp_message(browser, phone_number: str, message_text: str):
-    try:
-        # Create a new page
+async def send_whatsapp_message(phone_number: str, message_text: str):
+    async with async_playwright() as p:
+        # Ensure we launch a browser, not a browser context
+        browser = await p.chromium.launch(headless=False)
+
+        # Create a new browser context
         context = await browser.new_context(
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
         )
         page = await context.new_page()
 
-
-        # Navigate to WhatsApp Web
-        await page.goto("https://web.whatsapp.com")
-        print("Opened WhatsApp Web.")
-
-        # Wait for QR code to appear
         try:
-            page_content = await page.content()
+            # Open WhatsApp Web
+            await page.goto("https://web.whatsapp.com")
+            print("Opened WhatsApp Web. Waiting for QR code...")
 
-            # Print the full HTML content of the page
-            print("\n\n==== PAGE CONTENT ====\n")
-            print(page_content)
-            print("\n======================\n")
-
+            # Wait for QR Code
             qr_code_selector = 'canvas[aria-label="Scan this QR code to link a device!"]'
-            await page.wait_for_selector(qr_code_selector, timeout=10000)
-            print("QR code loaded. Displaying in terminal...")
+            await page.wait_for_selector(qr_code_selector, timeout=20000)
+            print("QR Code detected.")
 
-            # Take a screenshot of the QR code
-            qr_code_element = await page.query_selector(qr_code_selector)
-            qr_code_screenshot = await qr_code_element.screenshot()
-            
-            # Display the QR code in the terminal
-            qrcode_terminal.draw(qr_code_screenshot)
+            # Wait for successful login
+            await page.wait_for_selector('div[aria-label="Chat list"]', timeout=120000)
+            print("Logged in successfully. Navigating to chat...")
+
+            # Navigate to chat
+            whatsapp_url = f"https://web.whatsapp.com/send?phone={phone_number}"
+            await page.goto(whatsapp_url)
+            await page.wait_for_selector('div[aria-label="Message"]', timeout=20000)
+
+            # Type and send message
+            message_box = await page.query_selector('div[aria-label="Message"]')
+            await message_box.type(message_text)
+            await page.keyboard.press("Enter")
+            print(f"Message sent to {phone_number}")
+
         except Exception as e:
-            print("Failed to load QR code.", e)
+            print(f"An error occurred: {e}")
+
+        finally:
             await page.close()
-            return phone_number, "failed: QR code not found"
-
-        # Wait for the chat list to appear (indicating successful login)
-        await page.wait_for_selector('div[aria-label="Chat list"]', timeout=120000)
-        print("Logged in successfully. Navigating to the chat...")
-
-        # Navigate to the specific chat
-        await page.goto(f"https://web.whatsapp.com/send?phone={phone_number}")
-        print(f"Navigated to chat with {phone_number}.")
-
-        # Wait for the message input box to appear
-        try:
-            message_box = await page.wait_for_selector('div[aria-label="Digite uma mensagem"]', timeout=30000)
-            await message_box.fill(message_text)
-            print("Message typed.")
-        except Exception as e:
-            print("Failed to find the message input box.")
-            await page.close()
-            return phone_number, "failed: message input box not found"
-
-        # Click the send button
-        try:
-            send_button = await page.wait_for_selector('button[aria-label="Enviar"]', timeout=10000)
-            await send_button.click()
-            print("Message sent.")
-        except Exception as e:
-            print("Failed to find the send button.")
-            await page.close()
-            return phone_number, "failed: send button not found"
-
-        # Wait for a few seconds to ensure the message is sent
-        await asyncio.sleep(3)
-
-        # Close the page
-        await page.close()
-        print("Page closed.")
-
-        return phone_number, "success"
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        await page.close()
-        return phone_number, f"failed: {str(e)}"
+            await browser.close()
 
     
 # **Sanic Route: Send WhatsApp Messages**
