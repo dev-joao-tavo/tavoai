@@ -50,7 +50,7 @@ async def send_whatsapp_message(browser, phone_number: str, message_text: str):
 
         # Wait for QR code to appear and log it
         try:
-            qr_code_selector = 'canvas[aria-label="Scan me!"]'
+            qr_code_selector = 'canvas[aria-label="Scan this QR code to link a device!"]'
             await page.wait_for_selector(qr_code_selector, timeout=10000)
             print("QR code loaded. Displaying in terminal...")
 
