@@ -61,7 +61,7 @@ async def send_whatsapp_message(browser, phone_number: str, message_text: str):
             # Display the QR code in the terminal
             qrcode_terminal.draw(qr_code_screenshot)
         except Exception as e:
-            print("Failed to load QR code.")
+            print("Failed to load QR code.", e)
             await page.close()
             return phone_number, "failed: QR code not found"
 
