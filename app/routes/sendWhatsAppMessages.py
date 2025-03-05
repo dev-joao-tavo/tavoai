@@ -85,6 +85,9 @@ async def get_qrcode(phone, message_text):
 
         finally:
             # Close the browser
+            await page.screenshot(path='whatsapp_page_before_closing.png')
+            print("Screenshot of the page saved as 'whatsapp_page_before_closing.png'")
+
             await browser.close()
 
 
