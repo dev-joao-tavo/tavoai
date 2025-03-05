@@ -44,9 +44,6 @@ async def send_whatsapp_message(browser, phone_number: str, message_text: str):
         # Create a new page
         page = await browser.new_page()
 
-        # Set user agent to mimic a real browser
-        await page.set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36")
-
         # Navigate to WhatsApp Web
         await page.goto("https://web.whatsapp.com")
         print("Opened WhatsApp Web.")
