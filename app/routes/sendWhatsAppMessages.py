@@ -38,6 +38,7 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
 # **Async Function: Send WhatsApp Message**
 async def send_whatsapp_message(browser, phone_number: str, message_text: str):
     try:
+        await page.set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36")
         page = await browser.new_page()
         await page.goto(f"https://web.whatsapp.com/send?phone={phone_number}")
         await asyncio.sleep(5)
