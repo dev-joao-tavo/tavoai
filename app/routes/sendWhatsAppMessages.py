@@ -10,6 +10,8 @@ import time
 import asyncio
 from routes.configs import login, initialize_driver
 from models.models import Card, Contact
+from others import get_user_from_token
+from sanic.exceptions import Unauthorized
 
 app = Sanic.get_app()
 
@@ -57,9 +59,20 @@ async def sendWhatsAppMessages(request):
             return response.json({"error": f"No contacts found for status: {status}"}, status=404)
     except Exception as e:
         return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
+    
+    token = request.headers.get("Authorization")
+    
+    if not token:
+        raise Unauthorized(f"Authorization token is missing. Token: {token}; Headers: {request.headers}")
+
+    # Remove 'Bearer ' prefix if it exists
+    if token.startswith("Bearer "):
+        token = token[7:]
+
+    user_id = get_user_from_token(token)
 
     # Initialize the Selenium driver
-    driver = initialize_driver()
+    driver = initialize_driver(user_id)
 
     # Send the message to each phone number
     for phone_number in phone_numbers:
