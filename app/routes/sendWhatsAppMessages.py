@@ -1,15 +1,11 @@
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 from sanic import Sanic, response
-from db import SessionLocal
+from db import SessionLocal, get_db_session
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 import time
 import asyncio
-from routes.configs import login, initialize_driver
-from models.models import Card, Contact, Board, User
+from routes.configs import initialize_browser
+from models.models import Card, Contact, Board
 from routes.others import get_user_from_token
 from sanic.exceptions import Unauthorized
 
@@ -38,24 +34,43 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
             raise
     return phone_numbers
 
-# Sanic route to send WhatsApp messages
+
+# **Async Function: Send WhatsApp Message**
+async def send_whatsapp_message(browser, phone_number: str, message_text: str):
+    try:
+        page = await browser.new_page()
+        await page.goto(f"https://web.whatsapp.com/send?phone={phone_number}")
+        await asyncio.sleep(5)
+
+        # Wait for input box
+        message_box = await page.wait_for_selector('//div[@aria-label="Digite uma mensagem"]', timeout=30000)
+        await message_box.fill(message_text)
+
+        # Click send button
+        send_button = await page.wait_for_selector('//button[@aria-label="Enviar"]', timeout=10000)
+        await send_button.click()
+
+        await asyncio.sleep(3)
+        await page.close()
+
+        return phone_number, "success"
+
+    except Exception as e:
+        print(f"Failed to send message to {phone_number}: {str(e)}")
+        return phone_number, "failed"
+
+# **Sanic Route: Send WhatsApp Messages**
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
-    # Extract the JWT token from the request headers
     token = request.headers.get("Authorization")
     if not token:
         raise Unauthorized("Authorization token is missing.")
 
-    # Remove 'Bearer ' prefix if it exists
-    if token.startswith("Bearer "):
-        token = token[7:]
-
-    # Decode the token to get the user ID
+    token = token[7:] if token.startswith("Bearer ") else token
     user_id = get_user_from_token(token)
     if not user_id:
         raise Unauthorized("Invalid or expired token.")
 
-    # Parse JSON data from the request
     try:
         data = request.json
         status = data.get("status")
@@ -63,83 +78,48 @@ async def send_whatsapp_messages(request):
         message2 = data.get("message2")
         message3 = data.get("message3")
 
-        # Validate required fields
-        if not all([status, message1]):
-            return response.json(
-                {"error": "status, and at least message1 are required."},
-                status=400,
-            )
+        if not status or not message1:
+            return response.json({"error": "status and at least message1 are required."}, status=400)
+
+        message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
+
     except Exception as e:
         return response.json({"error": "Invalid request body."}, status=400)
 
-    # Combine messages into a single text
-    message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
-
-    # Query boards for the specific user
-    async with SessionLocal() as session:
+    async with get_db_session() as session:
         result = await session.execute(select(Board).filter(Board.user_id == user_id))
-        board = result.scalars().all()
+        board = result.scalars().first()
 
-        result = await session.execute(select(User).filter(User.id == user_id))
-        user = result.scalars().all()
+    if not board:
+        return response.json({"error": "Board not found for user."}, status=404)
 
     try:
-        phone_numbers = await get_phone_numbers_by_status_and_board(status, board[0].id)
+        phone_numbers = await get_phone_numbers_by_status_and_board(status, board.id)
         if not phone_numbers:
             return response.json(
-                {"error": f"No contacts found for status: {status} and board_id: {board[0].id}"},
+                {"error": f"No contacts found for status: {status} and board_id: {board.id}"},
                 status=404,
             )
     except Exception as e:
         return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
 
-    # Initialize the Selenium driver in a separate thread
-    driver = await asyncio.to_thread(initialize_driver(user_id, user[0].chrome_profile))
+    # **Initialize Async Playwright Browser**
+    browser = await initialize_browser(user_id, board.user_id)
 
-    # Send the message to each phone number
-    successful_sends = []
-    failed_sends = []
+    # **Send Messages Concurrently**
+    tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
+    results = await asyncio.gather(*tasks)
 
-    for phone_number in phone_numbers:
-        try:
-            # Navigate to WhatsApp Web
-            await asyncio.to_thread(driver.get, f"https://web.whatsapp.com/send?phone={phone_number}")
-            await asyncio.sleep(5)  # Use asyncio.sleep to avoid blocking
+    # **Close Browser**
+    await browser.close()
 
-            # Wait for the message input box to load
-            message_box = await asyncio.to_thread(
-                WebDriverWait(driver, 30).until,
-                EC.presence_of_element_located(
-                    (By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
-                )
-            )
-            # Enter the message text
-            await asyncio.to_thread(message_box.send_keys, message_text)
+    successful_sends = [phone for phone, status in results if status == "success"]
+    failed_sends = [phone for phone, status in results if status == "failed"]
 
-            # Click the send button
-            await asyncio.to_thread(
-                WebDriverWait(driver, 10).until,
-                EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Enviar"]'))
-            ).click()
-
-            # Wait for the message to be sent
-            await asyncio.sleep(3)
-
-            # Log successful sends
-            successful_sends.append(phone_number)
-        except Exception as e:
-            # Log the error and continue with the next phone number
-            print(f"Failed to send message to {phone_number}: {str(e)}")
-            failed_sends.append(phone_number)
-
-    # Close the Selenium driver
-    await asyncio.to_thread(driver.quit)
-
-    # Return success response with details
     return response.json(
         {
             "status": "Messages sent!",
             "successful_sends": successful_sends,
             "failed_sends": failed_sends,
         }
-    )  
+    )

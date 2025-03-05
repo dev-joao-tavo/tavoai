@@ -9,3 +9,5 @@ bcrypt
 sanic_cors
 passlib
 pyjwt 
+asyncpg 
+playwright

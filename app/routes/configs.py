@@ -81,46 +81,28 @@ from selenium.webdriver.chrome.options import Options
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-async def initialize_driver(user_id: int, chrome_profile):
-    try:
-        # Set up Chrome options
-        chrome_options = Options()
+async def initialize_browser(user_id: int, chrome_profile):
+    """Starts Playwright Chromium with user profile."""
+    playwright = await async_playwright().start()
 
-        # Base directory for Chrome user data
-        chrome_user_dir = "/home/ubuntu/chrome_user_data"
+    # Chrome user profile directories
+    chrome_user_dir = "/home/ubuntu/chrome_user_data"
+    user_profile_dir = os.path.join(chrome_user_dir, f"user_{user_id}")
 
-        # Ensure the base directory exists
-        if not os.path.exists(chrome_user_dir):
-            os.makedirs(chrome_user_dir)
+    os.makedirs(chrome_user_dir, exist_ok=True)
+    os.makedirs(user_profile_dir, exist_ok=True)
 
-        # User-specific profile directory
-        user_profile_dir = os.path.join(chrome_user_dir, f"user_{user_id}")
+    browser = await playwright.chromium.launch_persistent_context(
+        user_profile_dir,
+        headless=False,  # Set to True if running on a server
+        args=[f"--profile-directory={chrome_profile}"]
+    )
 
-        # Ensure the user-specific profile directory exists
-        if not os.path.exists(user_profile_dir):
-            os.makedirs(user_profile_dir)
+    return browser
 
-        # Specify the Chrome user data directory and profile
-        chrome_options.add_argument(f"--user-data-dir={user_profile_dir}")
-        chrome_options.add_argument(f"--profile-directory={chrome_profile}")
 
-        # Add headless mode and other options for server environments
-        chrome_options.add_argument("--headless")  # Run in headless mode
-        chrome_options.add_argument("--no-sandbox")  # Required for running as root
-        chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-        # Specify the Chrome for Testing binary location
-        chrome_options.binary_location = "/usr/local/bin/chrome-for-testing"
 
-        # Initialize the WebDriver with the path to chromedriver
-        service = Service("/usr/local/bin/chromedriver")  # Updated path to ChromeDriver
-        driver = webdriver.Chrome(service=service, options=chrome_options)
-
-        return driver
-
-    except Exception as e:
-        print(f"Failed to initialize driver for user {user_id}: {str(e)}")
-        raise
 #def initialize_driver():
 #    chrome_options = Options()
 #
