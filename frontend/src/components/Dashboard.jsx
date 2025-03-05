@@ -168,15 +168,18 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await axios.post(`${API_BASE_URL}/sendMessage`,
-        {
+      const response = await axios.post(
+        `${API_BASE_URL}/sendMessage`, // URL
+        { // Request body (data)
+          status,
+          ...columnMessages[status],
+        },
+        { // Config object (headers, etc.)
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }, {
-        status,
-        ...columnMessages[status],
-      });
+        }
+      );
       console.log("Message sent:", response.data);
       alert(`Message sent for ${status} column successfully!`);
     } catch (error) {
