@@ -56,18 +56,29 @@ async def get_qrcode(phone, message_text):
             print("Navigating to WhatsApp Web...")
             await page.goto('https://web.whatsapp.com', timeout=60000)  # 60 seconds timeout
 
-            # Debug: Print the current URL and page content
-            print("Current URL:", page.url)
-            print("Page content:", await page.content())
+            # Check if the URL is correct
+            current_url = page.url
+            print("Current URL:", current_url)
+            if "web.whatsapp.com" not in current_url:
+                raise Exception("Not on WhatsApp Web. Current URL: " + current_url)
+
+            # Debug: Take a screenshot of the entire page
+            await page.screenshot(path='whatsapp_page.png')
+            print("Screenshot of the page saved as 'whatsapp_page.png'")
 
             # Wait for the QR code element to appear
             print("Waiting for QR code...")
             qr_code = await page.wait_for_selector('canvas', timeout=60000)  # Wait up to 60 seconds
 
+            # Verify the QR code element
+            if await qr_code.is_visible():
+                print("QR code is visible on the page.")
+            else:
+                raise Exception("QR code is not visible.")
+
             # Take a screenshot of the QR code
             await qr_code.screenshot(path='qrcode.png')
             print("QR code saved as 'qrcode.png'")
-
 
         except Exception as e:
             print(f"An error occurred: {e}")
