@@ -126,9 +126,6 @@ async def send_whatsapp_messages(request):
             print(f"Failed to send message to {phone_number}: {str(e)}")
             failed_sends.append(phone_number)
 
-    # Close the Selenium driver
-    driver.quit()
-
     # Return success response with details
     return response.json(
         {
