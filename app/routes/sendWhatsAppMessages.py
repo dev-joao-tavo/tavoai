@@ -41,22 +41,39 @@ import asyncio
 import qrcode_terminal
 import os
 
+from playwright.async_api import async_playwright
+import asyncio
+
 async def get_qrcode(phone, message_text):
     async with async_playwright() as p:
-        # Launch the browser with a custom user-agent and disable automation flags
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            bypass_csp=True,  # Bypass Content Security Policy if needed
+        # Enable persistent session to avoid QR code every time
+        context = await p.chromium.launch_persistent_context(
+            user_data_dir="/path/to/your/chrome/profile",  # Change this to your profile path
+            headless=True,
+            args=[
+                "--disable-blink-features=AutomationControlled",  # Bypass detection
+                "--window-size=1920,1080",
+                "--disable-gpu",
+                "--no-sandbox",
+                "--disable-dev-shm-usage"
+            ]
         )
         page = await context.new_page()
 
         try:
+            # Modify JavaScript properties to avoid detection
+            await page.add_init_script("""
+                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+            """)
+
             # Navigate to WhatsApp Web
             print("Navigating to WhatsApp Web...")
-            await page.goto('https://web.whatsapp.com', timeout=60000)  # 60 seconds timeout
+            await page.goto('https://web.whatsapp.com', timeout=60000)  # 60 sec timeout
 
-            # Check if the URL is correct
+            # Wait for the page to load
+            await asyncio.sleep(5)
+
+            # Debug: Capture current URL
             current_url = page.url
             print("Current URL:", current_url)
             if "web.whatsapp.com" not in current_url:
@@ -68,7 +85,7 @@ async def get_qrcode(phone, message_text):
 
             # Wait for the QR code element to appear
             print("Waiting for QR code...")
-            qr_code = await page.wait_for_selector('canvas', timeout=60000)  # Wait up to 60 seconds
+            qr_code = await page.wait_for_selector('canvas', timeout=60000)  # Wait up to 60 sec
 
             # Verify the QR code element
             if await qr_code.is_visible():
@@ -84,11 +101,9 @@ async def get_qrcode(phone, message_text):
             print(f"An error occurred: {e}")
 
         finally:
-            # Close the browser
-            await browser.close()
+            # Close the browser but keep session active
+            await context.close()
 
-
-    
 # **Sanic Route: Send WhatsApp Messages**
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
@@ -138,6 +153,8 @@ async def send_whatsapp_messages(request):
 
     # **Send Messages Concurrently**
     #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
+    asyncio.run(get_qrcode("123456789", "Hello"))
+
     tasks = [get_qrcode(phone, message_text) for phone in phone_numbers]
     
     results = await asyncio.gather(*tasks)
