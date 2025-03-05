@@ -41,58 +41,21 @@ import asyncio
 import qrcode_terminal
 import os
 
-async def send_whatsapp_message(phone_number: str, message_text: str):
+async def get_qrcode(phone, message_text):
     async with async_playwright() as p:
-        os.environ["DISPLAY"] = ":99"  # Assign a virtual display
+        browser = await p.chromium.launch(headless=True)  # Set headless=True
+        page = await browser.new_page()
+        await page.goto('https://web.whatsapp.com')
+        
+        # Wait for the QR code to appear
+        await page.wait_for_selector('canvas')
+        
+        # Take a screenshot of the QR code
+        qr_code = await page.query_selector('canvas')
+        await qr_code.screenshot(path='qrcode.png')
+        
+        await browser.close()
 
-        # Ensure we launch a browser, not a browser context
-        browser = await p.chromium.launch(headless=False)
-
-        # Create a new browser context
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
-        )
-        page = await context.new_page()
-
-        try:
-            # Open WhatsApp Web
-            await page.goto("https://web.whatsapp.com")
-            print("Opened WhatsApp Web. Waiting for QR code...")
-
-            page_content = await page.content()
-
-            # Print the full HTML content of the page
-            print("\n\n==== PAGE CONTENT ====\n")
-            print(page_content)
-            print("\n======================\n")
-
-
-            # Wait for QR Code
-            qr_code_selector = 'canvas[aria-label="Scan this QR code to link a device!"]'
-            await page.wait_for_selector(qr_code_selector, timeout=20000)
-            print("QR Code detected.")
-
-            # Wait for successful login
-            await page.wait_for_selector('div[aria-label="Chat list"]', timeout=120000)
-            print("Logged in successfully. Navigating to chat...")
-
-            # Navigate to chat
-            whatsapp_url = f"https://web.whatsapp.com/send?phone={phone_number}"
-            await page.goto(whatsapp_url)
-            await page.wait_for_selector('div[aria-label="Message"]', timeout=20000)
-
-            # Type and send message
-            message_box = await page.query_selector('div[aria-label="Message"]')
-            await message_box.type(message_text)
-            await page.keyboard.press("Enter")
-            print(f"Message sent to {phone_number}")
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
-
-        finally:
-            await page.close()
-            await browser.close()
 
     
 # **Sanic Route: Send WhatsApp Messages**
@@ -144,7 +107,7 @@ async def send_whatsapp_messages(request):
 
     # **Send Messages Concurrently**
     #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
-    tasks = [send_whatsapp_message(phone, message_text) for phone in phone_numbers]
+    tasks = [get_qrcode(phone, message_text) for phone in phone_numbers]
     
     results = await asyncio.gather(*tasks)
 
