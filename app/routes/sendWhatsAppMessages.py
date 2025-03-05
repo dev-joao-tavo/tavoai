@@ -83,11 +83,11 @@ async def send_whatsapp_messages(request):
         phone_numbers = await get_phone_numbers_by_status_and_board(status, board.id)
         if not phone_numbers:
             return response.json(
-                {"error": f"No contacts found for status: {status} and board_id: {board.id}"},
+                {"error": f"No contacts found for status: {status} and board_id: {board[0].id}"},
                 status=404,
             )
     except Exception as e:
-        return response.json({"error": f"Failed to fetch contacts: {str(e),board}"}, status=500)
+        return response.json({"error": f"Failed to fetch contacts: {str(e),board[0]}"}, status=500)
 
     # Initialize the Selenium driver
     driver = initialize_driver(user_id)
