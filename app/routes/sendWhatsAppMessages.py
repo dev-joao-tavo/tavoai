@@ -43,18 +43,32 @@ import os
 
 async def get_qrcode(phone, message_text):
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)  # Set headless=True
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
-        await page.goto('https://web.whatsapp.com')
-        
-        # Wait for the QR code to appear
-        await page.wait_for_selector('canvas')
-        
-        # Take a screenshot of the QR code
-        qr_code = await page.query_selector('canvas')
-        await qr_code.screenshot(path='qrcode.png')
-        
-        await browser.close()
+
+        try:
+            # Navigate to WhatsApp Web
+            print("Navigating to WhatsApp Web...")
+            await page.goto('https://web.whatsapp.com', timeout=60000)
+
+            # Debug: Print the current URL and page content
+            print("Current URL:", page.url)
+            print("Page content:", await page.content())
+
+            # Wait for the QR code element to appear
+            print("Waiting for QR code...")
+            qr_code = await page.wait_for_selector('canvas', timeout=60000)
+
+            # Take a screenshot of the QR code
+            await qr_code.screenshot(path='qrcode.png')
+            print("QR code saved as 'qrcode.png'")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        finally:
+            # Close the browser
+            await browser.close()
 
 
     
