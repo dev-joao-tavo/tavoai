@@ -75,11 +75,7 @@ def get_ids_from_stage(driver, stage_id):
     return ids
 
 import os
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from playwright.async_api import async_playwright
 
 async def initialize_browser(user_id: int, chrome_profile):
     """Starts Playwright Chromium with user profile."""
