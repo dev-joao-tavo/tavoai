@@ -9,7 +9,7 @@ from typing import List
 import time
 import asyncio
 from routes.configs import login, initialize_driver
-from models.models import Card, Contact
+from models.models import Card, Contact, Board
 from routes.others import get_user_from_token
 from sanic.exceptions import Unauthorized
 
@@ -58,15 +58,14 @@ async def send_whatsapp_messages(request):
     try:
         data = request.json
         status = data.get("status")
-        board_id = data.get("board_id")
         message1 = data.get("message1")
         message2 = data.get("message2")
         message3 = data.get("message3")
 
         # Validate required fields
-        if not all([status, board_id, message1]):
+        if not all([status, message1]):
             return response.json(
-                {"error": "status, board_id, and at least message1 are required."},
+                {"error": "status, and at least message1 are required."},
                 status=400,
             )
     except Exception as e:
@@ -75,12 +74,16 @@ async def send_whatsapp_messages(request):
     # Combine messages into a single text
     message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
 
-    # Fetch phone numbers for the given status and board_id
+    # Now query boards for the specific user
+    async with SessionLocal() as session:
+        result = await session.execute(select(Board).filter(Board.user_id == user_id))
+        board = result.scalars().all()
+
     try:
-        phone_numbers = await get_phone_numbers_by_status_and_board(status, board_id)
+        phone_numbers = await get_phone_numbers_by_status_and_board(status, board.id)
         if not phone_numbers:
             return response.json(
-                {"error": f"No contacts found for status: {status} and board_id: {board_id}"},
+                {"error": f"No contacts found for status: {status} and board_id: {board.id}"},
                 status=404,
             )
     except Exception as e:
