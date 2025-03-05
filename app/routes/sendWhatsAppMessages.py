@@ -41,6 +41,7 @@ async def send_whatsapp_message(browser, phone_number: str, message_text: str):
         page = await browser.new_page()
         await page.goto(f"https://web.whatsapp.com/send?phone={phone_number}")
         await asyncio.sleep(5)
+        print(">>>>>>>>>>>>>>>>>>>>>>https://web.whatsapp.com/send?phone=phone_number<<<<<<<<<<<<<<<<<<<<<<<")
 
         # Wait for input box
         message_box = await page.wait_for_selector('//div[@aria-label="Digite uma mensagem"]', timeout=30000)
