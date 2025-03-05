@@ -87,7 +87,7 @@ async def send_whatsapp_messages(request):
                 status=404,
             )
     except Exception as e:
-        return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
+        return response.json({"error": f"Failed to fetch contacts: {str(e),board}"}, status=500)
 
     # Initialize the Selenium driver
     driver = initialize_driver(user_id)
