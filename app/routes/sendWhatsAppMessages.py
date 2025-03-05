@@ -99,8 +99,9 @@ async def send_whatsapp_messages(request):
     for phone_number in phone_numbers:
         try:
             # Navigate to WhatsApp Web
-            driver.get(f"https://web.whatsapp.com/send?phone={phone_number}")
-            time.sleep(5)
+            await driver.get(f"https://web.whatsapp.com/send?phone={phone_number}")
+            await asyncio.sleep(5)
+            print("yey")
 
             # Wait for the message input box to load
             message_box = WebDriverWait(driver, 30).until(
@@ -117,7 +118,7 @@ async def send_whatsapp_messages(request):
             ).click()
 
             # Wait for the message to be sent
-            time.sleep(3)
+            await asyncio.sleep(3)
 
             # Log successful sends
             successful_sends.append(phone_number)

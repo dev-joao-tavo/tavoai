@@ -101,7 +101,7 @@ async def initialize_driver(user_id):
 
         # Initialize the WebDriver with the path to chromedriver
         service = Service("/usr/local/bin/chromedriver")  # Updated path to ChromeDriver
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+        driver = await webdriver.Chrome(service=service, options=chrome_options)
 
         return driver
 #def initialize_driver():
