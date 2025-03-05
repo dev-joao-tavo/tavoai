@@ -90,7 +90,7 @@ async def send_whatsapp_messages(request):
         return response.json({"error": f"Failed to fetch contacts: {str(e),board[0]}"}, status=500)
 
     # Initialize the Selenium driver
-    driver = initialize_driver(user_id)
+    driver = await initialize_driver(user_id)
 
     # Send the message to each phone number
     successful_sends = []
