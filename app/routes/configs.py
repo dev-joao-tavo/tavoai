@@ -90,7 +90,7 @@ async def initialize_browser(user_id: int, chrome_profile):
 
     browser = await playwright.chromium.launch_persistent_context(
         user_profile_dir,
-        headless=False,  # Set to True if running on a server
+        headless=True,  # Set to True if running on a server
         args=[f"--profile-directory={chrome_profile}"]
     )
 
