@@ -42,7 +42,11 @@ import qrcode_terminal
 async def send_whatsapp_message(browser, phone_number: str, message_text: str):
     try:
         # Create a new page
-        page = await browser.new_page()
+        context = await browser.new_context(
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+        )
+        page = await context.new_page()
+
 
         # Navigate to WhatsApp Web
         await page.goto("https://web.whatsapp.com")
@@ -56,7 +60,7 @@ async def send_whatsapp_message(browser, phone_number: str, message_text: str):
             print("\n\n==== PAGE CONTENT ====\n")
             print(page_content)
             print("\n======================\n")
-            
+
             qr_code_selector = 'canvas[aria-label="Scan this QR code to link a device!"]'
             await page.wait_for_selector(qr_code_selector, timeout=10000)
             print("QR code loaded. Displaying in terminal...")
