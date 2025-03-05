@@ -74,22 +74,44 @@ def get_ids_from_stage(driver, stage_id):
     print(f"{len(ids)} leads were found on this stage: {stage_id}  \n")
     return ids
 
-async def initialize_driver(user_id):
-    async with get_db_session() as session:  # Use async with here
-        result = await session.execute(select(User).where(User.id == user_id))
+import os
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+async def initialize_driver(user_id: int, db_session: AsyncSession):
+    try:
+        # Fetch user data from the database
+        result = await db_session.execute(select(User).where(User.id == user_id))
         user = result.scalars().first()
- 
+
+        if not user:
+            raise ValueError(f"User with ID {user_id} not found")
+
         chrome_profile = user.chrome_profile
 
         # Set up Chrome options
         chrome_options = Options()
 
-        # Specify the Chrome user data directory
-        chrome_user_dir = "/home/ubuntu/chrome_user_data"  # Custom directory for Chrome user data
-        chrome_options.add_argument(f"--user-data-dir={chrome_user_dir}")
+        # Base directory for Chrome user data
+        chrome_user_dir = "/home/ubuntu/chrome_user_data"
 
-        # Specify the profile directory (optional)
-        chrome_options.add_argument(f"--profile-directory={chrome_profile}")  # e.g., Profile for selenium
+        # Ensure the base directory exists
+        if not os.path.exists(chrome_user_dir):
+            os.makedirs(chrome_user_dir)
+
+        # User-specific profile directory
+        user_profile_dir = os.path.join(chrome_user_dir, f"user_{user_id}")
+
+        # Ensure the user-specific profile directory exists
+        if not os.path.exists(user_profile_dir):
+            os.makedirs(user_profile_dir)
+
+        # Specify the Chrome user data directory and profile
+        chrome_options.add_argument(f"--user-data-dir={user_profile_dir}")
+        chrome_options.add_argument(f"--profile-directory={chrome_profile}")
 
         # Add headless mode and other options for server environments
         chrome_options.add_argument("--headless")  # Run in headless mode
@@ -101,9 +123,13 @@ async def initialize_driver(user_id):
 
         # Initialize the WebDriver with the path to chromedriver
         service = Service("/usr/local/bin/chromedriver")  # Updated path to ChromeDriver
-        driver = await webdriver.Chrome(service=service, options=chrome_options)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
 
         return driver
+
+    except Exception as e:
+        print(f"Failed to initialize driver for user {user_id}: {str(e)}")
+        raise
 #def initialize_driver():
 #    chrome_options = Options()
 #

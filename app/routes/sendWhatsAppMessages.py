@@ -38,6 +38,7 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
             raise
     return phone_numbers
 
+# Sanic route to send WhatsApp messages
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
     # Extract the JWT token from the request headers
@@ -74,7 +75,7 @@ async def send_whatsapp_messages(request):
     # Combine messages into a single text
     message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
 
-    # Now query boards for the specific user
+    # Query boards for the specific user
     async with SessionLocal() as session:
         result = await session.execute(select(Board).filter(Board.user_id == user_id))
         board = result.scalars().all()
@@ -87,10 +88,10 @@ async def send_whatsapp_messages(request):
                 status=404,
             )
     except Exception as e:
-        return response.json({"error": f"Failed to fetch contacts: {str(e),board[0]}"}, status=500)
+        return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
 
-    # Initialize the Selenium driver
-    driver = await initialize_driver(user_id)
+    # Initialize the Selenium driver in a separate thread
+    driver = await asyncio.to_thread(initialize_driver, user_id)
 
     # Send the message to each phone number
     successful_sends = []
@@ -99,21 +100,22 @@ async def send_whatsapp_messages(request):
     for phone_number in phone_numbers:
         try:
             # Navigate to WhatsApp Web
-            await driver.get(f"https://web.whatsapp.com/send?phone={phone_number}")
-            await asyncio.sleep(5)
-            print("yey")
+            await asyncio.to_thread(driver.get, f"https://web.whatsapp.com/send?phone={phone_number}")
+            await asyncio.sleep(5)  # Use asyncio.sleep to avoid blocking
 
             # Wait for the message input box to load
-            message_box = WebDriverWait(driver, 30).until(
+            message_box = await asyncio.to_thread(
+                WebDriverWait(driver, 30).until,
                 EC.presence_of_element_located(
                     (By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
                 )
             )
             # Enter the message text
-            message_box.send_keys(message_text)
+            await asyncio.to_thread(message_box.send_keys, message_text)
 
             # Click the send button
-            WebDriverWait(driver, 10).until(
+            await asyncio.to_thread(
+                WebDriverWait(driver, 10).until,
                 EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Enviar"]'))
             ).click()
 
@@ -127,6 +129,9 @@ async def send_whatsapp_messages(request):
             print(f"Failed to send message to {phone_number}: {str(e)}")
             failed_sends.append(phone_number)
 
+    # Close the Selenium driver
+    await asyncio.to_thread(driver.quit)
+
     # Return success response with details
     return response.json(
         {
@@ -134,4 +139,4 @@ async def send_whatsapp_messages(request):
             "successful_sends": successful_sends,
             "failed_sends": failed_sends,
         }
-    )
+    )  
