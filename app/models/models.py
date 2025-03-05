@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, TIMESTAMP, Enum
 from sqlalchemy.orm import relationship
-from db import Base
+from base import Base
 import bcrypt
 
 class User(Base):
