@@ -169,12 +169,12 @@ const Dashboard = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.post(
-        `${API_BASE_URL}/sendMessage`, // URL
-        { // Request body (data)
+        `${API_BASE_URL}/sendMessage`,
+        {
           status,
           ...columnMessages[status],
         },
-        { // Config object (headers, etc.)
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
