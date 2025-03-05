@@ -104,8 +104,6 @@ async def sendWhatsAppMessages(request):
             print(f"Failed to send message to {phone_number}: {str(e)}")
             continue
 
-    # Close the driver
-    driver.quit()
 
     # Return success response
     return response.json({"status": "Messages sent!", "contacts": phone_numbers})
