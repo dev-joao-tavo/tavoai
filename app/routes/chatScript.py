@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from random import randint
 from routes.messages import *
-from routes.configs import login, initialize_driver, set_switcher, get_ids_from_stage
+#from routes.configs import login, initialize_driver, set_switcher, get_ids_from_stage
 from sanic import Sanic
 app = Sanic.get_app()
 from openai import OpenAI
@@ -101,7 +101,7 @@ def send_message(driver, lead_id, previous_messages):
 def main(lead_id):   
     #driver = initialize_driver()
         # Specify the path to the chromedriver executable
-    driver = initialize_driver()
+   #driver = initialize_driver()
 
     # Open WhatsApp Web
     driver.get('https://web.whatsapp.com')

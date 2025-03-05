@@ -7,7 +7,7 @@ from datetime import datetime
 import time
 
 from routes.messages import *
-from routes.configs import login, initialize_driver, set_switcher, get_ids_from_stage
+#from routes.configs import login, initialize_driver, set_switcher, get_ids_from_stage
 
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -73,7 +73,7 @@ def send_message(driver, ids, messages):
 
 @app.route("/run_send_nutrition_messages_script")
 async def run_send_nutrition_messages_script(request):
-    driver = initialize_driver()
+    #driver = initialize_driver()
     #login(driver)
     counter = 0
     for stage_id in PIPELINE_STAGES.values():

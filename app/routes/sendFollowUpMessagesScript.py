@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from random import randint
 from routes.messages import *
-from routes.configs import login, initialize_driver, set_switcher, get_ids_from_stage
+#from routes.configs import login, initialize_driver, set_switcher, get_ids_from_stage
 
 from sanic.response import json
 from sanic import Sanic
@@ -63,7 +63,7 @@ def send_message(driver, ids, messages):
 
 @app.route("/run_send_followup_messages_script")
 async def run_send_followup_messages_script(request):
-    driver = initialize_driver()
+    #driver = initialize_driver()
     login(driver)
     counter = 0
     for stage_id in PIPELINE_STAGES.values():
