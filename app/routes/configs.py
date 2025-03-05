@@ -81,17 +81,8 @@ from selenium.webdriver.chrome.options import Options
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-async def initialize_driver(user_id: int, db_session: AsyncSession):
+async def initialize_driver(user_id: int, chrome_profile):
     try:
-        # Fetch user data from the database
-        result = await db_session.execute(select(User).where(User.id == user_id))
-        user = result.scalars().first()
-
-        if not user:
-            raise ValueError(f"User with ID {user_id} not found")
-
-        chrome_profile = user.chrome_profile
-
         # Set up Chrome options
         chrome_options = Options()
 

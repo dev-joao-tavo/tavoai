@@ -9,7 +9,7 @@ from typing import List
 import time
 import asyncio
 from routes.configs import login, initialize_driver
-from models.models import Card, Contact, Board
+from models.models import Card, Contact, Board, User
 from routes.others import get_user_from_token
 from sanic.exceptions import Unauthorized
 
@@ -80,6 +80,9 @@ async def send_whatsapp_messages(request):
         result = await session.execute(select(Board).filter(Board.user_id == user_id))
         board = result.scalars().all()
 
+        result = await session.execute(select(User).filter(User.id == user_id))
+        user = result.scalars().all()
+
     try:
         phone_numbers = await get_phone_numbers_by_status_and_board(status, board[0].id)
         if not phone_numbers:
@@ -91,7 +94,7 @@ async def send_whatsapp_messages(request):
         return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
 
     # Initialize the Selenium driver in a separate thread
-    driver = await asyncio.to_thread(initialize_driver, user_id)
+    driver = await asyncio.to_thread(initialize_driver(user_id, user.chrome_profile))
 
     # Send the message to each phone number
     successful_sends = []
