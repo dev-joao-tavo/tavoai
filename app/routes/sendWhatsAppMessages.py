@@ -10,7 +10,7 @@ import time
 import asyncio
 from routes.configs import login, initialize_driver
 from models.models import Card, Contact
-from others import get_user_from_token
+from routes.others import get_user_from_token
 from sanic.exceptions import Unauthorized
 
 app = Sanic.get_app()
