@@ -15,17 +15,20 @@ from sanic.exceptions import Unauthorized
 
 app = Sanic.get_app()
 
-# Function to fetch phone numbers for a given status
-async def get_phone_numbers_by_status(status: str) -> List[str]:
+# Function to fetch phone numbers for a given status and board_id
+async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> List[str]:
     phone_numbers = []
     async with SessionLocal() as session:
         try:
-            # Step 1: Fetch contact IDs from the cards table for the given status
-            contact_ids_query = select(Card.contact_id).where(Card.status == status)
+            # Fetch contact IDs from the cards table for the given status and board_id
+            contact_ids_query = select(Card.contact_id).where(
+                Card.status == status,
+                Card.board_id == board_id,
+            )
             contact_ids_result = await session.execute(contact_ids_query)
             contact_ids = [row[0] for row in contact_ids_result.fetchall()]
 
-            # Step 2: Fetch phone numbers for the retrieved contact IDs in a single query
+            # Fetch phone numbers for the retrieved contact IDs in a single query
             if contact_ids:
                 phone_numbers_query = select(Contact.phone_number).where(Contact.id.in_(contact_ids))
                 phone_numbers_result = await session.execute(phone_numbers_query)
@@ -36,51 +39,65 @@ async def get_phone_numbers_by_status(status: str) -> List[str]:
     return phone_numbers
 
 @app.route("/sendMessage", methods=["POST"])
-async def sendWhatsAppMessages(request):
-    # Parse JSON data from the request
-    data = request.json
-    status = data.get("status")
-    message1 = data.get("message1")
-    message2 = data.get("message2")
-    message3 = data.get("message3")
-
-    # Validate required fields
-    if not status:
-        return response.json({"error": "Status is required"}, status=400)
-
-    # Combine messages into a single text
-    message_text = f"{message1}\n{message2}\n{message3}"
-    #message_text = message1
-
-    # Fetch phone numbers for the given status
-    try:
-        phone_numbers = await get_phone_numbers_by_status(status)
-        if not phone_numbers:
-            return response.json({"error": f"No contacts found for status: {status}"}, status=404)
-    except Exception as e:
-        return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
-    
+async def send_whatsapp_messages(request):
+    # Extract the JWT token from the request headers
     token = request.headers.get("Authorization")
-    
     if not token:
-        raise Unauthorized(f"Authorization token is missing. Token: {token}; Headers: {request.headers}")
+        raise Unauthorized("Authorization token is missing.")
 
     # Remove 'Bearer ' prefix if it exists
     if token.startswith("Bearer "):
         token = token[7:]
 
+    # Decode the token to get the user ID
     user_id = get_user_from_token(token)
+    if not user_id:
+        raise Unauthorized("Invalid or expired token.")
+
+    # Parse JSON data from the request
+    try:
+        data = request.json
+        status = data.get("status")
+        board_id = data.get("board_id")
+        message1 = data.get("message1")
+        message2 = data.get("message2")
+        message3 = data.get("message3")
+
+        # Validate required fields
+        if not all([status, board_id, message1]):
+            return response.json(
+                {"error": "status, board_id, and at least message1 are required."},
+                status=400,
+            )
+    except Exception as e:
+        return response.json({"error": "Invalid request body."}, status=400)
+
+    # Combine messages into a single text
+    message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
+
+    # Fetch phone numbers for the given status and board_id
+    try:
+        phone_numbers = await get_phone_numbers_by_status_and_board(status, board_id)
+        if not phone_numbers:
+            return response.json(
+                {"error": f"No contacts found for status: {status} and board_id: {board_id}"},
+                status=404,
+            )
+    except Exception as e:
+        return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
 
     # Initialize the Selenium driver
     driver = initialize_driver(user_id)
 
     # Send the message to each phone number
+    successful_sends = []
+    failed_sends = []
+
     for phone_number in phone_numbers:
         try:
             # Navigate to WhatsApp Web
-            driver.get(f'https://web.whatsapp.com/send?phone={phone_number}')
+            driver.get(f"https://web.whatsapp.com/send?phone={phone_number}")
             time.sleep(5)
-
 
             # Wait for the message input box to load
             message_box = WebDriverWait(driver, 30).until(
@@ -99,11 +116,21 @@ async def sendWhatsAppMessages(request):
             # Wait for the message to be sent
             time.sleep(3)
 
+            # Log successful sends
+            successful_sends.append(phone_number)
         except Exception as e:
             # Log the error and continue with the next phone number
             print(f"Failed to send message to {phone_number}: {str(e)}")
-            continue
+            failed_sends.append(phone_number)
 
+    # Close the Selenium driver
+    driver.quit()
 
-    # Return success response
-    return response.json({"status": "Messages sent!", "contacts": phone_numbers})
+    # Return success response with details
+    return response.json(
+        {
+            "status": "Messages sent!",
+            "successful_sends": successful_sends,
+            "failed_sends": failed_sends,
+        }
+    )
