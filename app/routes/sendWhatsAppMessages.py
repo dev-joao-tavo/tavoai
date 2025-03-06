@@ -37,12 +37,7 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
 
 
 # **Async Function: Send WhatsApp Message**
-import asyncio
-from playwright.async_api import async_playwright
-
 async def get_qrcode(phone, message_text):
-    browser = None  # Initialize browser variable to avoid UnboundLocalError
-
     async with async_playwright() as p:
         try:
             # Launch browser in headless mode
@@ -59,7 +54,7 @@ async def get_qrcode(phone, message_text):
 
             # Clear cookies & cache
             await context.clear_cookies()
-            await page.context.clear_storage()
+            await page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
 
             # Navigate to WhatsApp Web
             await page.goto('https://web.whatsapp.com', timeout=60000)
@@ -69,12 +64,15 @@ async def get_qrcode(phone, message_text):
             await page.wait_for_selector(qr_code_selector, timeout=60000)
 
             # Take a screenshot of the QR code
-            await page.screenshot(path='qr_code.png')
+            await page.screenshot(path=f'qr_code_{phone}.png')
 
-            print("QR code captured successfully.")
+            print(f"QR code captured successfully for {phone}.")
 
         except Exception as e:
             print(f"Error: {e}")
+        finally:
+            if browser:
+                await browser.close()
         
 
     
@@ -127,9 +125,10 @@ async def send_whatsapp_messages(request):
 
     # **Send Messages Concurrently**
     #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
-    tasks = [await get_qrcode(phone, message_text) for phone in phone_numbers]
-    
+    tasks = [get_qrcode(phone, message_text) for phone in phone_numbers]
     results = await asyncio.gather(*tasks)
+    return results
+
 
     # **Close Browser**
     #await browser.close()
