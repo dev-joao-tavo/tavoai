@@ -49,23 +49,27 @@ async def get_qrcode(phone, message_text):
 
             # Disable permissions for notifications and other distractions
             await context.grant_permissions([])
-
+            print("await context.grant_permissions([])")
+            
             # Create a new page
             page = await context.new_page()
+            print("page = await context.new_page()")
 
             # Clear cookies (optional, since a new context starts with no cookies)
             await context.clear_cookies()
+            print("await context.clear_cookies()")
 
             # Navigate to WhatsApp Web
             await page.goto('https://web.whatsapp.com', timeout=60000)
+            print("await page.goto('https://web.whatsapp.com', timeout=60000)")
 
             # Wait for QR code element
             qr_code_selector = 'canvas'
             await page.wait_for_selector(qr_code_selector, timeout=60000)
+            print("await page.wait_for_selector(qr_code_selector, timeout=60000)")
 
             # Take a screenshot of the QR code
             await page.screenshot(path=f'qr_code_{phone}.png')
-
             print(f"QR code captured successfully for {phone}.")
 
         except Exception as e:
