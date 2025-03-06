@@ -56,7 +56,6 @@ async def get_qrcode(phone, message_text):
 
     # Set up the Chrome driver
     service = Service(ChromeDriverManager().install())
-
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     try:
@@ -64,15 +63,19 @@ async def get_qrcode(phone, message_text):
         print("Navigating to WhatsApp Web...")
         driver.get("https://web.whatsapp.com")
 
-        # Wait for the QR code to appear
+        # Wait for the QR code to appear using aria-label
         print("Waiting for QR code...")
-        qr_code_selector = (By.CSS_SELECTOR, "canvas")
+        qr_code_selector = (By.XPATH, '//div[@aria-label="Scan this QR code to link a device!"]')
         WebDriverWait(driver, 60).until(EC.presence_of_element_located(qr_code_selector))
 
-        # Take a screenshot of the QR code
-        print("Taking screenshot...")
-        driver.save_screenshot(f"qr_code_{phone}.png")
-        print(f"QR code captured successfully for {phone}.")
+        # Continuously take screenshots every 10 seconds
+        screenshot_count = 1
+        while True:
+            print(f"Taking screenshot {screenshot_count}...")
+            driver.save_screenshot(f"qr_code_{phone}_{screenshot_count}.png")
+            print(f"Screenshot {screenshot_count} captured successfully for {phone}.")
+            screenshot_count += 1
+            time.sleep(10)  # Wait for 10 seconds before taking the next screenshot
 
     except Exception as e:
         print(f"Error: {e}")
