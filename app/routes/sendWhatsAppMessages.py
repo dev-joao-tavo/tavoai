@@ -80,46 +80,46 @@ async def get_qrcode(phone, message_text):
 # **Sanic Route: Send WhatsApp Messages**
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
-    token = request.headers.get("Authorization")
-    if not token:
-        raise Unauthorized("Authorization token is missing.")
+    #####token = request.headers.get("Authorization")
+    #####if not token:
+    #####    raise Unauthorized("Authorization token is missing.")
 
-    token = token[7:] if token.startswith("Bearer ") else token
-    user_id = get_user_from_token(token)
-    if not user_id:
-        raise Unauthorized("Invalid or expired token.")
+    #####token = token[7:] if token.startswith("Bearer ") else token
+    #####user_id = get_user_from_token(token)
+    #####if not user_id:
+    #####    raise Unauthorized("Invalid or expired token.")
 
-    try:
-        data = request.json
-        status = data.get("status")
-        message1 = data.get("message1")
-        message2 = data.get("message2")
-        message3 = data.get("message3")
+    #####try:
+    #####    data = request.json
+    #####    status = data.get("status")
+    #####    message1 = data.get("message1")
+    #####    message2 = data.get("message2")
+    #####    message3 = data.get("message3")
 
-        if not status or not message1:
-            return response.json({"error": "status and at least message1 are required."}, status=400)
+    #####    if not status or not message1:
+    #####        return response.json({"error": "status and at least message1 are required."}, status=400)
 
-        message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
+    #####    message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
 
-    except Exception as e:
-        return response.json({"error": "Invalid request body."}, status=400)
+    #####except Exception as e:
+    #####    return response.json({"error": "Invalid request body."}, status=400)
 
-    async with get_db_session() as session:
-        result = await session.execute(select(Board).filter(Board.user_id == user_id))
-        board = result.scalars().first()
+    #####async with get_db_session() as session:
+    #####    result = await session.execute(select(Board).filter(Board.user_id == user_id))
+    #####    board = result.scalars().first()
 
-    if not board:
-        return response.json({"error": "Board not found for user."}, status=404)
+    #####if not board:
+    #####   return response.json({"error": "Board not found for user."}, status=404)
 
-    try:
-        phone_numbers = await get_phone_numbers_by_status_and_board(status, board.id)
-        if not phone_numbers:
-            return response.json(
-                {"error": f"No contacts found for status: {status} and board_id: {board.id}"},
-                status=404,
-            )
-    except Exception as e:
-        return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
+    #####try:
+    #####    phone_numbers = await get_phone_numbers_by_status_and_board(status, board.id)
+    #####    if not phone_numbers:
+    #####        return response.json(
+    #####            {"error": f"No contacts found for status: {status} and board_id: {board.id}"},
+    #####            status=404,
+    #####        )
+    #####except Exception as e:
+    #####    return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
 
     # **Initialize Async Playwright Browser**
     #browser = await initialize_browser(user_id, board.user_id)
@@ -127,7 +127,7 @@ async def send_whatsapp_messages(request):
     # **Send Messages Concurrently**
     #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
     phone_numbers =[123]
-    tasks = [get_qrcode(phone, message_text) for phone in phone_numbers]
+    tasks = [get_qrcode(phone, "") for phone in phone_numbers]
     results = await asyncio.gather(*tasks)
 
     successful_sends = [phone for phone, status in results if status == "success"]
