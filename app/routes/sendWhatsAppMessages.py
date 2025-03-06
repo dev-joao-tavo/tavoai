@@ -64,14 +64,16 @@ async def get_qrcode(phone, message_text):
 
             # Debug: Take a screenshot of the entire page
             await page.screenshot(path='whatsapp_page.png')
+            
             print("Screenshot of the page saved as 'whatsapp_page.png'")
 
             # Wait for the QR code element to appear
             print("Waiting for QR code...")
-            time.sleep(30)
+            time.sleep(60)
             await page.screenshot(path='whatsapp_page_before_closing.png')
 
-            qr_code = await page.wait_for_selector('canvas', timeout=60000)  # Wait up to 60 seconds
+            qr_code = await page.wait_for_selector('canvas[aria-label="Scan this QR code to link a device!"]', state="visible", timeout=20000)
+
 
             # Verify the QR code element
             if await qr_code.is_visible():
