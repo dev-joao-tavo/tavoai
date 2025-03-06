@@ -65,17 +65,18 @@ async def get_qrcode(phone, message_text):
 
         # Wait for the QR code to appear using aria-label
         print("Waiting for QR code...")
-        qr_code_selector = (By.XPATH, '//div[@aria-label="Scan this QR code to link a device!"]')
-        WebDriverWait(driver, 60).until(EC.presence_of_element_located(qr_code_selector))
 
         # Continuously take screenshots every 10 seconds
         screenshot_count = 1
-        while True:
+        for i in range(1,6):
             print(f"Taking screenshot {screenshot_count}...")
             driver.save_screenshot(f"qr_code_{phone}_{screenshot_count}.png")
             print(f"Screenshot {screenshot_count} captured successfully for {phone}.")
             screenshot_count += 1
             time.sleep(10)  # Wait for 10 seconds before taking the next screenshot
+
+        qr_code_selector = (By.XPATH, '//div[@aria-label="Scan this QR code to link a device!"]')
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located(qr_code_selector))
 
     except Exception as e:
         print(f"Error: {e}")
