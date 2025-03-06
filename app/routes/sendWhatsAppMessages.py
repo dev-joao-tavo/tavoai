@@ -40,18 +40,24 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
 import asyncio
 import qrcode_terminal
 import os
+from playwright.async_api import async_playwright
+import asyncio
 
 async def get_qrcode(phone, message_text):
     async with async_playwright() as p:
-        # Launch the browser with a custom user-agent and disable automation flags
+        # Launch the browser with a custom user-agent and incognito mode
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            bypass_csp=True,  # Bypass Content Security Policy if needed
+            bypass_csp=True  # Bypass Content Security Policy if needed
         )
         page = await context.new_page()
-        a=2
+
         try:
+            # Clear cookies and cache
+            await context.clear_cookies()
+            await page.context.clear_storage()
+
             # Navigate to WhatsApp Web
             print("Navigating to WhatsApp Web...")
             await page.goto('https://web.whatsapp.com', timeout=60000)  # 60 seconds timeout
@@ -63,37 +69,31 @@ async def get_qrcode(phone, message_text):
                 raise Exception("Not on WhatsApp Web. Current URL: " + current_url)
 
             # Debug: Take a screenshot of the entire page
-            await page.screenshot(path=f'1.{a}.whatsapp_page.png')
-            print("Screenshot of the page saved as 'whatsapp_page.png'")
+            await page.screenshot(path='whatsapp_page_before.png')
+            print("Screenshot saved as 'whatsapp_page_before.png'")
 
-            # Wait for the QR code element to appear
-            print("Waiting for QR code...")
-            time.sleep(10)
-            await page.screenshot(path=f'2.{a}.whatsapp_page_before_closing.png')
-            time.sleep(10)
-            await page.screenshot(path=f'22.{a}.whatsapp_page_before_closing.png')
-            time.sleep(10)
-            await page.screenshot(path=f'23.{a}.whatsapp_page_before_closing.png')
+            # Wait for the QR code element dynamically instead of fixed sleep
+            qr_selector = 'canvas'  # WhatsApp Web QR code appears inside a canvas element
+            await page.wait_for_selector(qr_selector, timeout=20000)  # Wait up to 20s
 
-            ###qr_code = await page.wait_for_selector('canvas[aria-label="Scan this QR code to link a device!"]', state="visible", timeout=20000)
-
-
-            # Verify the QR code element
-            ###if await qr_code.is_visible():
-               ### print("QR code is visible on the page.")
-                # Take a screenshot of the QR code
-                ###await qr_code.screenshot(path=f'3.{a}.qrcode.png')
-                ###print("QR code saved as 'qrcode.png'")
-            ###else:
-               ### raise Exception("QR code is not visible.")
-
-
+            # Debug: Take another screenshot after QR loads
+            await page.screenshot(path='whatsapp_qr_loaded.png')
+            print("Screenshot of QR saved as 'whatsapp_qr_loaded.png'")
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print("Error:", e)
+            await page.screenshot(path='whatsapp_error.png')
+            print("Error screenshot saved as 'whatsapp_error.png'")
+
+            # Refresh and retry once if failed
+            print("Refreshing page...")
+            await page.reload()
+            await page.wait_for_selector(qr_selector, timeout=20000)
+            print("QR code should be visible now.")
 
         finally:
             await browser.close()
+
 
 
     
