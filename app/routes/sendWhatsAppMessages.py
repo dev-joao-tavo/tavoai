@@ -127,7 +127,7 @@ async def send_whatsapp_messages(request):
 
     # **Send Messages Concurrently**
     #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
-    tasks = [get_qrcode(phone, message_text) for phone in phone_numbers]
+    tasks = [await get_qrcode(phone, message_text) for phone in phone_numbers]
     
     results = await asyncio.gather(*tasks)
 
