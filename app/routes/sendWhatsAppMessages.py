@@ -36,7 +36,6 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
     return phone_numbers
 
 
-# **Async Function: Send WhatsApp Message**
 async def get_qrcode(phone, message_text):
     async with async_playwright() as p:
         browser = None
@@ -44,18 +43,18 @@ async def get_qrcode(phone, message_text):
             # Launch browser in headless mode
             browser = await p.chromium.launch(headless=True)
 
-            # Set a custom user-agent to mimic a real browser
+            # Create a new browser context with a custom user-agent
             user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             context = await browser.new_context(user_agent=user_agent)
 
             # Disable permissions for notifications and other distractions
             await context.grant_permissions([])
 
+            # Create a new page
             page = await context.new_page()
 
-            # Clear cookies and cache
+            # Clear cookies (optional, since a new context starts with no cookies)
             await context.clear_cookies()
-            await context.clear_cache()
 
             # Navigate to WhatsApp Web
             await page.goto('https://web.whatsapp.com', timeout=60000)
