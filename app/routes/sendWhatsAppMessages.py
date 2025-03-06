@@ -39,6 +39,7 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
 # **Async Function: Send WhatsApp Message**
 async def get_qrcode(phone, message_text):
     async with async_playwright() as p:
+        browser = None
         try:
             # Launch browser in headless mode
             browser = await p.chromium.launch(headless=True)
@@ -52,9 +53,9 @@ async def get_qrcode(phone, message_text):
 
             page = await context.new_page()
 
-            # Clear cookies & cache
+            # Clear cookies and cache
             await context.clear_cookies()
-            await page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+            await context.clear_cache()
 
             # Navigate to WhatsApp Web
             await page.goto('https://web.whatsapp.com', timeout=60000)
@@ -73,6 +74,7 @@ async def get_qrcode(phone, message_text):
         finally:
             if browser:
                 await browser.close()
+
         
 
     
@@ -127,11 +129,6 @@ async def send_whatsapp_messages(request):
     #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
     tasks = [get_qrcode(phone, message_text) for phone in phone_numbers]
     results = await asyncio.gather(*tasks)
-    return results
-
-
-    # **Close Browser**
-    #await browser.close()
 
     successful_sends = [phone for phone, status in results if status == "success"]
     failed_sends = [phone for phone, status in results if status == "failed"]
