@@ -50,7 +50,7 @@ async def get_qrcode(phone, message_text):
             bypass_csp=True,  # Bypass Content Security Policy if needed
         )
         page = await context.new_page()
-
+        a=1
         try:
             # Navigate to WhatsApp Web
             print("Navigating to WhatsApp Web...")
@@ -63,14 +63,14 @@ async def get_qrcode(phone, message_text):
                 raise Exception("Not on WhatsApp Web. Current URL: " + current_url)
 
             # Debug: Take a screenshot of the entire page
-            await page.screenshot(path='whatsapp_page.png')
+            await page.screenshot(path=f'1.{a}.whatsapp_page.png')
             
             print("Screenshot of the page saved as 'whatsapp_page.png'")
 
             # Wait for the QR code element to appear
             print("Waiting for QR code...")
             time.sleep(60)
-            await page.screenshot(path='whatsapp_page_before_closing.png')
+            await page.screenshot(path=f'2.{a}.whatsapp_page_before_closing.png')
 
             qr_code = await page.wait_for_selector('canvas[aria-label="Scan this QR code to link a device!"]', state="visible", timeout=20000)
 
@@ -79,7 +79,7 @@ async def get_qrcode(phone, message_text):
             if await qr_code.is_visible():
                 print("QR code is visible on the page.")
                 # Take a screenshot of the QR code
-                await qr_code.screenshot(path='qrcode.png')
+                await qr_code.screenshot(path=f'3.{a}.qrcode.png')
                 print("QR code saved as 'qrcode.png'")
             else:
                 raise Exception("QR code is not visible.")
