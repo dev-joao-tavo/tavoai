@@ -63,6 +63,10 @@ async def get_qrcode(phone, message_text):
             await page.goto('https://web.whatsapp.com', timeout=60000)
             print("await page.goto('https://web.whatsapp.com', timeout=60000)")
 
+            # Take a screenshot of the QR code
+            await page.screenshot(path=f'qr_code_qr_code_qr_code_{phone}.png')
+            print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>> {phone}.")
+
             # Wait for QR code element
             qr_code_selector = 'canvas'
             await page.wait_for_selector(qr_code_selector, timeout=60000)
