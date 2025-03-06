@@ -42,6 +42,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from webdriver_manager.chrome import ChromeDriverManager
 
 async def get_qrcode(phone, message_text):
     # Set up Chrome options
@@ -54,7 +55,8 @@ async def get_qrcode(phone, message_text):
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
     # Set up the Chrome driver
-    service = Service(executable_path="/path/to/chromedriver")  # Replace with your chromedriver path
+    service = Service(ChromeDriverManager().install())
+
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     try:
