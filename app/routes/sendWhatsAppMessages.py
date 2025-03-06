@@ -36,53 +36,47 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
     return phone_numbers
 
 
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+
 async def get_qrcode(phone, message_text):
-    async with async_playwright() as p:
-        browser = None
-        try:
-            # Launch browser in headless mode
-            browser = await p.chromium.launch(headless=True)
+    # Set up Chrome options
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--headless")  # Run in headless mode
+    chrome_options.add_argument("--disable-notifications")  # Disable notifications
+    chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
+    chrome_options.add_argument("--no-sandbox")  # Disable sandboxing
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Avoid memory issues
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
-            # Create a new browser context with a custom user-agent
-            user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            context = await browser.new_context(user_agent=user_agent)
+    # Set up the Chrome driver
+    service = Service(executable_path="/path/to/chromedriver")  # Replace with your chromedriver path
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
-            # Disable permissions for notifications and other distractions
-            await context.grant_permissions([])
-            print("await context.grant_permissions([])")
-            
-            # Create a new page
-            page = await context.new_page()
-            print("page = await context.new_page()")
+    try:
+        # Navigate to WhatsApp Web
+        print("Navigating to WhatsApp Web...")
+        driver.get("https://web.whatsapp.com")
 
-            # Clear cookies (optional, since a new context starts with no cookies)
-            await context.clear_cookies()
-            print("await context.clear_cookies()")
+        # Wait for the QR code to appear
+        print("Waiting for QR code...")
+        qr_code_selector = (By.CSS_SELECTOR, "canvas")
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located(qr_code_selector))
 
-            # Navigate to WhatsApp Web
-            await page.goto('https://web.whatsapp.com', timeout=60000)
-            print("await page.goto('https://web.whatsapp.com', timeout=60000)")
+        # Take a screenshot of the QR code
+        print("Taking screenshot...")
+        driver.save_screenshot(f"qr_code_{phone}.png")
+        print(f"QR code captured successfully for {phone}.")
 
-            # Take a screenshot of the QR code
-            await page.screenshot(path=f'qr_code_qr_code_qr_code_{phone}.png')
-            print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>> {phone}.")
-
-            # Wait for QR code element
-            qr_code_selector = 'canvas'
-            await page.wait_for_selector(qr_code_selector, timeout=60000)
-            print("await page.wait_for_selector(qr_code_selector, timeout=60000)")
-
-            # Take a screenshot of the QR code
-            await page.screenshot(path=f'qr_code_{phone}.png')
-            print(f"QR code captured successfully for {phone}.")
-
-        except Exception as e:
-            print(f"Error: {e}")
-        finally:
-            if browser:
-                await browser.close()
-
-        
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        # Close the browser
+        driver.quit()
 
     
 # **Sanic Route: Send WhatsApp Messages**
