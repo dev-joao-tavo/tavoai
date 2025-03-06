@@ -63,9 +63,6 @@ async def get_qrcode(phone, message_text):
         print("Navigating to WhatsApp Web...")
         driver.get("https://web.whatsapp.com")
 
-        # Wait for the QR code to appear using aria-label
-        print("Waiting for QR code...")
-
         # Continuously take screenshots every 10 seconds
         screenshot_count = 1
         for i in range(1,6):
@@ -75,6 +72,8 @@ async def get_qrcode(phone, message_text):
             screenshot_count += 1
             time.sleep(10)  # Wait for 10 seconds before taking the next screenshot
 
+        # Wait for the QR code to appear using aria-label
+        print("Waiting for QR code...")
         qr_code_selector = (By.XPATH, '//div[@aria-label="Scan this QR code to link a device!"]')
         WebDriverWait(driver, 60).until(EC.presence_of_element_located(qr_code_selector))
 
@@ -134,17 +133,19 @@ async def send_whatsapp_messages(request):
 
     # **Send Messages Concurrently**
     #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
-    phone_numbers =[123]
-    tasks = [get_qrcode(phone, "") for phone in phone_numbers]
-    results = await asyncio.gather(*tasks)
+    #####phone_numbers =[123]
+    await get_qrcode(32165, "")
+    #####tasks = [get_qrcode(phone, "") for phone in phone_numbers]
+    #####results = await asyncio.gather(*tasks)
 
-    successful_sends = [phone for phone, status in results if status == "success"]
-    failed_sends = [phone for phone, status in results if status == "failed"]
+    #####successful_sends = [phone for phone, status in results if status == "success"]
+    #####failed_sends = [phone for phone, status in results if status == "failed"]
 
-    return response.json(
-        {
-            "status": "Messages sent!",
-            "successful_sends": successful_sends,
-            "failed_sends": failed_sends,
-        }
-    )
+    #####return response.json(
+    #####    {
+    #####        "status": "Messages sent!",
+    #####        "successful_sends": successful_sends,
+    #####        "failed_sends": failed_sends,
+    #####    }
+    #####)
+    return
