@@ -41,15 +41,13 @@ import asyncio
 import qrcode_terminal
 import os
 from playwright.async_api import async_playwright
-import asyncio
 
 async def get_qrcode(phone, message_text):
+    browser = None  # Initialize browser variable to avoid UnboundLocalError
+
     async with async_playwright() as p:
         try:
             # Ensure Playwright is properly initialized
-            await p.stop()  # Stop any existing Playwright instance
-            await p.start() # Restart Playwright
-
             browser = await p.chromium.launch(headless=True)
             context = await browser.new_context()
             page = await context.new_page()
@@ -69,9 +67,10 @@ async def get_qrcode(phone, message_text):
 
         except Exception as e:
             print(f"Error: {e}")
+        
         finally:
-            await browser.close()
-
+            if browser:  # Ensure browser is closed only if it was initialized
+                await browser.close()
 
 
     
