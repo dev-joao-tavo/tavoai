@@ -47,7 +47,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 async def get_qrcode(phone, message_text):
     # Set up Chrome options
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")  # Run in headless mode
+    ###chrome_options.add_argument("--headless")  # Run in headless mode
     chrome_options.add_argument("--disable-notifications")  # Disable notifications
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
     chrome_options.add_argument("--no-sandbox")  # Disable sandboxing
