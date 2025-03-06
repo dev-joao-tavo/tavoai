@@ -38,8 +38,6 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
 
 # **Async Function: Send WhatsApp Message**
 import asyncio
-import qrcode_terminal
-import os
 from playwright.async_api import async_playwright
 
 async def get_qrcode(phone, message_text):
@@ -47,9 +45,16 @@ async def get_qrcode(phone, message_text):
 
     async with async_playwright() as p:
         try:
-            # Ensure Playwright is properly initialized
+            # Launch browser in headless mode
             browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context()
+
+            # Set a custom user-agent to mimic a real browser
+            user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            context = await browser.new_context(user_agent=user_agent)
+
+            # Disable permissions for notifications and other distractions
+            await context.grant_permissions([])
+
             page = await context.new_page()
 
             # Clear cookies & cache
@@ -60,18 +65,17 @@ async def get_qrcode(phone, message_text):
             await page.goto('https://web.whatsapp.com', timeout=60000)
 
             # Wait for QR code element
-            await page.wait_for_selector('canvas', timeout=20000)
+            qr_code_selector = 'canvas'
+            await page.wait_for_selector(qr_code_selector, timeout=60000)
 
-            # Screenshot for debugging
+            # Take a screenshot of the QR code
             await page.screenshot(path='qr_code.png')
+
+            print("QR code captured successfully.")
 
         except Exception as e:
             print(f"Error: {e}")
         
-        finally:
-            if browser:  # Ensure browser is closed only if it was initialized
-                await browser.close()
-
 
     
 # **Sanic Route: Send WhatsApp Messages**
