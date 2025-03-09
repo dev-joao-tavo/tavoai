@@ -4,16 +4,11 @@ from sqlalchemy import select
 from typing import List
 import time
 import asyncio
-import os
-import uuid
-import shutil
-import subprocess
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+from routes.configs import initialize_browser
+from models.models import Card, Contact, Board
+from routes.others import get_user_from_token
+from sanic.exceptions import Unauthorized
+from playwright.async_api import async_playwright
 
 app = Sanic.get_app()
 
@@ -40,28 +35,23 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
             raise
     return phone_numbers
 
-def kill_chrome_processes():
-    """
-    Kill all running Chrome processes to ensure a clean slate.
-    """
-    try:
-        # Kill Chrome processes on Linux/Unix systems
-        subprocess.run(["pkill", "-f", "chrome"], check=True)
-        print("Killed all running Chrome processes.")
-    except subprocess.CalledProcessError as e:
-        # If no Chrome processes are running, pkill will return a non-zero exit code
-        print(f"No Chrome processes to kill: {e}")
-    except Exception as e:
-        print(f"Error killing Chrome processes: {e}")
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+import os
+import uuid
+from webdriver_manager.chrome import ChromeDriverManager
 
 async def get_qrcode(phone, message_text):
-    # Kill any running Chrome processes
-    kill_chrome_processes()
-
     # Set up Chrome options
     chrome_options = webdriver.ChromeOptions()
     ###chrome_options.add_argument("--headless")  # Run in headless mode
     chrome_options.add_argument("--disable-notifications")  # Disable notifications
+    chrome_options.add_argument("--remote-debugging-port=9222")  # Use a unique port (Option 2)
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
     chrome_options.add_argument("--no-sandbox")  # Disable sandboxing
     chrome_options.add_argument("--disable-dev-shm-usage")  # Avoid memory issues
@@ -80,15 +70,14 @@ async def get_qrcode(phone, message_text):
         # Navigate to WhatsApp Web
         print("Navigating to WhatsApp Web...")
         driver.get("https://web.whatsapp.com")
-
         # Continuously take screenshots every 10 seconds
         screenshot_count = 1
-        for _ in range(5):
+        for i in range(1,6):
             print(f"Taking screenshot {screenshot_count}...")
             driver.save_screenshot(f"qr_code_{phone}_{screenshot_count}.png")
             print(f"Screenshot {screenshot_count} captured successfully for {phone}.")
             screenshot_count += 1
-            await asyncio.sleep(10)  # Non-blocking sleep
+            time.sleep(10)  # Wait for 10 seconds before taking the next screenshot
 
         # Wait for the QR code to appear using aria-label
         print("Waiting for QR code...")
@@ -100,10 +89,10 @@ async def get_qrcode(phone, message_text):
     finally:
         # Close the browser
         driver.quit()
-        if os.path.exists(user_data_dir):
-            shutil.rmtree(user_data_dir)
-        print("Browser closed and user data directory removed.")
+        os.rmdir(user_data_dir)
 
+
+    
 # **Sanic Route: Send WhatsApp Messages**
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
@@ -168,4 +157,4 @@ async def send_whatsapp_messages(request):
     #####        "failed_sends": failed_sends,
     #####    }
     #####)
-    return response.json({"status": "QR code captured"})
+    return
