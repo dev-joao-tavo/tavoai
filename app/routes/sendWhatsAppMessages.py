@@ -52,6 +52,7 @@ async def get_qrcode(phone, message_text):
     ###chrome_options.add_argument("--headless")  # Run in headless mode
     chrome_options.add_argument("--disable-notifications")  # Disable notifications
     chrome_options.add_argument("--remote-debugging-port=9222")  # Use a unique port (Option 2)
+
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
     chrome_options.add_argument("--no-sandbox")  # Disable sandboxing
     chrome_options.add_argument("--disable-dev-shm-usage")  # Avoid memory issues
