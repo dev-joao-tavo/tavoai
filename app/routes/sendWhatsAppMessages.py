@@ -36,60 +36,54 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
     return phone_numbers
 
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
+import asyncio
 import os
 import uuid
-from webdriver_manager.chrome import ChromeDriverManager
+from playwright.async_api import async_playwright
 
-async def get_qrcode(phone, message_text):
-    # Set up Chrome options
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    chrome_options.add_argument("--disable-notifications")  # Disable notifications
-    chrome_options.add_argument("--remote-debugging-port=9222")  # Use a unique port (Option 2)
-
-    chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
-    chrome_options.add_argument("--no-sandbox")  # Disable sandboxing
-    chrome_options.add_argument("--disable-dev-shm-usage")  # Avoid memory issues
-    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-
-    # Create a unique user data directory for this session
+async def get_qrcode(phone):
     user_data_dir = os.path.join(os.getcwd(), "user_data", str(uuid.uuid4()))
     os.makedirs(user_data_dir, exist_ok=True)
-    chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
 
-    # Set up the Chrome driver
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(
+            headless=True,  # Run in headless mode
+            args=[
+                "--disable-notifications",
+                "--disable-gpu",
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--remote-debugging-port=9222",
+                f"--user-data-dir={user_data_dir}",
+                "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            ]
+        )
+        
+        context = await browser.new_context()
+        page = await context.new_page()
 
-    try:
-        # Navigate to WhatsApp Web
         print("Navigating to WhatsApp Web...")
-        driver.get("https://web.whatsapp.com")
-        # Continuously take screenshots every 10 seconds
+        await page.goto("https://web.whatsapp.com")
+
+        # Take screenshots every 10 seconds, up to 5 times
         screenshot_count = 1
-        for i in range(1,6):
+        for _ in range(5):
             print(f"Taking screenshot {screenshot_count}...")
-            driver.save_screenshot(f"qr_code_{phone}_{screenshot_count}.png")
+            await page.screenshot(path=f"qr_code_{phone}_{screenshot_count}.png")
             print(f"Screenshot {screenshot_count} captured successfully for {phone}.")
             screenshot_count += 1
-            time.sleep(10)  # Wait for 10 seconds before taking the next screenshot
+            await asyncio.sleep(10)
 
-        # Wait for the QR code to appear using aria-label
+        # Wait for the QR code to appear
         print("Waiting for QR code...")
-        qr_code_selector = (By.XPATH, '//div[@aria-label="Scan this QR code to link a device!"]')
-        WebDriverWait(driver, 60).until(EC.presence_of_element_located(qr_code_selector))
+        try:
+            await page.wait_for_selector('div[aria-label="Scan this QR code to link a device!"]', timeout=60000)
+            print("QR code detected!")
+        except Exception as e:
+            print(f"Error: QR code not detected. {e}")
 
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        # Close the browser
-        driver.quit()
+        # Close browser
+        await browser.close()
         os.rmdir(user_data_dir)
 
 
@@ -144,7 +138,10 @@ async def send_whatsapp_messages(request):
     # **Send Messages Concurrently**
     #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
     #####phone_numbers =[123]
-    await get_qrcode(32165, "")
+        
+    # Run the function
+    asyncio.run(get_qrcode("123456789"))
+
     #####tasks = [get_qrcode(phone, "") for phone in phone_numbers]
     #####results = await asyncio.gather(*tasks)
 
