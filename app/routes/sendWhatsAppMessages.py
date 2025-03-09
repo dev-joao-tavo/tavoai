@@ -42,6 +42,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import os
+import uuid
 from webdriver_manager.chrome import ChromeDriverManager
 
 async def get_qrcode(phone, message_text):
@@ -54,6 +56,11 @@ async def get_qrcode(phone, message_text):
     chrome_options.add_argument("--disable-dev-shm-usage")  # Avoid memory issues
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
+    # Create a unique user data directory for this session
+    user_data_dir = os.path.join(os.getcwd(), "user_data", str(uuid.uuid4()))
+    os.makedirs(user_data_dir, exist_ok=True)
+    chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
+
     # Set up the Chrome driver
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
@@ -62,7 +69,6 @@ async def get_qrcode(phone, message_text):
         # Navigate to WhatsApp Web
         print("Navigating to WhatsApp Web...")
         driver.get("https://web.whatsapp.com")
-
         # Continuously take screenshots every 10 seconds
         screenshot_count = 1
         for i in range(1,6):
@@ -82,6 +88,8 @@ async def get_qrcode(phone, message_text):
     finally:
         # Close the browser
         driver.quit()
+        os.rmdir(user_data_dir)
+
 
     
 # **Sanic Route: Send WhatsApp Messages**
