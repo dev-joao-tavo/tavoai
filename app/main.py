@@ -2,6 +2,7 @@ from sanic import Sanic
 from sanic_ext import Extend
 
 app = Sanic(__name__)
+app.config.REQUEST_TIMEOUT = 3000  # Increase as needed (default is 60 seconds)
 
 Extend(
     app,
