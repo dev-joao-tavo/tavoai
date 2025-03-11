@@ -76,9 +76,9 @@ def get_ids_from_stage(driver, stage_id):
 
 import os
 from playwright.async_api import async_playwright
-
+"""
 async def initialize_browser(user_id: int, chrome_profile):
-    """Starts Playwright Chromium with user profile."""
+    #Starts Playwright Chromium with user profile.
     playwright = await async_playwright().start()
 
     # Chrome user profile directories
@@ -96,17 +96,20 @@ async def initialize_browser(user_id: int, chrome_profile):
 
     return browser
 
+"""
 
+def initialize_driver():
+    chrome_options = Options()
 
+    # Path to Chrome user data (macOS)
+    chrome_user_dir = "/Users/usuario/Library/Application Support/Google/Chrome"
 
-#def initialize_driver():
-#    chrome_options = Options()
-#
-#    chrome_user_dir = r"C:\Users\jpjp1\AppData\Local\Google\Chrome\User Data"
-#
-#    chrome_options.add_argument("--user-data-dir="+chrome_user_dir )
-#
-#    service = Service(r"C:\Users\jpjp1\Documents\SNDN\app\services\chromedriver.exe")
-#    chrome_options.add_argument("--profile-directory=Profile 5") #e.g. Profile for selenium
-#
-#    return webdriver.Chrome(service=service, options=chrome_options)
+    # Set user profile directory
+    chrome_options.add_argument(f"--user-data-dir={chrome_user_dir}")
+    chrome_options.add_argument("--profile-directory=Profile 8")  # Adjust to your active profile
+
+    # Use the system-wide ChromeDriver path
+    service = Service("/usr/local/bin/chromedriver")
+
+    return webdriver.Chrome(service=service, options=chrome_options)
+

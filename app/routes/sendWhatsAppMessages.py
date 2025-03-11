@@ -4,17 +4,23 @@ from sqlalchemy import select
 from typing import List
 import time
 import asyncio
-from routes.configs import initialize_browser
 from models.models import Card, Contact, Board
 from routes.others import get_user_from_token
 from sanic.exceptions import Unauthorized
 from playwright.async_api import async_playwright
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+import time
+from routes.configs import initialize_driver
 
 app = Sanic.get_app()
 
-# Function to fetch phone numbers for a given status and board_id
-async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> List[str]:
-    phone_numbers = []
+from typing import List, Tuple
+
+async def get_phone_numbers_and_names_by_status_and_board(status: str, board_id: int) -> List[Tuple[str, str]]:
+    phone_numbers_and_names = []
     async with SessionLocal() as session:
         try:
             # Fetch contact IDs from the cards table for the given status and board_id
@@ -25,134 +31,89 @@ async def get_phone_numbers_by_status_and_board(status: str, board_id: int) -> L
             contact_ids_result = await session.execute(contact_ids_query)
             contact_ids = [row[0] for row in contact_ids_result.fetchall()]
 
-            # Fetch phone numbers for the retrieved contact IDs in a single query
+            # Fetch phone numbers and contact names for the retrieved contact IDs in a single query
             if contact_ids:
-                phone_numbers_query = select(Contact.phone_number).where(Contact.id.in_(contact_ids))
-                phone_numbers_result = await session.execute(phone_numbers_query)
-                phone_numbers = [row[0] for row in phone_numbers_result.fetchall()]
+                phone_numbers_and_names_query = select(Contact.phone_number, Contact.contact_name).where(Contact.id.in_(contact_ids))
+                phone_numbers_and_names_result = await session.execute(phone_numbers_and_names_query)
+                phone_numbers_and_names = [(row[0], row[1]) for row in phone_numbers_and_names_result.fetchall()]
         except Exception as e:
-            print(f"Error fetching phone numbers: {e}")
+            print(f"Error fetching phone numbers and names: {e}")
             raise
-    return phone_numbers
-
-
-import asyncio
-import os
-import uuid
-from playwright.async_api import async_playwright
-
-async def get_qrcode(phone):
-    user_data_dir = os.path.join(os.getcwd(), "user_data", str(uuid.uuid4()))
-    os.makedirs(user_data_dir, exist_ok=True)
-
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=True,  # Run in headless mode
-            args=[
-                "--disable-notifications",
-                "--disable-gpu",
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--remote-debugging-port=9222",
-                f"--user-data-dir={user_data_dir}",
-                "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            ]
-        )
-        
-        context = await browser.new_context()
-        page = await context.new_page()
-
-        print("Navigating to WhatsApp Web...")
-        await page.goto("https://web.whatsapp.com")
-
-        # Take screenshots every 10 seconds, up to 5 times
-        screenshot_count = 1
-        for _ in range(5):
-            print(f"Taking screenshot {screenshot_count}...")
-            await page.screenshot(path=f"qr_code_{phone}_{screenshot_count}.png")
-            print(f"Screenshot {screenshot_count} captured successfully for {phone}.")
-            screenshot_count += 1
-            await asyncio.sleep(10)
-
-        # Wait for the QR code to appear
-        print("Waiting for QR code...")
-        try:
-            await page.wait_for_selector('div[aria-label="Scan this QR code to link a device!"]', timeout=60000)
-            print("QR code detected!")
-        except Exception as e:
-            print(f"Error: QR code not detected. {e}")
-
-        # Close browser
-        await browser.close()
-        os.rmdir(user_data_dir)
-
+    return phone_numbers_and_names
 
     
 # **Sanic Route: Send WhatsApp Messages**
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
-    #####token = request.headers.get("Authorization")
-    #####if not token:
-    #####    raise Unauthorized("Authorization token is missing.")
+    token = request.headers.get("Authorization")
+    if not token:
+        raise Unauthorized("Authorization token is missing.")
 
-    #####token = token[7:] if token.startswith("Bearer ") else token
-    #####user_id = get_user_from_token(token)
-    #####if not user_id:
-    #####    raise Unauthorized("Invalid or expired token.")
+    token = token[7:] if token.startswith("Bearer ") else token
+    user_id = get_user_from_token(token)
+    if not user_id:
+        raise Unauthorized("Invalid or expired token.")
 
-    #####try:
-    #####    data = request.json
-    #####    status = data.get("status")
-    #####    message1 = data.get("message1")
-    #####    message2 = data.get("message2")
-    #####    message3 = data.get("message3")
+    try:
+        data = request.json
+        status = data.get("status")
+        message1 = data.get("message1")
+        message2 = data.get("message2")
+        message3 = data.get("message3")
 
-    #####    if not status or not message1:
-    #####        return response.json({"error": "status and at least message1 are required."}, status=400)
+        if not status or not message1:
+            return response.json({"error": "status and at least message1 are required."}, status=400)
 
-    #####    message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
 
-    #####except Exception as e:
-    #####    return response.json({"error": "Invalid request body."}, status=400)
+    except Exception as e:
+        return response.json({"error": "Invalid request body."}, status=400)
 
-    #####async with get_db_session() as session:
-    #####    result = await session.execute(select(Board).filter(Board.user_id == user_id))
-    #####    board = result.scalars().first()
+    async with get_db_session() as session:
+        result = await session.execute(select(Board).filter(Board.user_id == user_id))
+        board = result.scalars().first()
 
-    #####if not board:
-    #####   return response.json({"error": "Board not found for user."}, status=404)
+    if not board:
+       return response.json({"error": "Board not found for user."}, status=404)
 
-    #####try:
-    #####    phone_numbers = await get_phone_numbers_by_status_and_board(status, board.id)
-    #####    if not phone_numbers:
-    #####        return response.json(
-    #####            {"error": f"No contacts found for status: {status} and board_id: {board.id}"},
-    #####            status=404,
-    #####        )
-    #####except Exception as e:
-    #####    return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
-
-    # **Initialize Async Playwright Browser**
-    #browser = await initialize_browser(user_id, board.user_id)
-
-    # **Send Messages Concurrently**
-    #tasks = [send_whatsapp_message(browser, phone, message_text) for phone in phone_numbers]
-    #####phone_numbers =[123]
+    try:
+        phone_numbers_and_names = await get_phone_numbers_and_names_by_status_and_board(status, board.id)
+        if not phone_numbers_and_names:
+            return response.json(
+                {"error": f"No contacts found for status: {status} and board_id: {board.id}"},
+                status=404,
+            )
+    except Exception as e:
+        return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
+    
+    for phone_number, name in phone_numbers_and_names:
+        # Start WebDriver
+        driver = initialize_driver()
         
-    # Run the function
-    asyncio.run(get_qrcode("123456789"))
 
-    #####tasks = [get_qrcode(phone, "") for phone in phone_numbers]
-    #####results = await asyncio.gather(*tasks)
+        # Open WhatsApp Web (you should already be logged in)
+        driver.get(f"https://web.whatsapp.com/send/?phone=+55{phone_number}")
 
-    #####successful_sends = [phone for phone, status in results if status == "success"]
-    #####failed_sends = [phone for phone, status in results if status == "failed"]
+        # Wait for page to fully load
+        time.sleep(10)
 
-    #####return response.json(
-    #####    {
-    #####        "status": "Messages sent!",
-    #####        "successful_sends": successful_sends,
-    #####        "failed_sends": failed_sends,
-    #####    }
-    #####)
-    return
+        # Find the message input field
+        message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
+
+        message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
+
+        message_text = message_text.replace("[nome]", name)  # Replace [nome] with the contact name
+    
+        message_box.send_keys(message_text)
+        time.sleep(1)
+
+        # Find and click the send button
+        send_button = driver.find_element(By.XPATH, '//span[@data-icon="send"]')
+        send_button.click()
+
+        print(f"Message to {phone_number} was sent successfully")
+
+    # Close browser after a short delay
+    time.sleep(5)
+    driver.quit()
+
+    return response.json({"message": "Messages sent!"})
