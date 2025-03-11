@@ -83,10 +83,10 @@ async def send_whatsapp_messages(request):
     import time
     import random
 
-    for phone_number, name in phone_numbers_and_names:
-        # Start WebDriver
-        driver = initialize_driver()
+    # Start WebDriver
+    driver = initialize_driver()
 
+    for phone_number, name in phone_numbers_and_names:
         # Open WhatsApp Web (you should already be logged in)
         driver.get(f"https://web.whatsapp.com/send/?phone=+55{phone_number}")
 
@@ -118,10 +118,9 @@ async def send_whatsapp_messages(request):
 
                 print(f"Message to {phone_number} was sent successfully: {message_text}")
 
-                # Optional: sleep before sending the next message
                 time.sleep(random.uniform(3, 5))  # Random delay between sending messages
 
-            # Close browser after a short delay
+    # Close browser after a short delay
     time.sleep(5)
     driver.quit()
 
