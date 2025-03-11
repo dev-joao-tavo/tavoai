@@ -160,4 +160,8 @@ async def send_whatsapp_messages(request):
 
     except:
         qrCode = await get_qr_code_base64(driver)
+        time.sleep(5)
+
+        driver.quit()
+
         return response.json({"message": "login before sending a message;","qrcode":qrCode})
