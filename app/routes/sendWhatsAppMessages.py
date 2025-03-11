@@ -116,6 +116,7 @@ async def send_whatsapp_messages(request):
 
     # Start WebDriver
     driver = initialize_driver()
+    
     try:
         for phone_number, name in phone_numbers_and_names:
             # Open WhatsApp Web (you should already be logged in)
