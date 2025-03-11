@@ -17,9 +17,6 @@ Extend(
 
 # Import routes
 from routes.home import *
-from routes.sendFollowUpMessagesScript import *
-from routes.sendNutritionMessagesScript import *
-from routes.chatScript import *
 from routes.sendWhatsAppMessages import *
 from routes.cards import *
 from routes.others import *
