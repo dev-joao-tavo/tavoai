@@ -9,7 +9,16 @@ from sanic.exceptions import Unauthorized
 from selenium.webdriver.common.by import By
 import time
 from routes.configs import initialize_driver
-
+import base64
+import io
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from PIL import Image
+from sanic import Sanic, response
 app = Sanic.get_app()
 
 from typing import List, Tuple
@@ -35,6 +44,28 @@ async def get_phone_numbers_and_names_by_status_and_board(status: str, board_id:
             print(f"Error fetching phone numbers and names: {e}")
             raise
     return phone_numbers_and_names
+
+
+async def get_qr_code_base64(driver):
+    try:
+        # Find the QR code <canvas> element
+        qr_canvas = WebDriverWait(driver, 3).until(
+            EC.presence_of_element_located((By.TAG_NAME, "canvas"))
+        )
+        
+        # Convert QR code to image
+        screenshot = qr_canvas.screenshot_as_png
+        image = Image.open(io.BytesIO(screenshot))
+
+        # Convert image to base64
+        buffered = io.BytesIO()
+        image.save(buffered, format="PNG")
+        qr_base64 = base64.b64encode(buffered.getvalue()).decode()
+
+        return qr_base64
+    except Exception as e:
+        print(f"Error capturing QR code: {e}")
+        return None
 
     
 # **Sanic Route: Send WhatsApp Messages**
@@ -85,43 +116,47 @@ async def send_whatsapp_messages(request):
 
     # Start WebDriver
     driver = initialize_driver()
+    try:
+        for phone_number, name in phone_numbers_and_names:
+            # Open WhatsApp Web (you should already be logged in)
+            driver.get(f"https://web.whatsapp.com/send/?phone=+55{phone_number}")
 
-    for phone_number, name in phone_numbers_and_names:
-        # Open WhatsApp Web (you should already be logged in)
-        driver.get(f"https://web.whatsapp.com/send/?phone=+55{phone_number}")
+            # Wait for page to fully load
+            time.sleep(random.uniform(8, 12))  # Random sleep to simulate loading time
 
-        # Wait for page to fully load
-        time.sleep(random.uniform(8, 12))  # Random sleep to simulate loading time
+            # Find the message input field
+            message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
 
-        # Find the message input field
-        message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
+            # Prepare the messages
+            messages = [message1, message2, message3]
 
-        # Prepare the messages
-        messages = [message1, message2, message3]
+            # Loop through each message and send one at a time
+            for message in messages:
+                if message:  # Check if the message is not empty
+                    message_text = message.replace("[nome]", name)  # Replace [nome] with the contact name
+                    
+                    # Simulate typing effect
+                    for char in message_text:
+                        message_box.send_keys(char)
+                        time.sleep(random.uniform(0.1, 0.3))  # Random delay between typing each character
 
-        # Loop through each message and send one at a time
-        for message in messages:
-            if message:  # Check if the message is not empty
-                message_text = message.replace("[nome]", name)  # Replace [nome] with the contact name
-                
-                # Simulate typing effect
-                for char in message_text:
-                    message_box.send_keys(char)
-                    time.sleep(random.uniform(0.1, 0.3))  # Random delay between typing each character
+                    # Wait a little before sending the message
+                    time.sleep(random.uniform(1, 2))  # Random delay before clicking send
 
-                # Wait a little before sending the message
-                time.sleep(random.uniform(1, 2))  # Random delay before clicking send
+                    # Find and click the send button
+                    send_button = driver.find_element(By.XPATH, '//span[@data-icon="send"]')
+                    send_button.click()
 
-                # Find and click the send button
-                send_button = driver.find_element(By.XPATH, '//span[@data-icon="send"]')
-                send_button.click()
+                    print(f"Message to {phone_number} was sent successfully: {message_text}")
 
-                print(f"Message to {phone_number} was sent successfully: {message_text}")
+                    time.sleep(random.uniform(3, 5))  # Random delay between sending messages
 
-                time.sleep(random.uniform(3, 5))  # Random delay between sending messages
+        # Close browser after a short delay
+        time.sleep(5)
+        driver.quit()
 
-    # Close browser after a short delay
-    time.sleep(5)
-    driver.quit()
+        return response.json({"message": "Messages sent!"})
 
-    return response.json({"message": "Messages sent!"})
+    except:
+        qrCode = await get_qr_code_base64(driver)
+        return response.json({"message": "login before sending a message;","qrcode":qrCode})
