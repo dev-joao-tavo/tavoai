@@ -80,34 +80,48 @@ async def send_whatsapp_messages(request):
     except Exception as e:
         return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
     
+    import time
+    import random
+
     for phone_number, name in phone_numbers_and_names:
         # Start WebDriver
         driver = initialize_driver()
-        
 
         # Open WhatsApp Web (you should already be logged in)
         driver.get(f"https://web.whatsapp.com/send/?phone=+55{phone_number}")
 
         # Wait for page to fully load
-        time.sleep(10)
+        time.sleep(random.uniform(8, 12))  # Random sleep to simulate loading time
 
         # Find the message input field
         message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
 
-        message_text = f"{message1}\n{message2}\n{message3}" if message2 and message3 else message1
+        # Prepare the messages
+        messages = [message1, message2, message3]
 
-        message_text = message_text.replace("[nome]", name)  # Replace [nome] with the contact name
-    
-        message_box.send_keys(message_text)
-        time.sleep(1)
+        # Loop through each message and send one at a time
+        for message in messages:
+            if message:  # Check if the message is not empty
+                message_text = message.replace("[nome]", name)  # Replace [nome] with the contact name
+                
+                # Simulate typing effect
+                for char in message_text:
+                    message_box.send_keys(char)
+                    time.sleep(random.uniform(0.1, 0.3))  # Random delay between typing each character
 
-        # Find and click the send button
-        send_button = driver.find_element(By.XPATH, '//span[@data-icon="send"]')
-        send_button.click()
+                # Wait a little before sending the message
+                time.sleep(random.uniform(1, 2))  # Random delay before clicking send
 
-        print(f"Message to {phone_number} was sent successfully")
+                # Find and click the send button
+                send_button = driver.find_element(By.XPATH, '//span[@data-icon="send"]')
+                send_button.click()
 
-    # Close browser after a short delay
+                print(f"Message to {phone_number} was sent successfully: {message_text}")
+
+                # Optional: sleep before sending the next message
+                time.sleep(random.uniform(3, 5))  # Random delay between sending messages
+
+            # Close browser after a short delay
     time.sleep(5)
     driver.quit()
 
