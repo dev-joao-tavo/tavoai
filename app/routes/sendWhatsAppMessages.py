@@ -3,14 +3,9 @@ from db import SessionLocal, get_db_session
 from sqlalchemy import select
 from typing import List
 import time
-import asyncio
 from models.models import Card, Contact, Board
 from routes.others import get_user_from_token
 from sanic.exceptions import Unauthorized
-from playwright.async_api import async_playwright
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import time
 from routes.configs import initialize_driver
