@@ -115,7 +115,7 @@ async def send_whatsapp_messages(request):
     import random
 
     # Start WebDriver
-    driver = initialize_driver()
+    driver = initialize_driver(user_id)
     
     try:
         for phone_number, name in phone_numbers_and_names:
