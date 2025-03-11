@@ -2,7 +2,12 @@ from sanic import Sanic
 from sanic_ext import Extend
 
 app = Sanic(__name__)
-app.config.REQUEST_TIMEOUT = 3000  # Increase as needed (default is 60 seconds)
+
+
+# Increase timeouts if necessary
+app.config.REQUEST_TIMEOUT = 3000  # Increase the timeout for receiving requests
+app.config.RESPONSE_TIMEOUT = 3000  # Increase the timeout for processing the response
+app.config.KEEP_ALIVE_TIMEOUT = 3000  # Optional: Increase the Keep-Alive timeout
 
 Extend(
     app,
