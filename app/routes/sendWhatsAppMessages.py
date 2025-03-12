@@ -47,7 +47,7 @@ async def get_wpp_login_code(driver, user_phone_number):
         # Find the phone input field using a more specific CSS selector
         phone_input = driver.find_element(By.CSS_SELECTOR, "input[aria-label='Insira seu número de telefone.']")
         phone_input.clear()  # Clear the field before entering the new number
-        phone_input.send_keys(f"+55{user_phone_number}")
+        phone_input.send_keys(f"{user_phone_number}")
         time.sleep(1)
 
         # Click on the "Next" button
