@@ -16,9 +16,6 @@ def initialize_driver(user_id):
     user_profile_dir = os.path.join(PROFILE_BASE_DIR, f"user_{user_id}")
     chrome_options.add_argument(f"--user-data-dir={user_profile_dir}")
 
-
-    # Set user profile directory
-    chrome_options.add_argument(f"--user-data-dir={chrome_user_dir}")
     chrome_options.add_argument(f"--profile-directory=Profile {user_id}")  # Adjust to your active profile
 
     # Use the system-wide ChromeDriver path
