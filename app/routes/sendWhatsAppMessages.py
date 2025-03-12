@@ -51,7 +51,7 @@ async def get_wpp_login_code(driver, user_phone_number):
         time.sleep(1)
 
         # Click on the "Next" button
-        next_button = driver.find_element(By.XPATH, '//div[contains(text(), "Next")]')
+        next_button = driver.find_element(By.XPATH, "//div[contains(text(), 'Next')]")
         next_button.click()
         time.sleep(3)  # Wait for the next screen to load
 
