@@ -10,7 +10,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)  # Ensure this matches the migration
-    user_wpp_phone_number = Column(Integer, primary_key=True, index=True)
+    user_wpp_phone_number = Column(String, primary_key=True, index=True)
     boards = relationship("Board", back_populates="user")
 
 
