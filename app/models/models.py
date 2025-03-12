@@ -8,10 +8,9 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
-    chrome_profile = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)  # Ensure this matches the migration
-
+    user_wpp_phone_number = Column(Integer, primary_key=True, index=True)
     boards = relationship("Board", back_populates="user")
 
 
@@ -36,9 +35,9 @@ class Board(Base):
 
 class Contact(Base):
     __tablename__ = "contacts"
-
+ 
     id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(String, unique=True, nullable=False)
+    phone_number = Column(String, unique=True, nullable=False)     #there might be an issue if diferent users want to add the same contact. We should consider changing this: unique=True
     contact_name = Column(String, nullable=False)
 
     cards = relationship("Card", back_populates="contact")

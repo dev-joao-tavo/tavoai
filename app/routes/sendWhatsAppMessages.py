@@ -46,23 +46,30 @@ async def get_phone_numbers_and_names_by_status_and_board(status: str, board_id:
     return phone_numbers_and_names
 
 
-async def get_qr_code_base64(driver):
+async def get_wpp_login_code(driver, user_phone_number):
     try:
-        # Find the QR code <canvas> element
-        qr_canvas = WebDriverWait(driver, 3).until(
-            EC.presence_of_element_located((By.TAG_NAME, "canvas"))
-        )
+        # Click on the chevron icon
+        chevron_button = driver.find_element(By.CSS_SELECTOR, '[data-icon="chevron"]')
+        chevron_button.click()
+        time.sleep(2)
+
+        # Find the phone input field and enter the number
+        phone_input = driver.find_element(By.CSS_SELECTOR, 'input[value="+55"]')
+        phone_input.send_keys(f"{user_phone_number}")
+        time.sleep(1)
+
+        # Click on the "Next" button
+        next_button = driver.find_element(By.XPATH, '//div[contains(text(), "Next")]')
+        next_button.click()
+        time.sleep(3)  # Wait for the next screen to load
+
+        # Get the login code
+        code_div = driver.find_element(By.CSS_SELECTOR, '[data-link-code]')
+        login_code = code_div.get_attribute("data-link-code")
+
+        print("WhatsApp Web Login Code:", login_code)
+        return login_code
         
-        # Convert QR code to image
-        screenshot = qr_canvas.screenshot_as_png
-        image = Image.open(io.BytesIO(screenshot))
-
-        # Convert image to base64
-        buffered = io.BytesIO()
-        image.save(buffered, format="PNG")
-        qr_base64 = base64.b64encode(buffered.getvalue()).decode()
-
-        return qr_base64
     except Exception as e:
         print(f"Error capturing QR code: {e}")
         return None
@@ -71,6 +78,7 @@ async def get_qr_code_base64(driver):
 # **Sanic Route: Send WhatsApp Messages**
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
+    user_phone_number="31994857681"
     token = request.headers.get("Authorization")
     if not token:
         raise Unauthorized("Authorization token is missing.")
@@ -153,15 +161,15 @@ async def send_whatsapp_messages(request):
                     time.sleep(random.uniform(3, 5))  # Random delay between sending messages
 
         # Close browser after a short delay
-        time.sleep(5)
+        time.sleep(1)
         driver.quit()
 
         return response.json({"message": "Messages sent!"})
 
     except:
-        qrCode = await get_qr_code_base64(driver)
-        time.sleep(5)
+        code = await get_wpp_login_code(driver,user_phone_number)
+        time.sleep(1)
 
         driver.quit()
 
-        return response.json({"message": "login before sending a message;","qrcode":qrCode})
+        return response.json({"message": "login before sending a message;","code":code})

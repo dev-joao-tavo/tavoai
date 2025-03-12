@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./Login.css"; // Reuse Login.css
 
-const Signup = () => {
+const Signup = () => {phone
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -12,7 +14,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
+    if (!email || !password || !phone ) {
       setError('Please fill in all fields.');
       return;
     }
@@ -26,7 +28,7 @@ const Signup = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, phone }),
       });
 
       const data = await response.json();
@@ -70,6 +72,17 @@ const Signup = () => {
             required
           />
         </div>
+        <div className="form-group">
+          <label>Phone number:</label>
+          <input
+            type="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Yout WhatsApp Phone Number"
+            required
+          />
+        </div>
+        
         <button type="submit" className="login-button" disabled={isLoading}>
           {isLoading ? 'Signing up...' : 'Sign Up'}
         </button>
