@@ -181,7 +181,7 @@ const Dashboard = () => {
         }
       );
       console.log("Message sent:", response.data);
-      alert(`Message sent for ${status} column successfully!`);
+      alert(`Message sent for ${status} column successfully! Response: ${response.data}`);
     } catch (error) {
       console.error("Error sending message:", error);
       alert(`Failed to send message for ${status} column.`);
