@@ -3,22 +3,13 @@ from db import SessionLocal, get_db_session
 from sqlalchemy import select
 from typing import List
 import time
-from models.models import Card, Contact, Board
+from models.models import Card, Contact, Board, User
 from routes.others import get_user_from_token
 from sanic.exceptions import Unauthorized
 from selenium.webdriver.common.by import By
 import time
 from routes.configs import initialize_driver
-import base64
-import io
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from PIL import Image
-from sanic import Sanic, response
+
 app = Sanic.get_app()
 
 from typing import List, Tuple
@@ -78,7 +69,6 @@ async def get_wpp_login_code(driver, user_phone_number):
 # **Sanic Route: Send WhatsApp Messages**
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
-    user_phone_number="31994857681"
     token = request.headers.get("Authorization")
     if not token:
         raise Unauthorized("Authorization token is missing.")
@@ -167,6 +157,12 @@ async def send_whatsapp_messages(request):
         return response.json({"message": "Messages sent!"})
 
     except:
+        async with get_db_session() as session:
+            result = await session.execute(select(User).filter(User.id == user_id))
+            user = result.scalars().first()
+            
+        user_phone_number= user.user_wpp_phone_number
+
         code = await get_wpp_login_code(driver,user_phone_number)
         time.sleep(1)
 
