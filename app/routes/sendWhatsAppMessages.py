@@ -9,6 +9,10 @@ from sanic.exceptions import Unauthorized
 from selenium.webdriver.common.by import By
 import time
 from routes.configs import initialize_driver
+import asyncio
+
+import time
+import random
 
 app = Sanic.get_app()
 
@@ -42,18 +46,18 @@ async def get_wpp_login_code(driver, user_phone_number):
         # Click on the chevron icon
         chevron_button = driver.find_element(By.CSS_SELECTOR, '[data-icon="chevron"]')
         chevron_button.click()
-        time.sleep(2)
+        await asyncio.sleep(2)
 
         # Find the phone input field using a more specific CSS selector
         phone_input = driver.find_element(By.CSS_SELECTOR, "input[aria-label='Insira seu número de telefone.']")
         phone_input.clear()  # Clear the field before entering the new number
         phone_input.send_keys(f"{user_phone_number}")
-        time.sleep(1)
+        await asyncio.sleep(1)
 
         # Click on the "Next" button
         next_button = driver.find_element(By.XPATH, "//div[contains(text(), 'Avançar')]")
         next_button.click()
-        time.sleep(3)  # Wait for the next screen to load
+        await asyncio.sleep(3)  # Wait for the next screen to load
 
         # Get the login code
         code_div = driver.find_element(By.CSS_SELECTOR, '[data-link-code]')
@@ -109,26 +113,29 @@ async def send_whatsapp_messages(request):
             )
     except Exception as e:
         return response.json({"error": f"Failed to fetch contacts: {str(e)}"}, status=500)
+       # Run Selenium in a background thread
     
-    import time
-    import random
+    asyncio.create_task(send_whatsapp_messages_async(user_id, phone_numbers_and_names, message1, message2, message3))
 
-    # Start WebDriver
-    driver = initialize_driver(user_id)
-    
+    return response.json({"message": "WhatsApp messages are being sent in the background."})
+
+async def send_whatsapp_messages_async(user_id, phone_numbers_and_names, message1, message2, message3):
+    """Runs Selenium in a non-blocking background task"""
+    driver = await asyncio.to_thread(initialize_driver, user_id)
+
     try:
         for phone_number, name in phone_numbers_and_names:
             # Open WhatsApp Web (you should already be logged in)
             driver.get(f"https://web.whatsapp.com/send/?phone=+55{phone_number}")
 
             # Wait for page to fully load
-            time.sleep(random.uniform(8, 12))  # Random sleep to simulate loading time
+            await asyncio.sleep(random.uniform(8, 12))  # Random sleep to simulate loading time
 
             # Find the message input field
             message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
 
             # Prepare the messages
-            messages = [message1, message2, message3]
+            messages = [message1.replace("[nome]", name), message2.replace("[nome]", name), message3.replace("[nome]", name)]
 
             # Loop through each message and send one at a time
             for message in messages:
@@ -138,10 +145,10 @@ async def send_whatsapp_messages(request):
                     # Simulate typing effect
                     for char in message_text:
                         message_box.send_keys(char)
-                        time.sleep(random.uniform(0.1, 0.3))  # Random delay between typing each character
+                        await asyncio.sleep(random.uniform(0.1, 0.3))  # Random delay between typing each character
 
                     # Wait a little before sending the message
-                    time.sleep(random.uniform(1, 2))  # Random delay before clicking send
+                    await asyncio.sleep(random.uniform(1, 2))  # Random delay before clicking send
 
                     # Find and click the send button
                     send_button = driver.find_element(By.XPATH, '//span[@data-icon="send"]')
@@ -149,10 +156,10 @@ async def send_whatsapp_messages(request):
 
                     print(f"Message to {phone_number} was sent successfully: {message_text}")
 
-                    time.sleep(random.uniform(3, 5))  # Random delay between sending messages
+                    await asyncio.sleep(random.uniform(3, 5))  # Random delay between sending messages
 
         # Close browser after a short delay
-        time.sleep(1)
+        await asyncio.sleep(1)
         driver.quit()
 
         return response.json({"message": "Messages sent!"})
@@ -165,7 +172,7 @@ async def send_whatsapp_messages(request):
         user_phone_number= user.user_wpp_phone_number
 
         code = await get_wpp_login_code(driver,user_phone_number)
-        time.sleep(1)
+        await asyncio.sleep(1)
 
         driver.quit()
 
