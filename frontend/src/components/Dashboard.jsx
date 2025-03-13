@@ -190,8 +190,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleWhatsAppLogin = async (e, status) => {
-    e.preventDefault();
+  const handleWhatsAppLogin = async () => {
     setIsLoading(true);
 
     try {
