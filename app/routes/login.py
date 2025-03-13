@@ -53,6 +53,10 @@ async def signup(request):
         new_user = User(email=email, username=username, password_hash=hash_password(password),user_wpp_phone_number=user_wpp_phone_number)
         session.add(new_user)
         await session.flush()  # Ensure new_user gets an ID
+        await session.refresh(new_user)  # Ensure ID is populated
+        print(">>>>>>>>>>>>>>>new_user.id: ", new_user.id)
+        print(">>>>>>>>>>>>>>>new_user.id: ", new_user.email)
+        print(">>>>>>>>>>>>>>>new_user.id: ", new_user.password_hash)
 
         # Create a new board linked to this user
         new_board = Board(user_id=new_user.id, name=f"{username}'s Board")
