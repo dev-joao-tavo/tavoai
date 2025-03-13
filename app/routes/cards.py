@@ -53,7 +53,7 @@ async def add_card_and_contact(request):
                 "id": card_id,
                 "title": contact_name,
                 "status": status,  # Use the status from the frontend
-                "board_id": board_id,  # Use the board_id from the frontend
+                "board_id": int(board_id),  # Use the board_id from the frontend
                 "contact_ID": contact_id,
             }
 
