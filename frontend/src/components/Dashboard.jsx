@@ -86,6 +86,7 @@ const Dashboard = () => {
       if (response.data.boards.length > 0) {
         setBoards(response.data.boards);
         setSelectedBoard(response.data.boards[0].id); // Select the first board by default
+        setSelectedBoardType(response.data.boards[0].board_type); // Set the board type of the first board
       }
     } catch (error) {
       console.error("Error fetching boards:", error);
