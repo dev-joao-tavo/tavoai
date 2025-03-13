@@ -38,7 +38,7 @@ async def signup(request):
     username = str(randint(1, 99999999))  # Ensure unique username
     password = data.get("password")
     user_wpp_phone_number = data.get("phone")
-    user_id = str(randint(1, 99999999))  # Ensure unique username
+    user_id = randint(1, 99999999)  # Ensure unique username
 
 
     if not email or not password:
