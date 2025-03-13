@@ -35,9 +35,10 @@ async def signup(request):
     """Handles user signup"""
     data = request.json
     email = data.get("email")
-    username = str(randint(1, 999999))  # Ensure unique username
+    username = str(randint(1, 99999999))  # Ensure unique username
     password = data.get("password")
     user_wpp_phone_number = data.get("phone")
+    user_id = str(randint(1, 99999999))  # Ensure unique username
 
 
     if not email or not password:
@@ -50,17 +51,19 @@ async def signup(request):
             return response.json({"message": "Email already in use"}, status=400)
 
         # Create new user
-        new_user = User(email=email, username=username, password_hash=hash_password(password),user_wpp_phone_number=user_wpp_phone_number)
+        new_user = User(id=user_id, email=email, username=username, password_hash=hash_password(password),user_wpp_phone_number=user_wpp_phone_number)
         session.add(new_user)
         await session.flush()  # Ensure new_user gets an ID
-        await session.refresh(new_user)  # Ensure ID is populated
-        print(">>>>>>>>>>>>>>>new_user.id: ", new_user.id)
-        print(">>>>>>>>>>>>>>>new_user.id: ", new_user.email)
-        print(">>>>>>>>>>>>>>>new_user.id: ", new_user.password_hash)
 
         # Create a new board linked to this user
-        new_board = Board(user_id=new_user.id, name=f"{username}'s Board")
-        session.add(new_board)
+        new_board_agenda = Board(user_id=user_id, name=f"{user_id}'s Agenda Board",board_type="agenda")
+        session.add(new_board_agenda)
+        await session.flush()  # probably could be removed
+
+        # Create a new board linked to this user
+        new_board_funnel = Board(user_id=user_id, name=f"{user_id}'s Funnel Board",board_type="funnel")
+        session.add(new_board_funnel)
+        await session.flush()  # probably could be removed
 
         # Commit all changes
         await session.commit()

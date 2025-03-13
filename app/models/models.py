@@ -11,7 +11,6 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)  # Ensure this matches the migration
     user_wpp_phone_number = Column(String, primary_key=True, index=True)
-    boards = relationship("Board", back_populates="user")
 
 
     def set_password(self, password: str):
@@ -26,12 +25,10 @@ class Board(Base):
     __tablename__ = "boards"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    user_id = Column(Integer)
     name = Column(String, nullable=False)
-
-    user = relationship("User", back_populates="boards")
-    cards = relationship("Card", back_populates="board")
-
+    board_type = Column(String)
+   
 
 class Contact(Base):
     __tablename__ = "contacts"
@@ -40,7 +37,6 @@ class Contact(Base):
     phone_number = Column(String, unique=True, nullable=False)     #there might be an issue if diferent users want to add the same contact. We should consider changing this: unique=True
     contact_name = Column(String, nullable=False)
 
-    cards = relationship("Card", back_populates="contact")
 
 
 class Card(Base):
@@ -53,9 +49,6 @@ class Card(Base):
     status = Column(Enum("todo", "in-progress", "done", name="card_status"), default="todo")
     last_message = Column(TIMESTAMP)
 
-    board = relationship("Board", back_populates="cards")
-    contact = relationship("Contact", back_populates="cards")
-    messages = relationship("Message", back_populates="card")
 
 
 class Message(Base):
@@ -67,4 +60,3 @@ class Message(Base):
     message = Column(Text, nullable=False)
     timestamp = Column(TIMESTAMP)
 
-    card = relationship("Card", back_populates="messages")
