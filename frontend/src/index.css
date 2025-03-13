@@ -218,3 +218,24 @@ h2 {
   color: #555;
   margin: 0;
 }
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+}
+
+.header-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.header-button:hover {
+  text-decoration: underline;
+}
