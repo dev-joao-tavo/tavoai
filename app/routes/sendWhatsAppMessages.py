@@ -43,6 +43,11 @@ async def get_phone_numbers_and_names_by_status_and_board(status: str, board_id:
 
 async def get_wpp_login_code(driver, user_phone_number):
     try:
+        driver.get(f"https://web.whatsapp.com/")
+
+        # Wait for page to fully load
+        await asyncio.sleep(random.uniform(8, 12))  # Random sleep to simulate loading time
+
         # Click on the chevron icon
         chevron_button = driver.find_element(By.CSS_SELECTOR, '[data-icon="chevron"]')
         chevron_button.click()
@@ -165,15 +170,36 @@ async def send_whatsapp_messages_async(user_id, phone_numbers_and_names, message
         return response.json({"message": "Messages sent!"})
 
     except:
+        return response.json({"message": "login before sending a message;"})
+
+@app.route("/whatsAppLogin", methods=["get"])
+async def whats_app_login(request):
+    try:
+        token = request.headers.get("Authorization")
+        if not token:
+            raise Unauthorized("Authorization token is missing.")
+
+        token = token[7:] if token.startswith("Bearer ") else token
+        user_id = get_user_from_token(token)
+        if not user_id:
+            raise Unauthorized("Invalid or expired token.")
+    
+    except Exception as e:
+        return response.json({"error": "Invalid request body."}, status=400)
+    
+    try:        
         async with get_db_session() as session:
             result = await session.execute(select(User).filter(User.id == user_id))
             user = result.scalars().first()
-            
+        driver = await asyncio.to_thread(initialize_driver, user_id)
+
         user_phone_number= user.user_wpp_phone_number
 
         code = await get_wpp_login_code(driver,user_phone_number)
         await asyncio.sleep(1)
+        
+    except:
 
         driver.quit()
 
-        return response.json({"message": "login before sending a message;","code":code})
+    return response.json({"message": "Add this code  to your WhatsApp","code":code})
