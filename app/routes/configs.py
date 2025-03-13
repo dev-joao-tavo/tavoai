@@ -13,7 +13,7 @@ def initialize_driver(user_id):
     # Define a persistent profile directory for each user
     user_profile_dir = os.path.join(PROFILE_BASE_DIR, f"user_{user_id}")
     chrome_options.add_argument(f"--user-data-dir={user_profile_dir}")
-    chrome_options.add_argument("--headless=new")
+    #chrome_options.add_argument("--headless=new")
 
     chrome_options.add_argument(f"--profile-directory=Profile {user_id}")  # Adjust to your active profile
 
