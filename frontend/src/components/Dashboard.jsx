@@ -201,9 +201,15 @@ const Dashboard = () => {
       alert("Please select a board first.");
     }
   };
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Clear authentication token
+    window.location.href = "/login"; // Redirect to login page
+  };
 
   return (
     <div className="dashboard-container">
+      <button onClick={handleLogout} className="signup-button">Logout</button>
+
       <div class="title-container">
           <h1>Tavo AI</h1>
           <h2>Your Smart Assistant</h2>
