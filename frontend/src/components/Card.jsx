@@ -39,6 +39,14 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
           <option value="day-12">12º dia</option>
           <option value="day-13">13º dia</option>
           <option value="day-14">14º dia</option>
+          <option value="monday">Segunda</option>
+          <option value="tuesday">Terça</option>
+          <option value="wednesday">Quarta</option>
+          <option value="thrusday">Quinta</option>
+          <option value="friday">Sexta</option>
+          <option value="saturday">Sábado</option>
+          <option value="sunday">Domingo</option>
+          <option value="schedule">Agenda</option>
 
         </select>
       </div>
