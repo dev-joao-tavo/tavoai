@@ -3,7 +3,7 @@ import axios from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Card from "./Card";
 
-const API_BASE_URL = "https://api.tavoai.com"; 
+const API_BASE_URL = "https://api.tavoai.com";
 const STATUSES = ["todo", "in-progress", "done"];
 
 const Dashboard = () => {
@@ -47,13 +47,12 @@ const Dashboard = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-        console.log(`Bearer ${token}`)
-        const response = await axios.get(`${API_BASE_URL}/boards`, {
+      const response = await axios.get(`${API_BASE_URL}/boards`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (response.data.boards.length > 0) {
         setBoards(response.data.boards);
         setSelectedBoard(response.data.boards[0].id); // Select the first board by default
@@ -63,8 +62,7 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  };  
-  
+  };
 
   const fetchCards = async (boardId) => {
     setIsLoading(true);
@@ -99,7 +97,7 @@ const Dashboard = () => {
         {
           phone_number: description,
           contact_name: title,
-          board_id: boardId,  
+          board_id: boardId,
           status: status,
         },
         {
@@ -114,11 +112,10 @@ const Dashboard = () => {
         [status]: [...prevCards[status], newCard],
       }));
     } catch (error) {
-      console.error("Error adding card::", error);
+      console.error("Error adding card:", error);
     }
   };
-  
-  
+
   const deleteCard = async (cardId) => {
     try {
       await axios.delete(`${API_BASE_URL}/removeCardandContact`, {
@@ -212,6 +209,7 @@ const Dashboard = () => {
       setIsLoading(false);
     }
   };
+
   const handleAddCard = async (e) => {
     e.preventDefault();
     if (selectedBoard) {
@@ -223,9 +221,15 @@ const Dashboard = () => {
       alert("Please select a board first.");
     }
   };
+
   const handleLogout = () => {
     localStorage.removeItem("token"); // Clear authentication token
     window.location.href = "/login"; // Redirect to login page
+  };
+
+  const handleBoardChange = (e) => {
+    const boardId = e.target.value;
+    setSelectedBoard(boardId);
   };
 
   return (
@@ -237,13 +241,25 @@ const Dashboard = () => {
         <button onClick={handleLogout} className="header-button">Logout</button>
       </div>
 
-      <div class="title-container">
-          <h1>Tavo AI</h1>
-          <h2>Your Smart Assistant</h2>
+      <div className="title-container">
+        <h1>Tavo AI</h1>
+        <h2>Your Smart Assistant</h2>
+      </div>
+
+      {/* Add a dropdown to switch between boards */}
+      <div className="board-selector">
+        <label htmlFor="board-select">Select Board: </label>
+        <select id="board-select" value={selectedBoard || ""} onChange={handleBoardChange}>
+          {boards.map((board) => (
+            <option key={board.id} value={board.id}>
+              {board.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <form onSubmit={handleAddCard} className="dashboard-form">
-      <input
+        <input
           type="text"
           placeholder="Name"
           value={newCardTitle}
