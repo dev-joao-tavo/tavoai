@@ -22,7 +22,7 @@ const agendaStatuses = [
 const Dashboard = () => {
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
-  const [selectedBoardType, setSelectedBoardType] = useState(null); // Add this line
+  const [selectedBoardType, setSelectedBoardType] = useState(null); 
   const [cards, setCards] = useState(
     statuses.reduce((acc, status) => {
       acc[status] = [];
@@ -46,7 +46,7 @@ const Dashboard = () => {
     } else if (boardType === "agenda") {
       return agendaStatuses;
     }
-    return statuses; // Default to all statuses if no type is specified
+    return []; // Default to all statuses if no type is specified
   };
   const filteredStatuses = getStatusesForBoard(selectedBoardType);
 

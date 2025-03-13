@@ -90,10 +90,10 @@ async def get_boards(request):
         result = await session.execute(select(Board).filter(Board.user_id == user_id))
         boards = result.scalars().all()
 
-    boards_list = [{"id": board.id, "name": board.name} for board in boards]
+    # Include board_type in the response
+    boards_list = [{"id": board.id, "name": board.name, "board_type": board.board_type} for board in boards]
 
     return response.json({"boards": boards_list})
-
    
 @app.route("/cards/<card_id>/reorder", methods=["POST"])
 async def reorder_messages(request, card_id):
