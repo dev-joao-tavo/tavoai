@@ -9,15 +9,26 @@ const statuses = [
   "8º dia", "9º dia", "10º dia", "11º dia", "12º dia", "13º dia", "14º dia",
   "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo", "Agenda"
 ];
+
+const funnelStatuses = [
+  "1º dia", "2º dia", "3º dia", "4º dia", "5º dia", "6º dia", "7º dia",
+  "8º dia", "9º dia", "10º dia", "11º dia", "12º dia", "13º dia", "14º dia"
+];
+
+const agendaStatuses = [
+  "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo", "Agenda"
+];
+
 const Dashboard = () => {
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
+  const [selectedBoardType, setSelectedBoardType] = useState(null); // Add this line
   const [cards, setCards] = useState(
     statuses.reduce((acc, status) => {
       acc[status] = [];
       return acc;
     }, {})
-  );  
+  );
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
@@ -29,6 +40,15 @@ const Dashboard = () => {
     }, {})
   );
   
+  const getStatusesForBoard = (boardType) => {
+    if (boardType === "funnel") {
+      return funnelStatuses;
+    } else if (boardType === "agenda") {
+      return agendaStatuses;
+    }
+    return statuses; // Default to all statuses if no type is specified
+  };
+  const filteredStatuses = getStatusesForBoard(selectedBoardType);
 
   const navigate = useNavigate();
 
@@ -62,7 +82,7 @@ const Dashboard = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       if (response.data.boards.length > 0) {
         setBoards(response.data.boards);
         setSelectedBoard(response.data.boards[0].id); // Select the first board by default
@@ -251,7 +271,9 @@ const Dashboard = () => {
 
   const handleBoardChange = (e) => {
     const boardId = e.target.value;
+    const selectedBoard = boards.find((board) => board.id === boardId);
     setSelectedBoard(boardId);
+    setSelectedBoardType(selectedBoard ? selectedBoard.board_type : null); // Update the selected board type
   };
 
   return (
@@ -302,7 +324,7 @@ const Dashboard = () => {
         <div className="loading-spinner"></div>
       ) : (
         <div className="dashboard">
-          {statuses.map((status) => (
+          {filteredStatuses.map((status) => (
             <div key={status} className="dashboard-column">
               <h2 className="dashboard-title">
                 {status.toUpperCase()}
