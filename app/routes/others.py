@@ -138,9 +138,6 @@ async def update_card_status(request, card_id):
         data = request.json  # Get the new status from the request
         new_status = data.get("status")
 
-        if new_status not in ["todo", "in-progress", "done"]:
-            return response.json({"error": "Invalid status"}, status=400)
-
         async with SessionLocal() as session:
             await session.execute(
                 text("UPDATE cards SET status = :status WHERE id = :card_id"),

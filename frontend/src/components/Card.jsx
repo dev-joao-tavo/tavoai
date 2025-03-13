@@ -24,9 +24,22 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
           value={selectedStatus}
           onChange={handleStatusChange}
         >
-          <option value="todo">To Do</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
+          <option value="day-1">1º dia</option>
+          <option value="day-1">1º dia</option>
+          <option value="day-2">2º dia</option>
+          <option value="day-3">3º dia</option>
+          <option value="day-4">4º dia</option>
+          <option value="day-5">5º dia</option>
+          <option value="day-6">6º dia</option>
+          <option value="day-7">7º dia</option>
+          <option value="day-8">8º dia</option>
+          <option value="day-9">9º dia</option>
+          <option value="day-10">10º dia</option>
+          <option value="day-11">11º dia</option>
+          <option value="day-12">12º dia</option>
+          <option value="day-13">13º dia</option>
+          <option value="day-14">14º dia</option>
+
         </select>
       </div>
 

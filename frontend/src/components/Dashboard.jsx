@@ -4,21 +4,31 @@ import { useNavigate } from "react-router-dom";
 import Card from "./Card";
 
 const API_BASE_URL = "https://api.tavoai.com";
-const STATUSES = ["todo", "in-progress", "done"];
-
+const statuses = [
+  "1º dia", "2º dia", "3º dia", "4º dia", "5º dia", "6º dia", "7º dia",
+  "8º dia", "9º dia", "10º dia", "11º dia", "12º dia", "13º dia", "14º dia",
+  "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo", "Agenda"
+];
 const Dashboard = () => {
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
-  const [cards, setCards] = useState({ todo: [], "in-progress": [], done: [] });
+  const [cards, setCards] = useState(
+    statuses.reduce((acc, status) => {
+      acc[status] = [];
+      return acc;
+    }, {})
+  );  
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
   const [newCardDescription, setNewCardDescription] = useState("");
-  const [columnMessages, setColumnMessages] = useState({
-    todo: { message1: "", message2: "", message3: "" },
-    "in-progress": { message1: "", message2: "", message3: "" },
-    done: { message1: "", message2: "", message3: "" },
-  });
+  const [columnMessages, setColumnMessages] = useState(
+    statuses.reduce((acc, status) => {
+      acc[status] = { message1: "", message2: "", message3: "" };
+      return acc;
+    }, {})
+  );
+  
 
   const navigate = useNavigate();
 
@@ -41,7 +51,7 @@ const Dashboard = () => {
         [field]: value,
       },
     }));
-  };
+  };  
 
   const fetchBoards = async () => {
     setIsLoading(true);
@@ -68,10 +78,21 @@ const Dashboard = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/boards/${boardId}/cards`);
-      const groupedCards = { todo: [], "in-progress": [], done: [] };
+      
+      // Create an empty object based on statuses to ensure all are present
+      const groupedCards = statuses.reduce((acc, status) => {
+        acc[status] = [];
+        return acc;
+      }, {});
+  
       response.data.cards.forEach((card) => {
-        groupedCards[card.status].push(card);
+        if (groupedCards.hasOwnProperty(card.status)) {
+          groupedCards[card.status].push(card);
+        } else {
+          console.warn(`Unexpected status: ${card.status}`); // Handle unknown statuses
+        }
       });
+  
       setCards(groupedCards);
     } catch (error) {
       console.error("Error fetching cards:", error);
@@ -79,6 +100,7 @@ const Dashboard = () => {
       setIsLoading(false);
     }
   };
+  
 
   const fetchContacts = async () => {
     try {
@@ -280,10 +302,10 @@ const Dashboard = () => {
         <div className="loading-spinner"></div>
       ) : (
         <div className="dashboard">
-          {STATUSES.map((status) => (
+          {statuses.map((status) => (
             <div key={status} className="dashboard-column">
               <h2 className="dashboard-title">
-                {status.replace("-", " ").toUpperCase()}
+                {status.toUpperCase()}
               </h2>
 
               <div className="message-inputs">
@@ -291,7 +313,7 @@ const Dashboard = () => {
                   <div key={messageKey}>
                     <input
                       type="text"
-                      placeholder={`Message ${index + 1}`}
+                      placeholder={`${index + 1}ª mensagem`}
                       value={columnMessages[status][messageKey]}
                       onChange={(e) => handleInputChange(status, messageKey, e.target.value)}
                       className="custom-input"

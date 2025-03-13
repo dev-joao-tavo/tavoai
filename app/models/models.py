@@ -46,7 +46,7 @@ class Card(Base):
     board_id = Column(Integer, ForeignKey("boards.id", ondelete="CASCADE"))
     contact_id = Column(Integer, ForeignKey("contacts.id", ondelete="CASCADE"))
     title = Column(String, nullable=False)
-    status = Column(Enum("todo", "in-progress", "done", name="card_status"), default="todo")
+    status = Column(String)
     last_message = Column(TIMESTAMP)
 
 
