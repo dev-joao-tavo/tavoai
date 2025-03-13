@@ -27,7 +27,7 @@ async def add_card_and_contact(request):
 
     async with get_db_session() as session:  # Use async with here
         try:
-            result = await session.execute(select(Board).where(Board.id == board_id))
+            result = await session.execute(select(Board).where(Board.id == int(board_id)))
             board = result.scalars().first()
 
             if not board:
