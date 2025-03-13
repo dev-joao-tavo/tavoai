@@ -38,7 +38,7 @@ const Login = () => {
         login(data.token); // Save token and update state
         window.location.href = "/dashboard"; // Redirect to login page
       } else {
-        setError(data.message || 'Invalid login credentials.');
+        setError(data.message || 'Usuário e/ou senha inválidos');
       }
     } catch (error) {
       console.error('Login error:', error);
