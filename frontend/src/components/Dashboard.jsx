@@ -211,7 +211,7 @@ const Dashboard = () => {
       <div className="header-container">
         <button onClick={() => window.location.href = "/dashboard"} className="header-button">Dashboard</button>
         <button onClick={() => window.location.href = "/subscription"} className="header-button">Subscription</button>
-        <button onClick={handleLogout}>Logout</button>
+        <button onClick={handleLogout} className="header-button">Logout</button>
       </div>
 
       <div class="title-container">
