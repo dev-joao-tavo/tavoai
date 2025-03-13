@@ -37,7 +37,6 @@ const Login = () => {
       if (response.ok) {
         login(data.token); // Save token and update state
         navigate('/dashboard'); // Redirect to dashboard
-        window.location.href = "/dashboard"; // Redirect to login page
 
       } else {
         setError(data.message || 'Invalid login credentials.');
