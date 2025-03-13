@@ -35,9 +35,10 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message || 'Login successful!');
         login(data.token); // Save token and update state
         navigate('/dashboard'); // Redirect to dashboard
+        window.location.href = "/dashboard"; // Redirect to login page
+
       } else {
         setError(data.message || 'Invalid login credentials.');
       }
