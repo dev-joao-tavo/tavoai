@@ -22,7 +22,9 @@ const agendaStatuses = [
 const Dashboard = () => {
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
+  console.log(`>>>> ${selectedBoardType}`);
   const [selectedBoardType, setSelectedBoardType] = useState(null); 
+  console.log(`>>>.....> ${selectedBoardType}`);
   const [cards, setCards] = useState(
     statuses.reduce((acc, status) => {
       acc[status] = [];
@@ -66,7 +68,9 @@ const Dashboard = () => {
     const boardId = e.target.value;
     const selectedBoard = boards.find((board) => board.id === boardId);
     setSelectedBoard(boardId);
+    console.log(`>>>.....))))> ${selectedBoardType}`);   
     setSelectedBoardType(selectedBoard); // Update the selected board type
+    console.log(`>>&&&>.....> ${selectedBoardType}`);
   };
   
   const handleInputChange = (status, field, value) => {
