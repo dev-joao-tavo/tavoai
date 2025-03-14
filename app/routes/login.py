@@ -6,7 +6,7 @@ from utils.utils import SECRET_KEY, hash_password, verify_password, generate_tok
 from db import get_db_session
 from models.models import User, Board
 from sanic_ext import Extend
-from utils.utils import hash_password, verify_token
+from utils.utils import hash_password
 
 auth_bp = Blueprint("auth", url_prefix="/api")
 CORS(auth_bp)  # Enable CORS for the auth blueprint
@@ -75,7 +75,6 @@ async def signup(request):
         return response.json({"message": "User created successfully", "token": token}, status=201)
 
 user_bp = Blueprint("user", url_prefix="/api/users")
-Extend(user_bp)  # Extends Sanic with additional features
 
 @user_bp.put("/<user_id:int>")
 async def update_user(request, user_id):
