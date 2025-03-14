@@ -68,6 +68,9 @@ const Dashboard = () => {
     const selectedBoard = boards.find((board) => board.id === boardId);
     setSelectedBoard(selectedBoard);  // Store the full object
     setSelectedBoardType(selectedBoard?.board_type || null); // Ensure safe access
+    console.log(selectedBoard)
+    selectedBoard(selectedBoard?.board_type)
+
   };
   
   
