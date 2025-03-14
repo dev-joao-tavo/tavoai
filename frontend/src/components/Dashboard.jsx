@@ -309,7 +309,7 @@ const Dashboard = () => {
 
       <div className="title-container">
         <h1>Tavo AI</h1>
-        <h2>Seu assistente inteligente: {selectedBoardType}</h2>
+        <h2>Seu assistente inteligente</h2>
       </div>
 
       {/* Add a dropdown to switch between boards */}
