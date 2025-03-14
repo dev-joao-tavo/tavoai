@@ -4,11 +4,6 @@ import { useNavigate } from "react-router-dom";
 import Card from "./Card";
 
 const API_BASE_URL = "https://api.tavoai.com";
-const statuses = [
-  "1º dia", "2º dia", "3º dia", "4º dia", "5º dia", "6º dia", "7º dia",
-  "8º dia", "9º dia", "10º dia", "11º dia", "12º dia", "13º dia", "14º dia",
-  "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo", "Agenda"
-];
 
 const funnelStatuses = [
   "1º dia", "2º dia", "3º dia", "4º dia", "5º dia", "6º dia", "7º dia",
@@ -17,6 +12,13 @@ const funnelStatuses = [
 
 const agendaStatuses = [
   "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo", "Agenda"
+];
+
+const statuses = [
+  "day-1", "day-2", "day-3", "day-4", "day-5", "day-6", "day-7",
+  "day-8", "day-9", "day-10", "day-11", "day-12", "day-13", "day-14",
+  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+  "schedule"
 ];
 
 const Dashboard = () => {
@@ -40,15 +42,15 @@ const Dashboard = () => {
       acc[status] = { message1: "", message2: "", message3: "" };
       return acc;
     }, {})
-  );
+  );  
   
   const getStatusesForBoard = (boardType) => {
     if (boardType === "funnel") {
-      return funnelStatuses;
+      return statuses.slice(0, 14); // First 14 statuses for "funnel"
     } else if (boardType === "agenda") {
-      return agendaStatuses;
+      return statuses.slice(14); // Remaining statuses for "agenda"
     }
-    return []; // Default to all statuses if no type is specified
+    return statuses; // Default to all statuses
   };
   const filteredStatuses = getStatusesForBoard(selectedBoardType);
 
@@ -64,12 +66,18 @@ const Dashboard = () => {
   }, [selectedBoard]);
   
   const handleBoardChange = (e) => {
-    const boardId = Number(e.target.value); // Convert to number
-    const selectedBoard = boards.find((board) => board.id === boardId);
-    setSelectedBoard(selectedBoard);  // Store the full object
-    setSelectedBoardType(selectedBoard.board_type); // Ensure safe access
-    console.log(selectedBoard);
+    const boardId = Number(e.target.value);
+    const selectedBoard = boards.find((board) => board.id === boardId) || null;
+  
+    if (selectedBoard) {
+      setSelectedBoard(selectedBoard);
+      setSelectedBoardType(selectedBoard.board_type);
+    } else {
+      setSelectedBoard(null);
+      setSelectedBoardType(null);
+    }
   };
+  
   
   
   const handleInputChange = (status, field, value) => {
@@ -94,8 +102,8 @@ const Dashboard = () => {
   
       if (response.data.boards.length > 0) {
         setBoards(response.data.boards);
-        setSelectedBoard(response.data.boards[0].id); // Select the first board by default
-        setSelectedBoardType(response.data.boards[0].board_type); // Set the board type of the first board
+        setSelectedBoard(response.data.boards[0]); // Store the full board object
+        setSelectedBoardType(response.data.boards[0].board_type);
       }
     } catch (error) {
       console.error("Error fetching boards:", error);
@@ -345,18 +353,21 @@ const Dashboard = () => {
               </h2>
 
               <div className="message-inputs">
-                {["message1", "message2", "message3"].map((messageKey, index) => (
-                  <div key={messageKey}>
-                    <input
-                      type="text"
-                      placeholder={`${index + 1}ª mensagem`}
-                      value={columnMessages[status][messageKey]}
-                      onChange={(e) => handleInputChange(status, messageKey, e.target.value)}
-                      className="custom-input"
-                    />
-                    <br />
-                  </div>
-                ))}
+                          {(columnMessages[status] ? ["message1", "message2", "message3"] : []).map(
+              (messageKey, index) => (
+                <div key={messageKey}>
+                  <input
+                    type="text"
+                    placeholder={`${index + 1}ª mensagem`}
+                    value={columnMessages[status]?.[messageKey] || ""}
+                    onChange={(e) => handleInputChange(status, messageKey, e.target.value)}
+                    className="custom-input"
+                  />
+                  <br />
+                </div>
+  )
+)}
+
               </div>
 
               <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>

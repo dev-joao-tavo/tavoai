@@ -25,7 +25,6 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
           onChange={handleStatusChange}
         >
           <option value="day-1">1º dia</option>
-          <option value="day-1">1º dia</option>
           <option value="day-2">2º dia</option>
           <option value="day-3">3º dia</option>
           <option value="day-4">4º dia</option>
@@ -42,7 +41,7 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
           <option value="monday">Segunda</option>
           <option value="tuesday">Terça</option>
           <option value="wednesday">Quarta</option>
-          <option value="thrusday">Quinta</option>
+          <option value="thursday">Quinta</option>
           <option value="friday">Sexta</option>
           <option value="saturday">Sábado</option>
           <option value="sunday">Domingo</option>
