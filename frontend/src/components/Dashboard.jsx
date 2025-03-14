@@ -29,6 +29,8 @@ const Dashboard = () => {
       return acc;
     }, {})
   );
+  const filteredStatuses = getStatusesForBoard(selectedBoardType);
+  const navigate = useNavigate();
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
@@ -48,9 +50,6 @@ const Dashboard = () => {
     }
     return []; // Default to all statuses if no type is specified
   };
-  const filteredStatuses = getStatusesForBoard(selectedBoardType);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchBoards();
@@ -63,6 +62,13 @@ const Dashboard = () => {
     }
   }, [selectedBoard]);
 
+  const handleBoardChange = (e) => {
+    const boardId = e.target.value;
+    const selectedBoard = boards.find((board) => board.id === boardId);
+    setSelectedBoard(boardId);
+    setSelectedBoardType(selectedBoard ? selectedBoard.board_type : null); // Update the selected board type
+  };
+  
   const handleInputChange = (status, field, value) => {
     setColumnMessages((prev) => ({
       ...prev,
@@ -253,6 +259,12 @@ const Dashboard = () => {
     }
   };
 
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Clear authentication token
+    window.location.href = "/login"; // Redirect to login page
+  };
+  
   const handleAddCard = async (e) => {
     e.preventDefault();
     if (selectedBoard) {
@@ -265,17 +277,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear authentication token
-    window.location.href = "/login"; // Redirect to login page
-  };
-
-  const handleBoardChange = (e) => {
-    const boardId = e.target.value;
-    const selectedBoard = boards.find((board) => board.id === boardId);
-    setSelectedBoard(boardId);
-    setSelectedBoardType(selectedBoard ? selectedBoard.board_type : null); // Update the selected board type
-  };
 
   return (
     <div className="dashboard-container">
@@ -288,7 +289,7 @@ const Dashboard = () => {
 
       <div className="title-container">
         <h1>Tavo AI</h1>
-        <h2>Your Smart Assistant</h2>
+        <h2>Seu assistente inteligente</h2>
       </div>
 
       {/* Add a dropdown to switch between boards */}
@@ -297,7 +298,7 @@ const Dashboard = () => {
         <select id="board-select" value={selectedBoard || ""} onChange={handleBoardChange}>
           {boards.map((board) => (
             <option key={board.id} value={board.id}>
-              {board.name}
+              {board.board_type}
             </option>
           ))}
         </select>
