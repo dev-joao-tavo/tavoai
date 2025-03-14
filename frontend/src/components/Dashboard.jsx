@@ -66,7 +66,7 @@ const Dashboard = () => {
     const boardId = e.target.value;
     const selectedBoard = boards.find((board) => board.id === boardId);
     setSelectedBoard(boardId);
-    setSelectedBoardType(selectedBoard ? selectedBoard.board_type : null); // Update the selected board type
+    setSelectedBoardType(selectedBoard); // Update the selected board type
   };
   
   const handleInputChange = (status, field, value) => {
