@@ -22,7 +22,6 @@ const agendaStatuses = [
 const Dashboard = () => {
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
-  console.log(`>>>> ${selectedBoardType}`);
   const [selectedBoardType, setSelectedBoardType] = useState(null); 
   console.log(`>>>.....> ${selectedBoardType}`);
   const [cards, setCards] = useState(
@@ -59,19 +58,18 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedBoard) {
-      fetchCards(selectedBoard);
+    if (selectedBoard?.id) {  // Ensure `id` exists
+      fetchCards(selectedBoard.id);
     }
   }, [selectedBoard]);
-
+  
   const handleBoardChange = (e) => {
-    const boardId = e.target.value;
+    const boardId = Number(e.target.value); // Convert to number
     const selectedBoard = boards.find((board) => board.id === boardId);
-    setSelectedBoard(boardId);
-    console.log(`>>>.....))))> ${selectedBoardType}`);   
-    setSelectedBoardType(selectedBoard); // Update the selected board type
-    console.log(`>>&&&>.....> ${selectedBoardType}`);
+    setSelectedBoard(selectedBoard);  // Store the full object
+    setSelectedBoardType(selectedBoard?.board_type || null); // Ensure safe access
   };
+  
   
   const handleInputChange = (status, field, value) => {
     setColumnMessages((prev) => ({
@@ -142,7 +140,7 @@ const Dashboard = () => {
     }
   };
 
-  const addCard = async (boardId, title, description, status = "todo") => {
+  const addCard = async (boardId, title, description, status = "monday") => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -272,8 +270,8 @@ const Dashboard = () => {
   const handleAddCard = async (e) => {
     e.preventDefault();
     if (selectedBoard) {
-      await addCard(selectedBoard, newCardTitle, newCardDescription);
-      fetchCards(selectedBoard); // Re-fetch cards for the selected board
+      await addCard(selectedBoard.id, newCardTitle, newCardDescription);
+      fetchCards(selectedBoard.id); // Re-fetch cards for the selected board
       setNewCardTitle("");
       setNewCardDescription("");
     } else {
