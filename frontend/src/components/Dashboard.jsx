@@ -167,23 +167,18 @@ const Dashboard = () => {
         }
       );
       const newCard = response.data.card;
-      setCards((prevCards) => {
-        if (!prevCards || typeof prevCards !== "object") return { [status]: [newCard] };
-        if (!status) {
-          console.error("Status is undefined or invalid");
-          return prevCards;
-        }
-      
-        return {
-          ...prevCards,
-          [status]: [...(prevCards[status] || []), newCard],
-        };
-      });
-      
+      setCards((prevCards) => ({
+        ...prevCards,
+        [status]: [...(prevCards[status] || []), newCard],
+      }));
+  
+      // Fetch updated contacts to ensure newly added ones appear immediately
+      fetchContacts();
     } catch (error) {
       console.error("Error adding card:", error);
     }
   };
+  
 
   const deleteCard = async (cardId) => {
     try {
@@ -288,7 +283,16 @@ const Dashboard = () => {
   const handleAddCard = async (e) => {
     e.preventDefault();
     if (selectedBoard) {
-      await addCard(selectedBoard.id, newCardTitle, newCardDescription);
+      let newCardStatus = "";
+      if (selectedBoard.board_type === "funnel") {
+        newCardStatus = "day-1";
+      }
+      
+      if (selectedBoard.board_type === "agenda") {
+        newCardStatus = "monday";
+      }
+      
+      await addCard(selectedBoard.id, newCardTitle, newCardDescription,newCardStatus);
       fetchCards(selectedBoard.id); // Re-fetch cards for the selected board
       setNewCardTitle("");
       setNewCardDescription("");
