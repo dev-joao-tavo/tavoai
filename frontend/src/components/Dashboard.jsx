@@ -29,7 +29,6 @@ const Dashboard = () => {
       return acc;
     }, {})
   );
-  const filteredStatuses = getStatusesForBoard(selectedBoardType);
   const navigate = useNavigate();
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +49,7 @@ const Dashboard = () => {
     }
     return []; // Default to all statuses if no type is specified
   };
+  const filteredStatuses = getStatusesForBoard(selectedBoardType);
 
   useEffect(() => {
     fetchBoards();
