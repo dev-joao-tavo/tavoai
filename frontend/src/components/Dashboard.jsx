@@ -67,10 +67,8 @@ const Dashboard = () => {
     const boardId = Number(e.target.value); // Convert to number
     const selectedBoard = boards.find((board) => board.id === boardId);
     setSelectedBoard(selectedBoard);  // Store the full object
-    setSelectedBoardType(selectedBoard?.board_type || null); // Ensure safe access
-    console.log(selectedBoard)
-    selectedBoard(selectedBoard?.board_type)
-
+    setSelectedBoardType(selectedBoard.board_type); // Ensure safe access
+    console.log(selectedBoard);
   };
   
   
@@ -161,10 +159,19 @@ const Dashboard = () => {
         }
       );
       const newCard = response.data.card;
-      setCards((prevCards) => ({
-        ...prevCards,
-        [status]: [...prevCards[status], newCard],
-      }));
+      setCards((prevCards) => {
+        if (!prevCards || typeof prevCards !== "object") return { [status]: [newCard] };
+        if (!status) {
+          console.error("Status is undefined or invalid");
+          return prevCards;
+        }
+      
+        return {
+          ...prevCards,
+          [status]: [...(prevCards[status] || []), newCard],
+        };
+      });
+      
     } catch (error) {
       console.error("Error adding card:", error);
     }
@@ -299,8 +306,8 @@ const Dashboard = () => {
 
       {/* Add a dropdown to switch between boards */}
       <div className="board-selector">
-        <label htmlFor="board-select">Select Board: </label>
-        <select id="board-select" value={selectedBoard || ""} onChange={handleBoardChange}>
+        <label htmlFor="board-select">Select Board: </label>  
+          <select id="board-select" value={selectedBoard?.id || ""} onChange={handleBoardChange}>
           {boards.map((board) => (
             <option key={board.id} value={board.id}>
               {board.board_type}
