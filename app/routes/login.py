@@ -5,6 +5,8 @@ from random import randint
 from utils.utils import SECRET_KEY, hash_password, verify_password, generate_token
 from db import get_db_session
 from models.models import User, Board
+from sanic_ext import Extend
+from utils.utils import hash_password, verify_token
 
 auth_bp = Blueprint("auth", url_prefix="/api")
 CORS(auth_bp)  # Enable CORS for the auth blueprint
@@ -71,3 +73,38 @@ async def signup(request):
         # Generate JWT token
         token = await generate_token(new_user)
         return response.json({"message": "User created successfully", "token": token}, status=201)
+
+user_bp = Blueprint("user", url_prefix="/api/users")
+Extend(user_bp)  # Extends Sanic with additional features
+
+@user_bp.put("/<user_id:int>")
+async def update_user(request, user_id):
+    """Updates the user's phone number and/or password"""
+    
+    # Extract token from the request headers
+    token = request.headers.get("Authorization")
+    if not token:
+        return response.json({"message": "Unauthorized"}, status=401)
+
+    data = request.json
+    new_phone = data.get("user_wpp_phone_number")
+    new_password = data.get("password")
+
+    if not new_phone and not new_password:
+        return response.json({"message": "No changes provided"}, status=400)
+
+    async with get_db_session() as session:
+        result = await session.execute(select(User).where(User.id == user_id))
+        user = result.scalars().first()
+
+        if not user:
+            return response.json({"message": "User not found"}, status=404)
+
+        # Update fields
+        if new_phone:
+            user.user_wpp_phone_number = new_phone
+        if new_password:
+            user.password_hash = hash_password(new_password)  # Secure hashing
+
+        await session.commit()
+        return response.json({"message": "Profile updated successfully"})

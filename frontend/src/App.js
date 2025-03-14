@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import useAuth from "./hooks/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import Profile from "./pages/Profile";
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -50,6 +51,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
 
         {/* Fallback Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
