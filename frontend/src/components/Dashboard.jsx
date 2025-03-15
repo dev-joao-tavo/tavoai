@@ -167,6 +167,7 @@ const Dashboard = () => {
 
   const fetchContacts = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(`${API_BASE_URL}/contacts`,
         {
           headers: {
