@@ -7,6 +7,8 @@ from sqlalchemy import text  # Import text from sqlalchemy
 from models.models import Board
 from db import get_db_session
 from sqlalchemy.future import select
+from routes.others import get_user_from_token
+from sanic.exceptions import Unauthorized
 
 app = Sanic.get_app()
 
@@ -18,6 +20,16 @@ async def add_card_and_contact(request):
     contact_name = request.json.get("contact_name")
     board_id = request.json.get("board_id")  
     status = request.json.get("status")  
+
+    token = request.headers.get("Authorization")
+    if not token:
+        raise Unauthorized("Authorization token is missing.")
+
+    token = token[7:] if token.startswith("Bearer ") else token
+    user_id = get_user_from_token(token)
+    if not user_id:
+        raise Unauthorized("Invalid or expired token.")
+
 
     # Validate required fields
     if not phone_number or not contact_name or not board_id or not status:
@@ -34,16 +46,17 @@ async def add_card_and_contact(request):
                 raise Exception(f"Board with id={board_id} does not exist")
 
             # Generate a random contact ID
-            contact_id = randint(10, 9999)
+            contact_id = randint(10, 999009)
             contact = {
                 "id": contact_id,
                 "phone_number": phone_number,
                 "contact_name": contact_name,
+                "user_id": user_id
             }
 
             # Insert contact into the database
             await session.execute(
-                text("INSERT INTO contacts (id, phone_number, contact_name) VALUES (:id, :phone_number, :contact_name) ON CONFLICT (id) DO NOTHING"),
+                text("INSERT INTO contacts (id, phone_number, contact_name, user_id) VALUES (:id, :phone_number, :contact_name, :user_id) ON CONFLICT (id) DO NOTHING"),
                 contact,
             )
 

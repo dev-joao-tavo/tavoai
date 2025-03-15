@@ -120,8 +120,20 @@ async def reorder_messages(request, card_id):
 
 @app.route("/contacts", methods=["GET"])
 async def get_contacts(request):
+    token = request.headers.get("Authorization")
+    if not token:
+        raise Unauthorized("Authorization token is missing.")
+
+    token = token[7:] if token.startswith("Bearer ") else token
+    user_id = get_user_from_token(token)
+    if not user_id:
+        raise Unauthorized("Invalid or expired token.")
+
     async with SessionLocal() as session:
-        result = await session.execute(text("SELECT id, phone_number, contact_name FROM contacts"))
+        result = await session.execute(
+            text("SELECT id, phone_number, contact_name FROM contacts WHERE user_id = :user_id"),
+            {"user_id": user_id}
+        )
         contacts = result.fetchall()
 
     contacts_list = [
