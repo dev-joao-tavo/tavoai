@@ -5,6 +5,7 @@ import "./Login.css"; // Reuse Login.css
 const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
 
   const [error, setError] = useState('');
@@ -14,8 +15,13 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password || !phone ) {
+    if (!email || !password || !confirmPassword || !phone) {
       setError('Please fill in all fields.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
 
@@ -69,6 +75,16 @@ const Signup = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Confirm Password:</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm your password"
             required
           />
         </div>
