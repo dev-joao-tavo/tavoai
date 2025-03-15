@@ -167,7 +167,12 @@ const Dashboard = () => {
 
   const fetchContacts = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/contacts`);
+      const response = await axios.get(`${API_BASE_URL}/contacts`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
       setContacts(response.data.contacts);
     } catch (error) {
       console.error("Error fetching contacts:", error);
