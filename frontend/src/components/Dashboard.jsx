@@ -265,7 +265,7 @@ const Dashboard = () => {
           },
         }
       );
-      alert(`Use this code to login on your WhatsApp phone! Response: ${response.data}`);
+      alert(`Use this code to log in on your WhatsApp: ${response.data.code}`);
     } catch (error) {
       console.error("Error on logging in your WhatsApp: ", error);
       alert(`Failed to login!`);

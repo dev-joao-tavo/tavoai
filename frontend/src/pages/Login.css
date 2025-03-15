@@ -26,7 +26,7 @@
   }
   
   .form-group input {
-    width: 100%;
+    width: 94%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -62,5 +62,21 @@
   }
   
   .signup-button:hover {
+    color: #0056b3;
+  }
+
+  .toggle-password{
+    background-color: transparent;
+    color: #007bff;
+    border: none;
+    padding: 0px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: block;
+    margin-top: 5px;
+    text-decoration: underline;
+  }
+
+  .toggle-password:hover {
     color: #0056b3;
   }

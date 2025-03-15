@@ -10,9 +10,7 @@ import Profile from "./pages/Profile";
 
 function App() {
   const { isLoggedIn } = useAuth();
-
-  console.log("App re-rendered. isLoggedIn:", isLoggedIn); // Debugging
-
+  
   return (
     <Router>
       <Routes>
