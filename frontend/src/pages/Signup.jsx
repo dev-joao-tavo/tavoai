@@ -53,6 +53,32 @@ const Signup = () => {
     }
   };
 
+  const formatPhone = (value) => {
+    // Remove all non-numeric characters
+    let cleaned = value.replace(/\D/g, "");
+
+    // Limit to 11 digits
+    if (cleaned.length > 11) {
+      cleaned = cleaned.slice(0, 11);
+    }
+
+    // Apply formatting (31) 9 9999-9999
+    if (cleaned.length <= 2) {
+      return `(${cleaned}`;
+    } else if (cleaned.length <= 3) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+    } else if (cleaned.length <= 7) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3)}`;
+    } else {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+    }
+  };
+
+  const handleChange = (e) => {
+    setPhone(formatPhone(e.target.value));
+  };
+
+
   return (
     <div className="login-container"> {/* Reuse login-container */}
       <h2>Sign Up</h2>
@@ -64,37 +90,38 @@ const Signup = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
+            placeholder="Digite seu email"
             required
           />
         </div>
         <div className="form-group">
-          <label>Password:</label>
+          <label>Senha:</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
+            placeholder="Digite sua senha"
             required
           />
         </div>
         <div className="form-group">
-          <label>Confirm Password:</label>
+          <label>Confirme sua senha:</label>
           <input
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm your password"
+            placeholder="Confirme sua senha"
             required
           />
         </div>
+
         <div className="form-group">
-          <label>Phone number:</label>
+          <label>Número de WhatsApp:</label>
           <input
-            type="phone"
+            type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Your WhatsApp Phone Number"
+            onChange={handleChange}
+            placeholder="(31) 9 9999-9999"
             required
           />
         </div>

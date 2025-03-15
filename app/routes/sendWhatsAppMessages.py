@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 import time
 from routes.configs import initialize_driver
 import asyncio
+from sanic.response import json
 
 import time
 import random
@@ -198,8 +199,11 @@ async def whats_app_login(request):
         code = await get_wpp_login_code(driver,user_phone_number)
         await asyncio.sleep(1)
         
-    except:
 
+    except Exception as e:
+        return json({"error": str(e)}, status=500)        
+    
+    finally:
         driver.quit()
 
     return response.json({"message": "Add this code  to your WhatsApp","code":code})

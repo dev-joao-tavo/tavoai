@@ -77,7 +77,32 @@ const Dashboard = () => {
       setSelectedBoardType(null);
     }
   };
-  
+
+  const formatPhone = (value) => {
+    // Remove all non-numeric characters
+    let cleaned = value.replace(/\D/g, "");
+
+    // Limit to 11 digits
+    if (cleaned.length > 11) {
+      cleaned = cleaned.slice(0, 11);
+    }
+
+    // Apply formatting (31) 9 9999-9999
+    if (cleaned.length <= 2) {
+      return `(${cleaned}`;
+    } else if (cleaned.length <= 3) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+    } else if (cleaned.length <= 7) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3)}`;
+    } else {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+    }
+  };
+
+  const handlePhoneChange = (e) => {
+    setNewCardDescription(formatPhone(e.target.value));
+  };
+
   
   
   const handleInputChange = (status, field, value) => {
@@ -331,19 +356,19 @@ const Dashboard = () => {
       <form onSubmit={handleAddCard} className="dashboard-form">
         <input
           type="text"
-          placeholder="Name"
+          placeholder="Nome"
           value={newCardTitle}
           onChange={(e) => setNewCardTitle(e.target.value)}
           required
         />
         <input
-          type="text"
-          placeholder="Phone Number"
-          value={newCardDescription}
-          onChange={(e) => setNewCardDescription(e.target.value)}
-          required
-        />
-        <button type="submit">Add Card</button>
+            type="text"
+            placeholder="Número de WhatsApp"
+            value={newCardDescription}
+            onChange={handlePhoneChange}
+            required
+          />
+        <button type="submit">Adicionar contato</button>
       </form>
 
       {isLoading ? (
@@ -369,16 +394,15 @@ const Dashboard = () => {
                   />
                   <br />
                 </div>
-  )
-)}
+            )
+          )}
 
               </div>
-
-              <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>
-                <button type="submit" className="button button-green">
-                  Send Message
-                </button>
-              </form>
+                <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>
+                  <button type="submit" className="button button-green">
+                    Enviar mensagem
+                  </button>
+                </form>
               <br />
 
               <div className="dashboard-cards">

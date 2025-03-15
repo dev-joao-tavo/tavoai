@@ -59,18 +59,18 @@ const Login = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
+            placeholder="Digite seu email"
             required
           />
         </div>
         <div className="form-group">
-          <label>Password:</label>
+          <label>Senha:</label>
           <div className="password-input">
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="Digite sua senha"
               required
             />
             <button
@@ -79,7 +79,7 @@ const Login = () => {
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? 'Hide' : 'Show'}
+              {showPassword ? 'Esconder senha' : 'Ver senha'}
             </button>
           </div>
         </div>
@@ -89,7 +89,7 @@ const Login = () => {
       </form>
 
       <button className="signup-button" onClick={() => navigate('/signup')}>
-        Sign Up
+        Ainda não tem uma conta? Cadastre-se aqui!
       </button>
     </div>
   );

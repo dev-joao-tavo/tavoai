@@ -52,15 +52,11 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
 
       {/* Contact Information */}
       <p className="dashboard-contact-info text-sm text-gray-600 mb-2">
-        {contact ? `Phone number: ${contact.phone_number}` : "No contact found"}
+        {contact ? `Contato: ${contact.phone_number}` : "Contato não encontrado"}
       </p>
-
-      {/* Card Description */}
-      <p className="text-sm text-gray-700 mb-4">{card.description}</p>
 
       {/* Buttons */}
       <div className="flex gap-2">
-        
         <button
           onClick={() => deleteCard(card.id)}
           className="button button-red"
