@@ -203,14 +203,9 @@ async def whats_app_login(request):
     except Exception as e:
         try:
             message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
-            driver.quit()
             return json({"Você já está logado no WhatsApp!"}, status=200)        
 
         except:
-            driver.quit()
             return json({"Error": str(e)}, status=500)        
     
-    finally:
-        driver.quit()
-
     return response.json({"message": "Add this code  to your WhatsApp","code":code})
