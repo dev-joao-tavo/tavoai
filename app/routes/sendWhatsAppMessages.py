@@ -141,12 +141,12 @@ async def send_whatsapp_messages_async(user_id, phone_numbers_and_names, message
             message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
 
             # Prepare the messages
-            messages = [message1.replace("[nome]", name), message2.replace("[nome]", name), message3.replace("[nome]", name)]
+            messages = [message1.replace("@nome", name), message2.replace("@nome", name), message3.replace("@nome", name)]
 
             # Loop through each message and send one at a time
             for message in messages:
                 if message:  # Check if the message is not empty
-                    message_text = message.replace("[nome]", name)  # Replace [nome] with the contact name
+                    message_text = message.replace("@nome", name)  # Replace @nome with the contact name
                     
                     # Simulate typing effect
                     for char in message_text:
