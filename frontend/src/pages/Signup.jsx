@@ -21,7 +21,7 @@ const Signup = () => {
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError('Erro: suas senhas devem ser iguais.');
       return;
     }
 
@@ -40,7 +40,7 @@ const Signup = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message || 'Signup successful!');
+        alert(data.message || 'Cadastro feito com sucesso!');
         navigate('/login'); // Redirect to login page
       } else {
         setError(data.message || 'Signup failed. Please try again.');

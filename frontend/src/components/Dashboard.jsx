@@ -343,11 +343,11 @@ const Dashboard = () => {
 
       {/* Add a dropdown to switch between boards */}
       <div className="board-selector">
-        <label htmlFor="board-select">Select Board: </label>  
+        <label htmlFor="board-select">Selecione o quadro: </label>  
           <select id="board-select" value={selectedBoard?.id || ""} onChange={handleBoardChange}>
           {boards.map((board) => (
             <option key={board.id} value={board.id}>
-              {board.board_type}
+              {board.board_type.toUpperCase()}
             </option>
           ))}
         </select>

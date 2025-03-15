@@ -73,7 +73,7 @@ async def get_wpp_login_code(driver, user_phone_number):
         return login_code
         
     except Exception as e:
-        print(f"Error capturing QR code: {e}")
+        print(f"Error! Não foi possível identificar o : {e}")
         return None
 
     
@@ -167,11 +167,11 @@ async def send_whatsapp_messages_async(user_id, phone_numbers_and_names, message
         # Close browser after a short delay
         await asyncio.sleep(1)
         driver.quit()
-
         return response.json({"message": "Messages sent!"})
 
     except:
-        return response.json({"message": "login before sending a message;"})
+        driver.quit()
+        return response.json({"message": "Faça login no WhatsApp antes de enviar uma mensagem;"})
 
 @app.route("/whatsAppLogin", methods=["get"])
 async def whats_app_login(request):

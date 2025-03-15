@@ -72,7 +72,7 @@ async def signup(request):
 
         # Generate JWT token
         token = await generate_token(new_user)
-        return response.json({"message": "User created successfully", "token": token}, status=201)
+        return response.json({"message": "Cadastro feito com sucesso!", "token": token}, status=201)
 
 user_bp = Blueprint("user", url_prefix="/api/users")
 
