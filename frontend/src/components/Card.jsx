@@ -7,6 +7,9 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
     const newStatus = event.target.value;
     setSelectedStatus(newStatus);
     updateCardStatus(card.id, newStatus);
+    console.log(newStatus)
+    console.log(newStatus)
+    console.log(newStatus)
   };
 
   // Find the contact related to this card
