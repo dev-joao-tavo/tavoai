@@ -67,16 +67,15 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
       </p>
 
 
-     <p
-        className={`dashboard-contact-info text-sm mb-2 ${
-          contact?.last_message_contact ? "text-gray-600" : "text-red-500"
-        }`}
-      >
-        {contact?.last_message_contact
-          ? ` • Última mensagem: ${formatLastMessageDate(contact.last_message_contact)}`
-          : " • Última mensagem: Não disponível"}
-      </p>
-
+          <p
+      className={`dashboard-contact-info text-sm mb-2 ${
+        contact?.last_message_contact != null ? "text-gray-600" : "text-red-500"
+      }`}
+    >
+      {contact?.last_message_contact != null
+        ? ` • Última mensagem: ${formatLastMessageDate(contact.last_message_contact)}`
+        : " • Última mensagem: Não disponível"}
+    </p>
 
 
       {/* Buttons */}
