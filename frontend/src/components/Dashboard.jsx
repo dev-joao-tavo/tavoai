@@ -5,6 +5,31 @@ import Card from "./Card";
 
 const API_BASE_URL = "https://api.tavoai.com";
 
+const statusTranslation = {
+  "monday": "Segunda-feira",
+  "tuesday": "Terça-feira",
+  "wednesday": "Quarta-feira",
+  "thursday": "Quinta-feira",
+  "friday": "Sexta-feira",
+  "saturday": "Sábado",
+  "sunday": "Domingo",
+  "schedule": "Agendar",
+  "day-1": "Dia 1",
+  "day-2": "Dia 2",
+  "day-3": "Dia 3",
+  "day-4": "Dia 4",
+  "day-5": "Dia 5",
+  "day-6": "Dia 6",
+  "day-7": "Dia 7",
+  "day-8": "Dia 8",
+  "day-9": "Dia 9",
+  "day-10": "Dia 10",
+  "day-11": "Dia 11",
+  "day-12": "Dia 12",
+  "day-13": "Dia 13",
+  "day-14": "Dia 14",
+};
+
 const agendaStatuses = [
 "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
   "schedule"
@@ -20,6 +45,8 @@ const statuses = [
   "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
   "schedule"
 ];
+
+const translatedStatuses = statuses.map(status => statusTranslation[status] || status.toUpperCase());
 
 const Dashboard = () => {
   const [boards, setBoards] = useState([]);
@@ -413,11 +440,11 @@ const Dashboard = () => {
           {filteredStatuses.map((status) => (
             <div key={status} className="dashboard-column">
               <h2 className="dashboard-title">
-                {status.toUpperCase()}
+                {statusTranslation[status] || status.toUpperCase()}
               </h2>
 
               <div className="message-inputs">
-                          {(columnMessages[status] ? ["message1", "message2", "message3"] : []).map(
+              {(columnMessages[status] ? ["message1", "message2", "message3"] : []).map(
               (messageKey, index) => (
                 <div key={messageKey}>
                   <input
