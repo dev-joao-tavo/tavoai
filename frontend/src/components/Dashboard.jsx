@@ -227,7 +227,7 @@ const Dashboard = () => {
       console.error("Error deleting card:", error);
     }
   };
-  
+
   const getBoardTypeFromStatus = (status) => {
     if (agendaStatuses.includes(status)) return "agenda";
     if (funnelStatuses.includes(status)) return "funnel";
@@ -240,7 +240,7 @@ const Dashboard = () => {
     return board ? board.id : null;
   };
   
-  const updateCardStatus = async (cardId, newStatus, boards) => {
+  const updateCardStatus = async (cardId, newStatus) => {
     setCards((prevCards) => {
       const updatedCards = { ...prevCards };
       let movedCard = null;
