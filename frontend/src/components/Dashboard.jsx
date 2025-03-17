@@ -227,70 +227,57 @@ const Dashboard = () => {
       console.error("Error deleting card:", error);
     }
   };
-
-  const updateCardStatus = async (cardId, newStatus) => {
-    const updatedCards = { ...cards };
-    let movedCard = null;
   
-    // Move the card from its current status to the new status
-    Object.keys(updatedCards).forEach((key) => {
-      const index = updatedCards[key].findIndex((card) => card.id === cardId);
-      if (index !== -1) {
-        [movedCard] = updatedCards[key].splice(index, 1);
+  const getBoardTypeFromStatus = (status) => {
+    if (agendaStatuses.includes(status)) return "agenda";
+    if (funnelStatuses.includes(status)) return "funnel";
+    return null;
+  };
+  
+  const getBoardIdFromStatus = (status, boards) => {
+    const boardType = getBoardTypeFromStatus(status);
+    const board = boards.find((board) => board.type === boardType);
+    return board ? board.id : null;
+  };
+  
+  const updateCardStatus = async (cardId, newStatus, boards) => {
+    setCards((prevCards) => {
+      const updatedCards = { ...prevCards };
+      let movedCard = null;
+  
+      // Find and remove the card from its current status
+      Object.keys(updatedCards).forEach((key) => {
+        const index = updatedCards[key].findIndex((card) => card.id === cardId);
+        if (index !== -1) {
+          [movedCard] = updatedCards[key].splice(index, 1);
+        }
+      });
+  
+      if (movedCard) {
+        movedCard.status = newStatus;
+        updatedCards[newStatus] = [...(updatedCards[newStatus] || []), movedCard];
       }
+  
+      return updatedCards;
     });
   
-    if (movedCard) {
-      movedCard.status = newStatus;
-      updatedCards[newStatus].push(movedCard);
-      setCards(updatedCards); // Update local state after moving the card
+    // Get the board ID for the new status
+    const otherBoardId = getBoardIdFromStatus(newStatus, boards);
+    if (!otherBoardId) {
+      console.error("No valid board found for the given status.");
+      return;
     }
-    
-    // Function to determine the board type based on the status
-    const getBoardTypeFromStatus = (status) => {
-      if (agendaStatuses.includes(status)) {
-        return 'agenda';
-      } else if (funnelStatuses.includes(status)) {
-        return 'funnel';
-      }
-      return null; // If status doesn't match either, return null
-    };
-    
-    // Function to determine the board ID based on status
-    const getBoardIdFromStatus = (status, boards) => {
-      const boardType = getBoardTypeFromStatus(status);
-    
-      if (boardType) {
-        // Find the board based on the type and return its ID
-        const board = boards.find(board => board.type === boardType);
-        if (board) {
-          return board.id; // Return the board ID
-        }
-      }
-      
-      console.error(`No board found for status: ${status}`);
-      return null; // If no board found, return null
-    };
-    
-    // Main logic to update the card status
-    const updateCardStatus = async (selectedBoard, newStatus, cardId, boards) => {
-      try {
-        // Get the ID of the other board (based on status)
-        const otherBoardId = getBoardIdFromStatus(newStatus, boards);
-    
-        if (otherBoardId) {
-          await axios.patch(`${API_BASE_URL}/cards/${cardId}`, {
-            status: newStatus,
-            board_id: otherBoardId // Use the board ID of the other board
-          });
-        } else {
-          console.error("No valid board found for the given status.");
-        }
-      } catch (error) {
-        console.error("Error updating card status:", error);
-      }
-    };
-      };
+  
+    try {
+      await axios.patch(`${API_BASE_URL}/cards/${cardId}`, {
+        status: newStatus,
+        board_id: otherBoardId,
+      });
+    } catch (error) {
+      console.error("Error updating card status:", error);
+    }
+  };
+  
   
   const sendMessageForEachColumn = async (e, status) => {
     e.preventDefault();
