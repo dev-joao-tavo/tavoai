@@ -59,6 +59,9 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
           contact && contact.last_message_contact ? "text-gray-600" : "text-red-500"
         }`}
       >
+        console.log(contact.last_message_contact);
+        console.log(contact.last_message_contact);
+                
         {contact && contact.last_message_contact
           ? ` • Última mensagem: ${new Intl.DateTimeFormat("pt-BR", {
               timeZone: "America/Sao_Paulo",
