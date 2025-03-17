@@ -236,9 +236,10 @@ const Dashboard = () => {
   
   const getBoardIdFromStatus = (status, boards) => {
     const boardType = getBoardTypeFromStatus(status);
-    console.log(status)
-    console.log(boardType)
     const board = boards.find((board) => board.type === boardType);
+    console.log(board)
+    console.log(board)
+    console.log(boards)
     return board ? board.id : null;
   };
   
