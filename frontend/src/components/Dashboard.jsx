@@ -408,7 +408,7 @@ const Dashboard = () => {
         <select id="board-select" value={selectedBoard?.id || ""} onChange={handleBoardChange}>
           {boards.map((board) => (
             <option key={board.id} value={board.id}>
-              {board.board_type === "funnel" ? "Funil" : board.board_type === "Agenda" ? "Semanal" : board.board_type}
+              {board.board_type === "funnel" ? "Funil" : board.board_type === "agenda" ? "Semanal" : board.board_type}
             </option>
           ))}
         </select>
