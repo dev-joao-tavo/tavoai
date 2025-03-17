@@ -11,7 +11,18 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
 
   // Find the contact related to this card
   const contact = contacts.find((contact) => Number(contact.ID) === Number(card.contact_ID));
-
+  
+  const formatLastMessageDate = (dateString) => {
+    const date = new Date(dateString.replace(" ", "T"));
+    return new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      hour: "2-digit",
+      minute: "2-digit",
+      month: "long",
+      day: "2-digit",
+    }).format(date);
+  };
+  
   return (
     <div className="dashboard-card bg-white p-4 rounded-lg shadow-md mb-4">
       {/* Card Header */}
@@ -54,26 +65,17 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
       <p className="dashboard-contact-info text-sm text-gray-600 mb-2">
         {contact ? `Contato: ${contact.phone_number}` : "Contato não encontrado"}
       </p>
-      console.log(contact.last_message_contact);
-      console.log(contact.last_message_contact);
+
 
       <p
-        className={`dashboard-contact-info text-sm mb-2 ${
-          contact && contact.last_message_contact ? "text-gray-600" : "text-red-500"
-        }`}
-      >
-        {contact && contact.last_message_contact
-          ? ` • Última mensagem: ${new Intl.DateTimeFormat("pt-BR", {
-              timeZone: "America/Sao_Paulo",
-              hour: "2-digit",
-              minute: "2-digit",
-              month: "long",
-              day: "2-digit",
-            }).format(
-              new Date(new Date(contact.last_message_contact.replace(" ", "T")).getTime() - 3 * 60 * 60 * 1000)
-            )}`
-          : " • Última mensagem: Não disponível"}
-      </p>
+  className={`dashboard-contact-info text-sm mb-2 ${
+    contact?.last_message_contact ? "text-gray-600" : "text-red-500"
+  }`}
+>
+  {contact?.last_message_contact
+    ? ` • Última mensagem: ${formatLastMessageDate(contact.last_message_contact)}`
+    : " • Última mensagem: Não disponível"}
+</p>
 
 
 
