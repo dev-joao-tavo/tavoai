@@ -11,7 +11,7 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
 
   // Find the contact related to this card
   const contact = contacts.find((contact) => Number(contact.ID) === Number(card.contact_ID));
-
+  
   const formatLastMessageDate = (dateString) => {
     const date = new Date(dateString.replace(" ", "T"));
     return new Intl.DateTimeFormat("pt-BR", {
@@ -22,11 +22,6 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
       day: "2-digit",
     }).format(date);
   };
-
-  // Debugging logs
-  console.log("Contact:", contact);
-  console.log("Last Message Contact:", contact?.last_message_contact);
-  console.log("Condition Result:", contact?.last_message_contact != null ? "text-gray-600" : "text-red-500");
 
   return (
     <div className="dashboard-card bg-white p-4 rounded-lg shadow-md mb-4">
@@ -62,6 +57,7 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
           <option value="saturday">Sábado</option>
           <option value="sunday">Domingo</option>
           <option value="schedule">Agenda</option>
+
         </select>
       </div>
 
@@ -70,16 +66,18 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
         {contact ? `Contato: ${contact.phone_number}` : "Contato não encontrado"}
       </p>
 
-      {/* Last Message Information */}
-      <p
+
+     <p
         className={`dashboard-contact-info text-sm mb-2 ${
-          contact?.last_message_contact != null ? "text-gray-600" : "text-red-500"
+          contact?.last_message_contact ? "text-gray-600" : "text-red-500"
         }`}
       >
-        {contact?.last_message_contact != null
+        {contact?.last_message_contact
           ? ` • Última mensagem: ${formatLastMessageDate(contact.last_message_contact)}`
           : " • Última mensagem: Não disponível"}
       </p>
+
+
 
       {/* Buttons */}
       <div className="flex gap-2">
