@@ -54,14 +54,14 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
       <p className="dashboard-contact-info text-sm text-gray-600 mb-2">
         {contact ? `Contato: ${contact.phone_number}` : "Contato não encontrado"}
       </p>
+      console.log(contact.last_message_contact);
+      console.log(contact.last_message_contact);
+
       <p
         className={`dashboard-contact-info text-sm mb-2 ${
           contact && contact.last_message_contact ? "text-gray-600" : "text-red-500"
         }`}
       >
-        console.log(contact.last_message_contact);
-        console.log(contact.last_message_contact);
-                
         {contact && contact.last_message_contact
           ? ` • Última mensagem: ${new Intl.DateTimeFormat("pt-BR", {
               timeZone: "America/Sao_Paulo",
