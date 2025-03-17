@@ -131,15 +131,21 @@ async def get_contacts(request):
 
     async with SessionLocal() as session:
         result = await session.execute(
-            text("SELECT id, phone_number, contact_name FROM contacts WHERE user_id = :user_id"),
+            text("SELECT id, phone_number, contact_name, last_message_contact FROM contacts WHERE user_id = :user_id"),
             {"user_id": user_id}
         )
         contacts = result.fetchall()
 
     contacts_list = [
-        {"ID": row[0], "phone_number": row[1], "contact_name": row[2]}
-        for row in contacts
-    ]
+    {
+        "ID": row[0], 
+        "phone_number": row[1], 
+        "contact_name": row[2], 
+        "last_message_contact": row[3].isoformat() if row[3] else None  # Convert datetime to string
+    }
+    for row in contacts
+]
+
 
     return response.json({"contacts": contacts_list})
 
@@ -149,18 +155,20 @@ async def update_card_status(request, card_id):
         card_id = int(card_id)  # Ensure card_id is an integer
         data = request.json  # Get the new status from the request
         new_status = data.get("status")
+        board_id = int(data.get("board_id"))
 
         async with SessionLocal() as session:
             await session.execute(
-                text("UPDATE cards SET status = :status WHERE id = :card_id"),
-                {"status": new_status, "card_id": card_id}
+                text("UPDATE cards SET status = :status, board_id = :board_id WHERE id = :card_id"),
+                {"status": new_status, "board_id": board_id, "card_id": card_id}
             )
+
             await session.commit()
 
         return response.json({"status": "Card updated!"})
 
-    except ValueError:
-        return response.json({"error": "Invalid card_id"}, status=400)
+    except ValueError as e:
+        return response.json({"error": "Invalid card_id","Error:": card_id}, status=400)
     
 @app.middleware("response")
 async def add_cors_headers(request, response):

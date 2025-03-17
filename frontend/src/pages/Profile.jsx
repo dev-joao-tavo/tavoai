@@ -1,74 +1,113 @@
-import { useState } from "react";
-import axios from "../api/api";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./Profile.css"; // Import the updated CSS file
 
-const Profile = ({ user }) => {
-  const [phoneNumber, setPhoneNumber] = useState(user.user_wpp_phone_number || "");
-  const [password, setPassword] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
+const Profile = () => {
+  const [profile, setProfile] = useState({
+    username: "",
+    email: "",
+    phone_number: "",
+  });
+  const [newPassword, setNewPassword] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleUpdate = async () => {
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:8000/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(response.data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Update profile
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`/users/${user.id}`, 
-        { user_wpp_phone_number: phoneNumber, password }, 
+      await axios.post(
+        "http://localhost:8000/profile/update",
+        { email: profile.email, phone_number: profile.phone_number },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setIsEditing(false);
+      setMessage("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
+      setMessage("Failed to update profile.");
+    }
+  };
+
+  // Reset password
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "http://localhost:8000/profile/reset_password",
+        { new_password: newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessage("Password updated successfully!");
+      setNewPassword("");
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      setMessage("Failed to reset password.");
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg p-8 max-w-lg w-full">
-
-        <div className="mt-6">
-          <label className="block text-gray-700 font-semibold">WhatsApp Number:</label>
+    <div className="profile-container">
+      <h1>Profile</h1>
+      <form onSubmit={handleUpdateProfile}>
+        <div>
+          <label>Username:</label>
+          <input type="text" value={profile.username} readOnly />
+        </div>
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            value={profile.email}
+            onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+            placeholder="Enter your email"
+          />
+        </div>
+        <div>
+          <label>Phone Number:</label>
           <input
             type="text"
-            className="w-full p-2 border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            disabled={!isEditing}
+            value={profile.phone_number}
+            onChange={(e) =>
+              setProfile({ ...profile, phone_number: e.target.value })
+            }
+            placeholder="Enter your phone number"
           />
+        </div>
+        <button type="submit">Update Profile</button>
+      </form>
 
-          <label className="block text-gray-700 font-semibold mt-4">New Password:</label>
+      <h2>Reset Password</h2>
+      <form onSubmit={handleResetPassword}>
+        <div>
+          <label>New Password:</label>
           <input
             type="password"
-            className="w-full p-2 border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={!isEditing}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Enter a new password"
           />
         </div>
+        <button type="submit">Reset Password</button>
+      </form>
 
-        <div className="mt-6 flex justify-between">
-          {isEditing ? (
-            <>
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-                onClick={handleUpdate}
-              >
-                Save Changes
-              </button>
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition w-full"
-              onClick={() => setIsEditing(true)}
-            >
-              Edit Profile
-            </button>
-          )}
-        </div>
-      </div>
+      {message && <p className="message">{message}</p>}
     </div>
   );
 };

@@ -37,6 +37,7 @@ class Contact(Base):
     phone_number = Column(String, nullable=False)    
     contact_name = Column(String)
     user_id = Column(Integer)
+    last_message_contact = Column(TIMESTAMP)
 
 
 
