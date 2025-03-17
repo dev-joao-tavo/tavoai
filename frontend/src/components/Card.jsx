@@ -54,19 +54,23 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
       <p className="dashboard-contact-info text-sm text-gray-600 mb-2">
         {contact ? `Contato: ${contact.phone_number}` : "Contato não encontrado"}
       </p>
-<p className="dashboard-contact-info text-sm text-gray-600 mb-2">
-  {contact && contact.last_message_contact
-    ? ` • Última mensagem: ${new Intl.DateTimeFormat("pt-BR", {
-        timeZone: "America/Sao_Paulo",
-        hour: "2-digit",
-        minute: "2-digit",
-        month: "long",
-        day: "2-digit",
-      }).format(
-        new Date(new Date(contact.last_message_contact.replace(" ", "T")).getTime() - 3 * 60 * 60 * 1000)
-      )}`
-    : " • Última mensagem: Não disponível"}
-</p>
+      <p
+        className={`dashboard-contact-info text-sm mb-2 ${
+          contact && contact.last_message_contact ? "text-gray-600" : "text-red-500"
+        }`}
+      >
+        {contact && contact.last_message_contact
+          ? ` • Última mensagem: ${new Intl.DateTimeFormat("pt-BR", {
+              timeZone: "America/Sao_Paulo",
+              hour: "2-digit",
+              minute: "2-digit",
+              month: "long",
+              day: "2-digit",
+            }).format(
+              new Date(new Date(contact.last_message_contact.replace(" ", "T")).getTime() - 3 * 60 * 60 * 1000)
+            )}`
+          : " • Última mensagem: Não disponível"}
+      </p>
 
 
 
