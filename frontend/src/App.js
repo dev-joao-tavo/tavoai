@@ -7,6 +7,7 @@ import useAuth from "./hooks/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import Profile from "./pages/Profile";
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -55,6 +56,15 @@ function App() {
             <ProtectedRoute isLoggedIn={isLoggedIn}>
               <Profile />
             </ProtectedRoute>
+          }
+        />
+        {/* Add the Settings Page route */}
+        <Route
+          path="/settings"
+          element={
+            <PublicRoute isLoggedIn={isLoggedIn}>
+              <SettingsPage />
+            </PublicRoute>
           }
         />
 
