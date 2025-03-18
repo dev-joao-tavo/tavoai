@@ -7,7 +7,7 @@ import useAuth from "./hooks/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import Profile from "./pages/Profile";
-import SettingsPage from "./pages/SettingsPage";
+import SettingsPage from "./pages/Settings";
 
 function App() {
   const { isLoggedIn } = useAuth();
