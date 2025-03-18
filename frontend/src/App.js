@@ -58,6 +58,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
         {/* Add the Settings Page route */}
         <Route
           path="/settings"
@@ -71,6 +72,7 @@ function App() {
 
         {/* Fallback Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
+        
       </Routes>
     </Router>
   );
