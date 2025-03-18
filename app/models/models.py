@@ -63,3 +63,13 @@ class Message(Base):
     message = Column(Text, nullable=False)
     timestamp = Column(TIMESTAMP)
 
+
+
+""""CREATE TABLE user_messages (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);"""
