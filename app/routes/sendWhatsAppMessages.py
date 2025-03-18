@@ -210,6 +210,7 @@ async def whats_app_login(request):
         code = await get_wpp_login_code(driver,user_phone_number)
         await asyncio.sleep(1)
         
+        return response.json({"message": "Add this code  to your WhatsApp","code":code})
 
     except Exception as e:
         try:
@@ -217,9 +218,12 @@ async def whats_app_login(request):
             return json({"Você já está logado no WhatsApp!"}, status=200)        
 
         except:
-            return json({"Error": str(e)}, status=500)        
+            return json({"Error": str(e)}, status=500)       
+    finally:
+            await asyncio.sleep(60)
+            driver.quit()
+
     
-    return response.json({"message": "Add this code  to your WhatsApp","code":code})
 
 async def update_last_message(contact_id):
     async with get_db_session() as session:

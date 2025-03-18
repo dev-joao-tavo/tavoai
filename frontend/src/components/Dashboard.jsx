@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Card from "./Card";
+import Header from "./Header"; // Adjust path if necessary
 
 const API_BASE_URL = "https://api.tavoai.com";
 
@@ -52,7 +53,6 @@ const Dashboard = () => {
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [selectedBoardType, setSelectedBoardType] = useState(null); 
-  console.log(`>>>.....> ${selectedBoardType}`);
   const [cards, setCards] = useState(
     statuses.reduce((acc, status) => {
       acc[status] = [];
@@ -62,6 +62,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [whatsAppCode, setWhatsAppCode] = useState(null);
+
   const [newCardTitle, setNewCardTitle] = useState("");
   const [newCardDescription, setNewCardDescription] = useState("");
   const [columnMessages, setColumnMessages] = useState(
@@ -343,22 +345,23 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await axios.get(
-        `${API_BASE_URL}/whatsAppLogin`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      alert(`Utilize este código para fazer login no seu WhatsApp: ${response.data.code}`);
+      const response = await axios.get(`${API_BASE_URL}/whatsAppLogin`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Store the code in state
+      setWhatsAppCode(response.data.code);
     } catch (error) {
       console.error("Error on logging in your WhatsApp: ", error);
-      alert(`Failed to login!`);
+      alert("Failed to login!");
     } finally {
       setIsLoading(false);
     }
   };
+
+
 
 
   const handleLogout = () => {
@@ -390,12 +393,8 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="header-container">
-        <button onClick={() => window.location.href = "/dashboard"} className="header-button">Dashboard</button>
-        <button onClick={() => window.open("https://pay.infinitepay.io/tavoai/Ri0x-1HOAcj6R35-19,90", "_blank")} className="header-button"> Assinatura </button>
-        <button onClick={handleWhatsAppLogin} className="header-button">WhatsApp login</button>
-        <button onClick={handleLogout} className="header-button">Logout</button>
-      </div>
+        {/* Header Component */}
+        <Header handleLogout={handleLogout} />
 
       <div className="title-container">
         <h1>Tavo.AI</h1>
