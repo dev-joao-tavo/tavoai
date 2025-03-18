@@ -81,7 +81,7 @@ const Signup = () => {
 
   return (
     <div className="login-container"> {/* Reuse login-container */}
-      <h2>Sign Up</h2>
+      <h2>Crie sua conta</h2>
       {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -127,12 +127,12 @@ const Signup = () => {
         </div>
         
         <button type="submit" className="login-button" disabled={isLoading}>
-          {isLoading ? 'Signing up...' : 'Sign Up'}
+          {isLoading ? 'Cadastrando...' : 'Cadastrar'}
         </button>
       </form>
 
       <button className="signup-button" onClick={() => navigate('/login')}>
-        Already have an account? Login
+        Já tem uma conta? Clique aqui
       </button>
     </div>
   );

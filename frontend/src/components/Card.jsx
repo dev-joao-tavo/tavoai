@@ -85,7 +85,7 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
           onClick={() => deleteCard(card.id)}
           className="button button-red"
         >
-          Delete
+          Remover
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import WhatsAppLogin from "./WhatsAppLogin"; // Import the modal
+import "./Header.css"; // Import the CSS file
 
 const API_BASE_URL = "https://api.tavoai.com";
 
