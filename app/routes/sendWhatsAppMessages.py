@@ -186,6 +186,8 @@ async def send_whatsapp_messages_async(user_id, phone_numbers_and_names, message
 
 @app.route("/whatsAppLogin", methods=["get"])
 async def whats_app_login(request):
+    driver = None  # Ensure driver is always available in the scope
+    
     try:
         token = request.headers.get("Authorization")
         if not token:
@@ -196,34 +198,43 @@ async def whats_app_login(request):
         if not user_id:
             raise Unauthorized("Invalid or expired token.")
     
+    except Unauthorized as e:
+        return response.json({"error": str(e)}, status=401)
     except Exception as e:
-        return response.json({"error": "Invalid request body."}, status=400)
-    
+        return response.json({"error": "An error occurred: " + str(e)}, status=400)
+
     try:        
         async with get_db_session() as session:
             result = await session.execute(select(User).filter(User.id == user_id))
             user = result.scalars().first()
-        driver = await asyncio.to_thread(initialize_driver, user_id)
-
-        user_phone_number= user.user_wpp_phone_number
-
-        code = await get_wpp_login_code(driver,user_phone_number)
-        await asyncio.sleep(1)
         
-        return response.json({"message": "Add this code  to your WhatsApp","code":code})
+        if not user:
+            return response.json({"error": "User not found."}, status=404)
+
+        driver = await asyncio.to_thread(initialize_driver, user_id)
+        user_phone_number = user.user_wpp_phone_number
+        code = await get_wpp_login_code(driver, user_phone_number)
+        
+        # Sleeping before sending the response if needed
+        await asyncio.sleep(1)
+        return response.json({"message": "Add this code to your WhatsApp", "code": code})
 
     except Exception as e:
         try:
             message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
-            return json({"Você já está logado no WhatsApp!"}, status=200)        
-
+            return response.json({"message": "Você já está logado no WhatsApp!"}, status=200)
         except:
-            return json({"Error": str(e)}, status=500)       
-    finally:
-            await asyncio.sleep(60)
-            driver.quit()
-
+            return response.json({"error": str(e)}, status=500)
     
+    finally:
+        # Start an asynchronous task to sleep and quit the driver concurrently
+        if driver:
+            asyncio.create_task(sleep_and_quit(driver))
+
+# Define the sleep and quit logic in an async function
+async def sleep_and_quit(driver):
+    await asyncio.sleep(60)  # Sleep for 60 seconds
+    driver.quit()  # Quit the driver
 
 async def update_last_message(contact_id):
     async with get_db_session() as session:
