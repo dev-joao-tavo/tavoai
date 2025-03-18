@@ -7,7 +7,6 @@ const SettingsPage = () => {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch messages on component mount
   useEffect(() => {
     const fetchMessages = async () => {
       try {

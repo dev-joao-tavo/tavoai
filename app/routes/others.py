@@ -4,9 +4,9 @@ import jwt
 from db import SessionLocal
 from sqlalchemy import text  # Import text from sqlalchemy
 from sanic.exceptions import Unauthorized
-from utils.utils import SECRET_KEY
 from models.models import Board
 from sqlalchemy.future import select
+from utils.utils import get_user_from_token
 
 app = Sanic.get_app()
 
@@ -61,29 +61,12 @@ async def get_cards(request, board_id):
         return response.json({"error": "Invalid board_id"}, status=400)
 
 
-# Helper function to decode the JWT and get the current user
-def get_user_from_token(token: str):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return payload["user_id"]  # assuming the token contains 'user_id' of the user
-    except jwt.ExpiredSignatureError:
-        raise Unauthorized("Token has expired.")
-    except jwt.InvalidTokenError:
-        raise Unauthorized("Invalid token.")
 
 # Define the route to fetch boards
 @app.route("/boards", methods=["GET"])
 async def get_boards(request):
-    # Extract the JWT token from the request headers
-    token = request.headers.get("Authorization")
-    if not token:
-        raise Unauthorized(f"Authorization token is missing. Token: {token}; Headers: {request.headers}")
-    
-    # Remove 'Bearer ' prefix if it exists
-    if token.startswith("Bearer "):
-        token = token[7:]
 
-    user_id = get_user_from_token(token)
+    user_id = get_user_from_token(request)
 
     # Now query boards for the specific user
     async with SessionLocal() as session:
@@ -120,12 +103,8 @@ async def reorder_messages(request, card_id):
 
 @app.route("/contacts", methods=["GET"])
 async def get_contacts(request):
-    token = request.headers.get("Authorization")
-    if not token:
-        raise Unauthorized("Authorization token is missing.")
 
-    token = token[7:] if token.startswith("Bearer ") else token
-    user_id = get_user_from_token(token)
+    user_id = get_user_from_token(request)
     if not user_id:
         raise Unauthorized("Invalid or expired token.")
 

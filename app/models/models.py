@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Text, TIMESTAMP, Enu
 from sqlalchemy.orm import relationship
 from base import Base
 import bcrypt
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import DateTime, func
 
 class User(Base):
     __tablename__ = "users"
@@ -65,11 +67,13 @@ class Message(Base):
 
 
 
-""""CREATE TABLE user_messages (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    message TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);"""
+class UserMessages(Base):
+    __tablename__ = "user_messages"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, nullable=False)  # Associates messages with a specific user
+    status = Column(String(50), nullable=False)  # e.g., "day-1", "monday", etc.
+    message = Column(Text, nullable=False)  # The actual message content
+    created_at = Column(DateTime, default=func.now())  # Timestamp for when the message was created
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())  # Timestamp for when the message was last updated
+

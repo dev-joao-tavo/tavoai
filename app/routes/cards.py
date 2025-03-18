@@ -7,7 +7,7 @@ from sqlalchemy import text  # Import text from sqlalchemy
 from models.models import Board
 from db import get_db_session
 from sqlalchemy.future import select
-from routes.others import get_user_from_token
+from utils.utils import get_user_from_token
 from sanic.exceptions import Unauthorized
 
 app = Sanic.get_app()
@@ -21,12 +21,8 @@ async def add_card_and_contact(request):
     board_id = request.json.get("board_id")  
     status = request.json.get("status")  
 
-    token = request.headers.get("Authorization")
-    if not token:
-        raise Unauthorized("Authorization token is missing.")
-
-    token = token[7:] if token.startswith("Bearer ") else token
-    user_id = get_user_from_token(token)
+    
+    user_id = get_user_from_token(request)
     if not user_id:
         raise Unauthorized("Invalid or expired token.")
 

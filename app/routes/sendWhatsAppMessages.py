@@ -4,7 +4,7 @@ from sqlalchemy import select
 from typing import List
 import time
 from models.models import Card, Contact, Board, User
-from routes.others import get_user_from_token
+from utils.utils import get_user_from_token
 from sanic.exceptions import Unauthorized
 from selenium.webdriver.common.by import By
 import time
@@ -83,12 +83,8 @@ async def get_wpp_login_code(driver, user_phone_number):
 # **Sanic Route: Send WhatsApp Messages**
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
-    token = request.headers.get("Authorization")
-    if not token:
-        raise Unauthorized("Authorization token is missing.")
 
-    token = token[7:] if token.startswith("Bearer ") else token
-    user_id = get_user_from_token(token)
+    user_id = get_user_from_token(request)
     if not user_id:
         raise Unauthorized("Invalid or expired token.")
 
@@ -189,12 +185,7 @@ async def whats_app_login(request):
     driver = None  # Ensure driver is always available in the scope
     
     try:
-        token = request.headers.get("Authorization")
-        if not token:
-            raise Unauthorized("Authorization token is missing.")
-
-        token = token[7:] if token.startswith("Bearer ") else token
-        user_id = get_user_from_token(token)
+        user_id = get_user_from_token(request)
         if not user_id:
             raise Unauthorized("Invalid or expired token.")
     

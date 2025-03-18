@@ -2,7 +2,7 @@ from sanic import Blueprint, response
 from sanic_cors import CORS  # Add CORS support
 from sqlalchemy.future import select
 from random import randint
-from utils.utils import SECRET_KEY, hash_password, verify_password, generate_token
+from utils.utils import hash_password, verify_password, generate_token
 from db import get_db_session
 from models.models import User, Board
 from sanic_ext import Extend
