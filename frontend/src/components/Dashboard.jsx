@@ -211,33 +211,38 @@ const Dashboard = () => {
 
   const addCard = async (boardId, title, description, status = "monday") => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${API_BASE_URL}/addCardandContact`,
-        {
-          phone_number: description,
-          contact_name: title,
-          board_id: boardId,
-          status: status,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const newCard = response.data.card;
-      setCards((prevCards) => ({
-        ...prevCards,
-        [status]: [...(prevCards[status] || []), newCard],
-      }));
-  
-      // Fetch updated contacts to ensure newly added ones appear immediately
-      fetchContacts();
+        const token = localStorage.getItem("token");
+        const response = await axios.post(
+            `${API_BASE_URL}/addCardandContact`,
+            {
+                phone_number: description,
+                contact_name: title,
+                board_id: boardId,
+                status: status,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        const newCard = response.data.card;
+        setCards((prevCards) => ({
+            ...prevCards,
+            [status]: [...(prevCards[status] || []), newCard],
+        }));
+
+        // Fetch updated contacts to ensure newly added ones appear immediately
+        fetchContacts();
     } catch (error) {
-      console.error("Error adding card:", error);
+        console.error("Error adding card:", error);
+        if (error.response && error.response.data.error) {
+            alert(error.response.data.error); // Display the error message to the user
+        } else {
+            alert("An unexpected error occurred. Please try again.");
+        }
     }
-  };
+};
   
 
   const deleteCard = async (cardId) => {
