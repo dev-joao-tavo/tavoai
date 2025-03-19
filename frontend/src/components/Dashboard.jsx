@@ -16,7 +16,7 @@ const statusTranslation = {
   "sunday": "Domingo",
   "schedule": "Agenda",
   "day-1": "1º dia",
-  "day-2": "2 diaº",
+  "day-2": "2º dia",
   "day-3": "3º dia",
   "day-4": "4º dia",
   "day-5": "5º dia",
@@ -398,17 +398,17 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-        {/* Header Component */}
-        <Header handleLogout={handleLogout} />
-
+      {/* Header Component */}
+      <Header handleLogout={handleLogout} />
+  
       <div className="title-container">
         <h1>Tavo.AI</h1>
         <h2>Seu assistente inteligente</h2>
       </div>
-
+  
       {/* Add a dropdown to switch between boards */}
       <div className="board-selector">
-        <label htmlFor="board-select">Selecione o quadro: </label>  
+        <label htmlFor="board-select">Selecione o quadro: </label>
         <select id="board-select" value={selectedBoard?.id || ""} onChange={handleBoardChange}>
           {boards.map((board) => (
             <option key={board.id} value={board.id}>
@@ -417,8 +417,7 @@ const Dashboard = () => {
           ))}
         </select>
       </div>
-
-
+  
       <form onSubmit={handleAddCard} className="dashboard-form">
         <input
           type="text"
@@ -428,15 +427,15 @@ const Dashboard = () => {
           required
         />
         <input
-            type="text"
-            placeholder="Número de WhatsApp"
-            value={newCardDescription}
-            onChange={handlePhoneChange}
-            required
-          />
+          type="text"
+          placeholder="Número de WhatsApp"
+          value={newCardDescription}
+          onChange={handlePhoneChange}
+          required
+        />
         <button type="submit">Adicionar contato</button>
       </form>
-
+  
       {isLoading ? (
         <div className="loading-spinner"></div>
       ) : (
@@ -445,32 +444,33 @@ const Dashboard = () => {
             <div key={status} className="dashboard-column">
               <h2 className="dashboard-title">
                 {statusTranslation[status] || status.toUpperCase()}
+                {/* Add the live card counter here */}
+                <span className="card-counter"> ({cards[status].length})</span>
               </h2>
-
+  
               <div className="message-inputs">
-              {(columnMessages[status] ? ["message1", "message2", "message3"] : []).map(
-              (messageKey, index) => (
-                <div key={messageKey}>
-                  <input
-                    type="text"
-                    placeholder={`${index + 1}ª mensagem`}
-                    value={columnMessages[status]?.[messageKey] || ""}
-                    onChange={(e) => handleInputChange(status, messageKey, e.target.value)}
-                    className="custom-input"
-                  />
-                  <br />
-                </div>
-            )
-          )}
-
+                {(columnMessages[status] ? ["message1", "message2", "message3"] : []).map(
+                  (messageKey, index) => (
+                    <div key={messageKey}>
+                      <input
+                        type="text"
+                        placeholder={`${index + 1}ª mensagem`}
+                        value={columnMessages[status]?.[messageKey] || ""}
+                        onChange={(e) => handleInputChange(status, messageKey, e.target.value)}
+                        className="custom-input"
+                      />
+                      <br />
+                    </div>
+                  )
+                )}
               </div>
-                <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>
-                  <button type="submit" className="button button-green">
-                    Enviar mensagem
-                  </button>
-                </form>
+              <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>
+                <button type="submit" className="button button-green">
+                  Enviar mensagem
+                </button>
+              </form>
               <br />
-
+  
               <div className="dashboard-cards">
                 {cards[status].map((card) => (
                   <Card
