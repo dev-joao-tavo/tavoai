@@ -79,7 +79,7 @@ async def add_card_and_contact(request):
         except IntegrityError as e:
             await session.rollback()
             if "contacts_phone_number_key" in str(e):
-                return json({"error": "A contact with this phone number already exists."}, status=400)
+                return json({"error": "Esse contato já existe e não pode ser adicionado novamente"}, status=400)
             else:
                 return json({"error": "An unexpected error occurred."}, status=500)
         except Exception as e:
