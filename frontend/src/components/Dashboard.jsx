@@ -3,6 +3,7 @@ import axios from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Card from "./Card";
 import Header from "./Header"; // Adjust path if necessary
+import "./Dashboard.css"
 
 const API_BASE_URL = "https://api.tavoai.com";
 
@@ -408,14 +409,18 @@ const Dashboard = () => {
   
       {/* Add a dropdown to switch between boards */}
       <div className="board-selector">
-        <label htmlFor="board-select">Selecione o quadro: </label>
-        <select id="board-select" value={selectedBoard?.id || ""} onChange={handleBoardChange}>
+        <label>Selecione o quadro: </label>
+        <div className="toggle-buttons">
           {boards.map((board) => (
-            <option key={board.id} value={board.id}>
+            <button
+              key={board.id}
+              className={`toggle-button ${selectedBoard?.id === board.id ? "active" : ""}`}
+              onClick={() => handleBoardChange({ target: { value: board.id } })}
+            >
               {board.board_type === "funnel" ? "Funil" : board.board_type === "agenda" ? "Semanal" : board.board_type}
-            </option>
+            </button>
           ))}
-        </select>
+        </div>
       </div>
   
       <form onSubmit={handleAddCard} className="dashboard-form">
