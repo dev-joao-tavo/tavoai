@@ -13,6 +13,8 @@ from sanic.exceptions import Unauthorized
 app = Sanic.get_app()
 
 
+from sqlalchemy.exc import IntegrityError
+
 @app.post("/addCardandContact")
 async def add_card_and_contact(request):
     # Extract data from the request body
@@ -21,17 +23,13 @@ async def add_card_and_contact(request):
     board_id = request.json.get("board_id")  
     status = request.json.get("status")  
 
-    
     user_id = get_user_from_token(request)
     if not user_id:
         raise Unauthorized("Invalid or expired token.")
 
-
     # Validate required fields
     if not phone_number or not contact_name or not board_id or not status:
         raise BadRequest(f"Missing phone_number: {phone_number}, contact_name: {contact_name}, board_id: {board_id}, or status: {status}")
-
-
 
     async with get_db_session() as session:  # Use async with here
         try:
@@ -42,7 +40,7 @@ async def add_card_and_contact(request):
                 raise Exception(f"Board with id={board_id} does not exist")
 
             # Generate a random contact ID
-            contact_id = randint(10, 999009)
+            contact_id = randint(10, 99909909)
             contact = {
                 "id": contact_id,
                 "phone_number": phone_number,
@@ -57,7 +55,7 @@ async def add_card_and_contact(request):
             )
 
             # Generate a random card ID
-            card_id = randint(10, 9999)
+            card_id = randint(10, 99999999)
             card = {
                 "id": card_id,
                 "title": contact_name,
@@ -78,12 +76,15 @@ async def add_card_and_contact(request):
             # Return a success response
             return json({"message": "Card and contact added successfully", "card": card})
 
+        except IntegrityError as e:
+            await session.rollback()
+            if "contacts_phone_number_key" in str(e):
+                return json({"error": "A contact with this phone number already exists."}, status=400)
+            else:
+                return json({"error": "An unexpected error occurred."}, status=500)
         except Exception as e:
-            # Rollback the transaction in case of error
             await session.rollback()
             return json({"error": str(e)}, status=500)
-
-
 
 @app.delete("/removeCardandContact")
 async def remove_card_and_contact(request):
