@@ -1,8 +1,16 @@
 import { useState } from "react";
+import "./Card.css"
 
 const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }) => {
   const [selectedStatus, setSelectedStatus] = useState(card.status);
+  const [isClicked, setIsClicked] = useState(false); // State to track if the button is clicked
 
+  const handleClick = () => {
+    if (!isClicked) {
+      setIsClicked(true); // Disable the button
+      deleteCard(card.id); // Trigger the delete function
+    }
+  };
   const handleStatusChange = (event) => {
     const newStatus = event.target.value;
     setSelectedStatus(newStatus);
@@ -77,18 +85,16 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
           : " • Última mensagem: Não disponível"}
       </p>
 
-
-
-      {/* Buttons */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => deleteCard(card.id)}
-          className="button button-red"
-        >
-          Remover
-        </button>
-      </div>
+       {/* Close Button ("X") */}
+      <button
+        onClick={handleClick}
+        className="close-button"
+        disabled={isClicked} // Disable the button after the first click
+      >
+        &#10005; {/* "X" character */}
+      </button>
     </div>
+    
   );
 };
 
