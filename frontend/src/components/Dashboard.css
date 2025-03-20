@@ -1,20 +1,24 @@
 .toggle-buttons {
-    display: center;
-    gap: 8px;
-    margin-top: 8px;
+    display: inline-flex; /* Use inline-flex to keep the buttons in a single line */
+    border: 1px solid #ccc; /* Add a border around the entire group */
+    border-radius: 4px; /* Rounded corners for the group */
+    overflow: hidden; /* Ensure the inner buttons don't overflow the border */
   }
   
   .toggle-button {
     padding: 8px 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border: none; /* Remove individual borders */
     background-color: #f9f9f9;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
+    margin: 0; /* Remove margin to ensure buttons are connected */
+  }
+  
+  .toggle-button:not(:last-child) {
+    border-right: 1px solid #ccc; /* Add a separator between buttons */
   }
   
   .toggle-button.active {
     background-color: #007bff;
     color: white;
-    border-color: #007bff;
   }
