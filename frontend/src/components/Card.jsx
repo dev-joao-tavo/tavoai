@@ -32,23 +32,23 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
   };
 
   return (
-    <div className="dashboard-card bg-white p-4 rounded-lg shadow-md mb-4 relative">
+    <div className="dashboard-card bg-white p-6 rounded-lg shadow-lg mb-6 relative">
       {/* Close Button ("X") */}
       <button
         onClick={handleClick}
-        className="close-button absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-red-500 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
+        className="close-button absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-red-500 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
         disabled={isClicked} // Disable the button after the first click
       >
         &#10005; {/* "X" character */}
       </button>
   
       {/* Card Header */}
-      <div className="card-header flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">{card.title}</h3>
+      <div className="card-header flex justify-between items-center mb-6 border-b pb-4">
+        <h3 className="text-xl font-bold text-gray-900">{card.title}</h3>
   
         {/* Dropdown Menu */}
         <select
-          className="dashboard-dropdown p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400 text-sm text-gray-700"
+          className="dashboard-dropdown p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-700 bg-white"
           value={selectedStatus}
           onChange={handleStatusChange}
         >
@@ -72,19 +72,30 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
       </div>
   
       {/* Contact Information */}
-      <div className="space-y-2">
-        <p className="dashboard-contact-info text-sm text-gray-600">
-          {contact ? `Contato: ${contact.phone_number}` : "Contato não encontrado"}
+      <div className="space-y-3">
+        <p className="dashboard-contact-info text-sm text-gray-700">
+          {contact ? (
+            <>
+              <span className="font-medium">Contato:</span> {contact.phone_number}
+            </>
+          ) : (
+            <span className="text-red-500">Contato não encontrado</span>
+          )}
         </p>
   
         <p
           className={`dashboard-contact-info text-sm ${
-            contact?.last_message_contact ? "text-gray-600" : "text-red-500"
+            contact?.last_message_contact ? "text-gray-700" : "text-red-500"
           }`}
         >
-          {contact?.last_message_contact
-            ? ` • Última mensagem: ${formatLastMessageDate(contact.last_message_contact)}`
-            : " • Última mensagem: Não disponível"}
+          {contact?.last_message_contact ? (
+            <>
+              <span className="font-medium">Última mensagem:</span>{" "}
+              {formatLastMessageDate(contact.last_message_contact)}
+            </>
+          ) : (
+            "Última mensagem: Não disponível"
+          )}
         </p>
       </div>
     </div>
