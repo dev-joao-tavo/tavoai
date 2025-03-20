@@ -28,3 +28,8 @@
     cursor: not-allowed; /* Change cursor to indicate the button is disabled */
     opacity: 0.6; /* Reduce opacity to visually indicate the button is disabled */
   }
+
+  /* In your CSS file */
+.smaller-text {
+  font-size: 0.9rem;
+}
