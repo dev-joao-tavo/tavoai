@@ -5,7 +5,7 @@
 :root {
   --primary-color: #3498db;
   --secondary-color: #2980b9;
-  --success-color: #10b981;
+  --success-color: #16c9fa;
   --error-color: #e74c3c;
   --warning-color: #f1c40f;
   --background-color: #f8f9fa;
@@ -101,7 +101,7 @@ body {
 }
 
 .button-green:hover {
-  background: #059669;
+  background: #17b1ed;
 }
 
 /* === Responsive Design === */
