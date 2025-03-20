@@ -32,69 +32,62 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
   };
 
   return (
-    <div className="dashboard-card bg-white p-4 rounded-lg shadow-md mb-4">
-      {/* Card Header */}
-      <div className="card-header flex justify-between items-center mb-2">
-        <h3 className="text-lg font-semibold text-gray-800">{card.title}</h3>
-
-        {/* Dropdown Menu */}
-        <select
-          className="dashboard-dropdown p-1 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
-          value={selectedStatus}
-          onChange={handleStatusChange}
-        >
-          <option value="day-1">1º dia</option>
-          <option value="day-2">2º dia</option>
-          <option value="day-3">3º dia</option>
-          <option value="day-4">4º dia</option>
-          <option value="day-5">5º dia</option>
-          <option value="day-6">6º dia</option>
-          <option value="day-7">7º dia</option>
-          <option value="day-8">8º dia</option>
-          <option value="day-9">9º dia</option>
-          <option value="day-10">10º dia</option>
-          <option value="day-11">11º dia</option>
-          <option value="day-12">12º dia</option>
-          <option value="day-13">13º dia</option>
-          <option value="day-14">14º dia</option>
-          <option value="monday">Segunda</option>
-          <option value="tuesday">Terça</option>
-          <option value="wednesday">Quarta</option>
-          <option value="thursday">Quinta</option>
-          <option value="friday">Sexta</option>
-          <option value="saturday">Sábado</option>
-          <option value="sunday">Domingo</option>
-          <option value="schedule">Agenda</option>
-
-        </select>
-      </div>
-
-      {/* Contact Information */}
-      <p className="dashboard-contact-info text-sm text-gray-600 mb-2">
-        {contact ? `Contato: ${contact.phone_number}` : "Contato não encontrado"}
-      </p>
-
-
-     <p
-        className={`dashboard-contact-info text-sm mb-2 ${
-          contact?.last_message_contact ? "text-gray-600" : "text-red-500"
-        }`}
-      >
-        {contact?.last_message_contact
-          ? ` • Última mensagem: ${formatLastMessageDate(contact.last_message_contact)}`
-          : " • Última mensagem: Não disponível"}
-      </p>
-
-       {/* Close Button ("X") */}
+    <div className="dashboard-card bg-white p-4 rounded-lg shadow-md mb-4 relative">
+      {/* Close Button ("X") */}
       <button
         onClick={handleClick}
-        className="close-button"
+        className="close-button absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-red-500 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
         disabled={isClicked} // Disable the button after the first click
       >
         &#10005; {/* "X" character */}
       </button>
+  
+      {/* Card Header */}
+      <div className="card-header flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-800">{card.title}</h3>
+  
+        {/* Dropdown Menu */}
+        <select
+          className="dashboard-dropdown p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400 text-sm text-gray-700"
+          value={selectedStatus}
+          onChange={handleStatusChange}
+        >
+          {/* Days 1-14 */}
+          {Array.from({ length: 14 }, (_, i) => (
+            <option key={`day-${i + 1}`} value={`day-${i + 1}`}>
+              {i + 1}º dia
+            </option>
+          ))}
+  
+          {/* Weekdays */}
+          {["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"].map((day, i) => (
+            <option key={day} value={day.toLowerCase()}>
+              {day}
+            </option>
+          ))}
+  
+          {/* Additional Option */}
+          <option value="schedule">Agenda</option>
+        </select>
+      </div>
+  
+      {/* Contact Information */}
+      <div className="space-y-2">
+        <p className="dashboard-contact-info text-sm text-gray-600">
+          {contact ? `Contato: ${contact.phone_number}` : "Contato não encontrado"}
+        </p>
+  
+        <p
+          className={`dashboard-contact-info text-sm ${
+            contact?.last_message_contact ? "text-gray-600" : "text-red-500"
+          }`}
+        >
+          {contact?.last_message_contact
+            ? ` • Última mensagem: ${formatLastMessageDate(contact.last_message_contact)}`
+            : " • Última mensagem: Não disponível"}
+        </p>
+      </div>
     </div>
-    
   );
 };
 
