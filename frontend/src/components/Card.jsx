@@ -35,7 +35,7 @@ const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }
     <div className="dashboard-card bg-white p-6 rounded-lg shadow-lg mb-6 relative">
       <button
         onClick={handleClick}
-        className="close-button absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-red-500 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
+        className="close-button"
         disabled={isClicked}
       >
         &#10005;

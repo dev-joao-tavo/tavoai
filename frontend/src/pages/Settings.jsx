@@ -109,7 +109,7 @@ const Settings = () => {
       <div className="section">
         <h2>Profile</h2>
         <div className="input-group">
-          <label>Name</label>
+        <label htmlFor="name">Name</label>
           <input
             type="text"
             value={name}
@@ -118,7 +118,7 @@ const Settings = () => {
           />
         </div>
         <div className="input-group">
-          <label>Email</label>
+          <label htmlFor="email">Email</label>
           <input
             type="email"
             value={email}
@@ -127,7 +127,7 @@ const Settings = () => {
           />
         </div>
         <div className="input-group">
-          <label>Phone Number</label>
+          <label htmlFor="phone_number">Phone Number</label>
           <input
             type="tel"
             value={phone}
@@ -136,7 +136,7 @@ const Settings = () => {
           />
         </div>
         <div className="input-group">
-          <label>Password</label>
+          <label htmlFor="password">Password</label>
           <input
             type="password"
             value={password}
@@ -144,8 +144,8 @@ const Settings = () => {
             placeholder="Enter a new password"
           />
         </div>
-        <button onClick={handleSaveProfile}>Save Profile</button>
-      </div>
+        <button className="button" onClick={handleSaveProfile}>Save Profile</button>
+        </div>
 
       {/* WhatsApp Connection Section */}
       <div className="section">
@@ -153,7 +153,7 @@ const Settings = () => {
         <div className="status">
           <span>Status:</span> <span>{whatsappStatus}</span>
         </div>
-        <button onClick={handleConnectWhatsApp}>Connect/Reconnect WhatsApp</button>
+        <button className="button" onClick={handleConnectWhatsApp}>Connect/Reconnect WhatsApp</button>
       </div>
 
       {/* Messages Section */}
@@ -164,7 +164,7 @@ const Settings = () => {
           <h3>Agenda Statuses</h3>
           {agendaStatuses.map((status) => (
             <div key={status} className="input-group">
-              <label>{status}</label>
+              <label htmlFor="status">{status}</label>
               <input
                 type="text"
                 value={agendaMessages[status].message1}
@@ -196,7 +196,7 @@ const Settings = () => {
           <h3>Funnel Statuses</h3>
           {funnelStatuses.map((status) => (
             <div key={status} className="input-group">
-              <label>{status}</label>
+              <label htmlFor="status">{status}</label>
               <input
                 type="text"
                 value={funnelMessages[status].message1}
@@ -224,7 +224,7 @@ const Settings = () => {
             </div>
           ))}
         </div>
-        <button onClick={handleSaveMessages}>Save Messages</button>
+        <button className="button" onClick={handleSaveMessages}>Save Messages</button>
       </div>
     </div>
   );

@@ -47,7 +47,7 @@ const WhatsAppLogin = ({ code, onClose }) => {
         )}
 
         {/* Close Button ("X") */}
-        <button className="close-button" onClick={onClose}>
+        <button className="close-button-wpp" onClick={onClose}>
           &#10005; {/* "X" character */}
         </button>
       </div>

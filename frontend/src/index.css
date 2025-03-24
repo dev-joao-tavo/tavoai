@@ -164,7 +164,6 @@ body {
   gap: 20px;
   padding: 20px;
   width: 100%;
-  overflow-x: auto; /* Enables horizontal scrolling */
   align-items: flex-start;
   flex-wrap: nowrap; /* Prevents stacking */
 }
