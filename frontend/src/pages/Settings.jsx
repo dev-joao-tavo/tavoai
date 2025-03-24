@@ -155,7 +155,6 @@ const Settings = () => {
   
       {/* Profile Section */}
       <div className="section">
-        <h2>Profile</h2>
         <div className="input-group">
         <label htmlFor="name">Nome</label>
           <input
@@ -225,10 +224,10 @@ const Settings = () => {
 
       {/* Messages Section */}
       <div className="section">
-        <h2>Messages</h2>
+        <h2>Suas mensagens</h2>
         <div className="messages-section">
           {/* Agenda Statuses */}
-          <h3>Mensagens: agenda</h3>
+          <h3>AGENDA</h3>
           {agendaStatuses.map((status) => (
             <div key={status} className="input-group">
               <label htmlFor="status">{constants.statusTranslation[status] || status.toUpperCase()}              </label>
@@ -260,7 +259,7 @@ const Settings = () => {
           ))}
 
           {/* Funnel Statuses */}
-          <h3>Mensagens: funil</h3>
+          <h3>FUNIL</h3>
           {funnelStatuses.map((status) => (
             <div key={status} className="input-group">
               <label htmlFor="status">{constants.statusTranslation[status] || status.toUpperCase()}</label>
@@ -270,7 +269,7 @@ const Settings = () => {
                 onChange={(e) =>
                   handleMessageChange("funnel", status, "message1", e.target.value)
                 }
-                placeholder="Message 1"
+                placeholder="Mensagem 1"
               />
               <input
                 type="text"
@@ -278,7 +277,7 @@ const Settings = () => {
                 onChange={(e) =>
                   handleMessageChange("funnel", status, "message2", e.target.value)
                 }
-                placeholder="Message 2"
+                placeholder="Mensagem 2"
               />
               <input
                 type="text"
@@ -286,7 +285,7 @@ const Settings = () => {
                 onChange={(e) =>
                   handleMessageChange("funnel", status, "message3", e.target.value)
                 }
-                placeholder="Message 3"
+                placeholder="Mensagem 3"
               />
             </div>
           ))}

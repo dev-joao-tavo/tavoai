@@ -17,6 +17,7 @@
 
 .settings-page .input-group {
   margin-bottom: 1rem;
+  text-align: left;
 }
 
 .settings-page .input-group label {

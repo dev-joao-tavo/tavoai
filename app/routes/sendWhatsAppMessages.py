@@ -53,7 +53,7 @@ async def login_check(driver):
         await asyncio.sleep(random.uniform(15, 20))  # Random sleep to simulate loading time
 
         # Try to find the message input field
-        test = driver.find_element(By.XPATH, '//div[@aria-label="Digite umma mensagem"]')
+        test = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
         print(">>>>>",test )
         return True
     except NoSuchElementException:
