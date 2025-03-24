@@ -6,7 +6,7 @@ import Signup from "./pages/Signup";
 import useAuth from "./hooks/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
-import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import SettingsPage from "./pages/Settings";
 
 function App() {
@@ -51,10 +51,10 @@ function App() {
           }
         />
         <Route
-          path="/profile"
+          path="/Settings"
           element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
-              <Profile />
+              <Settings />
             </ProtectedRoute>
           }
         />
