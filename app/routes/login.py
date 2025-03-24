@@ -77,9 +77,7 @@ async def signup(request):
 user_bp = Blueprint("user", url_prefix="/api/users")
 
 @user_bp.put("/<user_id:int>")
-async def update_user(request, user_id):
-    """Updates the user's phone number and/or password"""
-    
+async def update_user(request, user_id):   
     # Extract token from the request headers
     token = request.headers.get("Authorization")
     if not token:
@@ -107,3 +105,4 @@ async def update_user(request, user_id):
 
         await session.commit()
         return response.json({"message": "Profile updated successfully"})
+
