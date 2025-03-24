@@ -194,6 +194,8 @@ const Settings = () => {
         </div>
         <button className="button" onClick={handleSaveProfile}>Atualizar perfil</button>
         </div>
+        
+        <div class="divider"></div>
 
 {/* WhatsApp Connection Section */}
 <div className="section">
@@ -236,6 +238,7 @@ const Settings = () => {
           }}
         />
       )}
+        <div class="divider"></div>
 
       {/* Messages Section */}
       <div className="section">

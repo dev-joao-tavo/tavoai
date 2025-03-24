@@ -113,3 +113,9 @@
   align-items: center;
   margin-bottom: 16px;
 }
+.divider {
+  width: 50%; /* Adjust the width to your preference */
+  height: 1px;
+  background-color: #000; /* Black color, you can change it */
+  margin: 20px auto; /* Center the line and give some space around it */
+}
