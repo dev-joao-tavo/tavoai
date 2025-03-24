@@ -1,16 +1,76 @@
 import React, { useState } from "react";
 import "./Settings.css";
 import Header from "../components/Header.jsx"; // Adjust path if necessary
+import axios from "axios";
+import WhatsAppLogin from "../components/WhatsAppLogin"; // Import the modal
 
+const API_BASE_URL = "https://api.tavoai.com";
 const Settings = () => {
   // State for Profile Section
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  
+  const [whatsappStatus, setWhatsappStatus] = useState("-");
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [whatsAppCode, setWhatsAppCode] = useState(null);
 
-  // State for WhatsApp Connection
-  const [whatsappStatus, setWhatsappStatus] = useState("Disconnected");
+  const handleWhatsAppIsLoggedInCheck = async() => {
+    setIsChecking(true);
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(`${API_BASE_URL}/whatsAppLoginCheck`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if(response.data.status = 200){
+        setWhatsappStatus("Connected");
+      }
+      if(response.data.status = 500){
+        setWhatsappStatus("Disconnected");
+      }
+
+    } catch (error) {
+      console.error("Error on logging in your WhatsApp: ", error);
+      setWhatsappStatus("Error: try again");
+      alert("Error: ", error);
+
+      
+    } finally {
+      setIsChecking(false);
+    }
+  }
+
+  const handleWhatsAppLogin = async () => {
+    setIsLoading(true);
+    setShowModal(true); // Show the modal as soon as the button is clicked
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(`${API_BASE_URL}/whatsAppLogin`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setWhatsAppCode(response.data.code); // Set the code when available
+
+    } catch (error) {
+      console.error("Error on logging in your WhatsApp: ", error);
+      alert("Error: ", error);
+      
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   // State for Messages Section
   const agendaStatuses = [
@@ -71,12 +131,7 @@ const Settings = () => {
     }
   };
 
-  // Connect WhatsApp Handler
-  const handleConnectWhatsApp = () => {
-    setWhatsappStatus("Connected");
-    console.log("WhatsApp Connected");
-    alert("WhatsApp connected!");
-  };
+
 
   // Save Messages Handler
   const handleSaveMessages = () => {
@@ -153,8 +208,21 @@ const Settings = () => {
         <div className="status">
           <span>Status:</span> <span>{whatsappStatus}</span>
         </div>
-        <button className="button" onClick={handleConnectWhatsApp}>Connect/Reconnect WhatsApp</button>
+        <button className="button" onClick={handleWhatsAppLogin}> {isLoading ? "Loading..." : "Connect"} </button>
+        <button className="button" onClick={handleWhatsAppIsLoggedInCheck}> {isChecking ? "Checking..." : "Check Status"} </button>
+
       </div>
+
+      {/* Show modal if showModal is true */}
+      {showModal && (
+        <WhatsAppLogin
+          code={whatsAppCode} // Pass the code (null initially)
+          onClose={() => {
+            setShowModal(false); // Close the modal
+            setWhatsAppCode(null); // Reset the code
+          }}
+        />
+      )}
 
       {/* Messages Section */}
       <div className="section">

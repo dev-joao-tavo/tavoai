@@ -6,31 +6,6 @@ import "./Header.css"; // Import the CSS file
 const API_BASE_URL = "https://api.tavoai.com";
 
 const Header = ({ handleLogout }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [whatsAppCode, setWhatsAppCode] = useState(null);
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
-
-  const handleWhatsAppLogin = async () => {
-    setIsLoading(true);
-    setShowModal(true); // Show the modal as soon as the button is clicked
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await axios.get(`${API_BASE_URL}/whatsAppLogin`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setWhatsAppCode(response.data.code); // Set the code when available
-    } catch (error) {
-      console.error("Error on logging in your WhatsApp: ", error);
-      alert("Failed to login!");
-    } finally {
-      setIsLoading(false);
-    }
-  };
   
   return (
     <div className="header-container">
@@ -48,23 +23,10 @@ const Header = ({ handleLogout }) => {
       > 
         Assinatura
       </button>*/}
-      <button onClick={handleWhatsAppLogin} className="header-button" disabled={isLoading}>
-        {isLoading ? "Carregando..." : "WhatsApp Login"}
-      </button>
       <button onClick={handleLogout} className="header-button">
         Logout
       </button>
 
-      {/* Show modal if showModal is true */}
-      {showModal && (
-        <WhatsAppLogin
-          code={whatsAppCode} // Pass the code (null initially)
-          onClose={() => {
-            setShowModal(false); // Close the modal
-            setWhatsAppCode(null); // Reset the code
-          }}
-        />
-      )}
     </div>
   );
 };
