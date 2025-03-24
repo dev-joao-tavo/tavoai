@@ -3,7 +3,7 @@ import axios from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Card from "./Card";
 import Header from "./Header"; // Adjust path if necessary
-import "./Dashboard.css"
+import "./Dashboard.css";
 import * as constants from '../utils/constants';
 
 
