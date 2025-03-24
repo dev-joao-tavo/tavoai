@@ -3,8 +3,8 @@ import "./Settings.css";
 import Header from "../components/Header.jsx"; // Adjust path if necessary
 import axios from "axios";
 import WhatsAppLogin from "../components/WhatsAppLogin"; // Import the modal
+import * as constants from '../utils/constants';
 
-const API_BASE_URL = "https://api.tavoai.com";
 const Settings = () => {
   // State for Profile Section
   const [name, setName] = useState("");
@@ -23,7 +23,7 @@ const Settings = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await axios.get(`${API_BASE_URL}/whatsAppLoginCheck`, {
+      const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLoginCheck`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -38,7 +38,7 @@ const Settings = () => {
 
     } catch (error) {
       console.error("Error on logging in your WhatsApp: ", error);
-      setWhatsappStatus("Error: try again");
+      setWhatsappStatus("Error: please try again");
       alert("Error: ", error);
 
       
@@ -54,7 +54,7 @@ const Settings = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await axios.get(`${API_BASE_URL}/whatsAppLogin`, {
+      const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLogin`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -73,13 +73,9 @@ const Settings = () => {
 
 
   // State for Messages Section
-  const agendaStatuses = [
-    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "schedule"
-  ];
-  const funnelStatuses = [
-    "day-1", "day-2", "day-3", "day-4", "day-5", "day-6", "day-7",
-    "day-8", "day-9", "day-10", "day-11", "day-12", "day-13", "day-14"
-  ];
+  const agendaStatuses = constants.agendaStatuses;
+  const funnelStatuses = constants.funnelStatuses;
+  
 
   const [agendaMessages, setAgendaMessages] = useState(
     agendaStatuses.reduce((acc, status) => {

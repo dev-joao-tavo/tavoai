@@ -4,58 +4,15 @@ import { useNavigate } from "react-router-dom";
 import Card from "./Card";
 import Header from "./Header"; // Adjust path if necessary
 import "./Dashboard.css"
+import * as constants from '../utils/constants';
 
-const API_BASE_URL = "https://api.tavoai.com";
-
-const statusTranslation = {
-  "monday": "Segunda-feira",
-  "tuesday": "Terça-feira",
-  "wednesday": "Quarta-feira",
-  "thursday": "Quinta-feira",
-  "friday": "Sexta-feira",
-  "saturday": "Sábado",
-  "sunday": "Domingo",
-  "schedule": "Agenda",
-  "day-1": "1º dia",
-  "day-2": "2º dia",
-  "day-3": "3º dia",
-  "day-4": "4º dia",
-  "day-5": "5º dia",
-  "day-6": "6º dia",
-  "day-7": "7º dia",
-  "day-8": "8º dia",
-  "day-9": "9º dia",
-  "day-10": "10º dia",
-  "day-11": "11º dia",
-  "day-12": "12º dia",
-  "day-13": "13º dia",
-  "day-14": "14º dia",
-};
-
-const agendaStatuses = [
-"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
-  "schedule"
-];
-
-const funnelStatuses = [
-"day-1", "day-2", "day-3", "day-4", "day-5", "day-6", "day-7",
-  "day-8", "day-9", "day-10", "day-11", "day-12", "day-13", "day-14"];
-
-const statuses = [
-  "day-1", "day-2", "day-3", "day-4", "day-5", "day-6", "day-7",
-  "day-8", "day-9", "day-10", "day-11", "day-12", "day-13", "day-14",
-  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
-  "schedule"
-];
-
-const translatedStatuses = statuses.map(status => statusTranslation[status] || status.toUpperCase());
 
 const Dashboard = () => {
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [selectedBoardType, setSelectedBoardType] = useState(null); 
   const [cards, setCards] = useState(
-    statuses.reduce((acc, status) => {
+    constants.statuses.reduce((acc, status) => {
       acc[status] = [];
       return acc;
     }, {})
@@ -68,7 +25,7 @@ const Dashboard = () => {
   const [newCardTitle, setNewCardTitle] = useState("");
   const [newCardDescription, setNewCardDescription] = useState("");
   const [columnMessages, setColumnMessages] = useState(
-    statuses.reduce((acc, status) => {
+    constants.statuses.reduce((acc, status) => {
       acc[status] = { message1: "", message2: "", message3: "" };
       return acc;
     }, {})
@@ -76,11 +33,11 @@ const Dashboard = () => {
   
   const getStatusesForBoard = (boardType) => {
     if (boardType === "funnel") {
-      return statuses.slice(0, 14); // First 14 statuses for "funnel"
+      return constants.statuses.slice(0, 31); // First 31 statuses for "funnel"
     } else if (boardType === "agenda") {
-      return statuses.slice(14); // Remaining statuses for "agenda"
+      return constants.statuses.slice(31); // Remaining statuses for "agenda"
     }
-    return statuses; // Default to all statuses
+    return constants.statuses; // Default to all statuses
   };
   const filteredStatuses = getStatusesForBoard(selectedBoardType);
 
@@ -149,7 +106,7 @@ const Dashboard = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_BASE_URL}/boards`, {
+      const response = await axios.get(`${constants.API_BASE_URL}/boards`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -170,10 +127,10 @@ const Dashboard = () => {
   const fetchCards = async (boardId) => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/boards/${boardId}/cards`);
+      const response = await axios.get(`${constants.API_BASE_URL}/boards/${boardId}/cards`);
       
       // Create an empty object based on statuses to ensure all are present
-      const groupedCards = statuses.reduce((acc, status) => {
+      const groupedCards = constants.statuses.reduce((acc, status) => {
         acc[status] = [];
         return acc;
       }, {});
@@ -198,7 +155,7 @@ const Dashboard = () => {
   const fetchContacts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_BASE_URL}/contacts`,
+      const response = await axios.get(`${constants.API_BASE_URL}/contacts`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -214,7 +171,7 @@ const Dashboard = () => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.post(
-            `${API_BASE_URL}/addCardandContact`,
+            `${constants.API_BASE_URL}/addCardandContact`,
             {
                 phone_number: description,
                 contact_name: title,
@@ -248,7 +205,7 @@ const Dashboard = () => {
 
   const deleteCard = async (cardId) => {
     try {
-      await axios.delete(`${API_BASE_URL}/removeCardandContact`, {
+      await axios.delete(`${constants.API_BASE_URL}/removeCardandContact`, {
         data: { card_id: cardId },
       });
       setCards((prevCards) => {
@@ -264,8 +221,8 @@ const Dashboard = () => {
   };
 
   const getBoardTypeFromStatus = (status) => {
-    if (agendaStatuses.includes(status)) return "agenda";
-    if (funnelStatuses.includes(status)) return "funnel";
+    if (constants.agendaStatuses.includes(status)) return "agenda";
+    if (constants.funnelStatuses.includes(status)) return "funnel";
     return null;
   };
   
@@ -305,7 +262,7 @@ const Dashboard = () => {
     }
   
     try {
-      await axios.patch(`${API_BASE_URL}/cards/${cardId}`, {
+      await axios.patch(`${constants.API_BASE_URL}/cards/${cardId}`, {
         status: newStatus,
         board_id: otherBoardId,
       });
@@ -322,7 +279,7 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `${API_BASE_URL}/sendMessage`,
+        `${constants.API_BASE_URL}/sendMessage`,
         {
           status,
           ...columnMessages[status],
@@ -349,7 +306,7 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await axios.get(`${API_BASE_URL}/whatsAppLogin`, {
+      const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLogin`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -446,7 +403,7 @@ const Dashboard = () => {
           {filteredStatuses.map((status) => (
             <div key={status} className="dashboard-column">
               <h2 className="dashboard-title">
-                {statusTranslation[status] || status.toUpperCase()}
+                {constants.statusTranslation[status] || status.toUpperCase()}
                 {/* Add the live card counter here */}
                 <span className="card-counter"> ({cards[status].length})</span>
               </h2>
