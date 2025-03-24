@@ -91,41 +91,6 @@ const Settings = () => {
     }, {})
   );
 
-  const updateProfile = async (userId, profileData) => {
-    const token = localStorage.getItem("token"); // Assuming you store the token in localStorage
-    const response = await fetch(`/api/users/profile/${userId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(profileData),
-    });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to update profile");
-    }
-  
-    return response.json();
-  };
-  
-  // Example usage
-  const handleSaveProfile = async () => {
-    try {
-      const profileData = {
-        name: "John Doe",
-        email: "john.doe@example.com",
-        phone: "+1234567890",
-        password: "newpassword123",
-      };
-      
-      const result = await updateProfile("", profileData);
-    } catch (error) {
-      console.error(error.message);
-    }
-  };
-
 
 
   // Save Messages Handler
@@ -147,55 +112,137 @@ const Settings = () => {
       }));
     }
   };
+// State for loading and feedback
+const [isUpdating, setIsUpdating] = useState(false);
+const [updateError, setUpdateError] = useState(null);
+const [updateSuccess, setUpdateSuccess] = useState(false);
 
-  return (
-    <div className="settings-page">
-      {/* Header Component */}
-      <Header/>
+// Function to update the profile
+const updateProfile = async (profileData) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    // Data to be sent in the request
+    const data = {
+      new_phone: profileData.phone,
+      new_password: profileData.password,
+      new_email: profileData.email,
+      new_username: profileData.name
+    };
+
+    // Send the update request to the backend
+    const response = await axios.post(`${constants.API_BASE_URL}/update-profile`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Handle save profile with loading states
+const handleSaveProfile = async () => {
+  setIsUpdating(true);
+  setUpdateError(null);
+  setUpdateSuccess(false);
   
-      {/* Profile Section */}
-      <div className="section">
-        <br/>
-        <div className="input-group">
+  try {
+    const profileData = {
+      name,
+      email,
+      phone,
+      password
+    };
+    
+    await updateProfile(profileData);
+    setUpdateSuccess(true);
+    
+    // Reset success message after 3 seconds
+    setTimeout(() => setUpdateSuccess(false), 3000);
+  } catch (error) {
+    setUpdateError(error.response?.data?.message || error.message || 'Failed to update profile');
+  } finally {
+    setIsUpdating(false);
+  }
+};
+
+return (
+  <div className="settings-page">
+    {/* Header Component */}
+    <Header/>
+  
+    {/* Profile Section */}
+    <div className="section">
+      <br/>
+      <div className="input-group">
         <label htmlFor="name">Nome</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-          />
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter your name"
+        />
+      </div>
+      <div className="input-group">
+        <label htmlFor="email">Email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+        />
+      </div>
+      <div className="input-group">
+        <label htmlFor="phone_number">Número do WhatsApp</label>
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="Enter your phone number"
+        />
+      </div>
+      <div className="input-group">
+        <label htmlFor="password">Senha</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter a new password"
+        />
+      </div>
+      
+      {/* Feedback messages */}
+      {updateError && (
+        <div className="error-message">
+          {updateError}
         </div>
-        <div className="input-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-          />
+      )}
+      {updateSuccess && (
+        <div className="success-message">
+          Perfil atualizado com sucesso!
         </div>
-        <div className="input-group">
-          <label htmlFor="phone_number">Número do WhatsApp</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Enter your phone number"
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="password">Senha</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter a new password"
-          />
-        </div>
-        <button className="button" onClick={handleSaveProfile}>Atualizar perfil</button>
-        </div>
-        
-        <div class="divider"></div>
+      )}
+      
+      <button 
+        className="button" 
+        onClick={handleSaveProfile}
+        disabled={isUpdating}
+      >
+        {isUpdating ? (
+          <>
+            <div className="loading-circle small"></div>
+            Atualizando...
+          </>
+        ) : 'Atualizar perfil'}
+      </button>
+    </div>
+  <div class="divider"></div>
 
 {/* WhatsApp Connection Section */}
 <div className="section">
