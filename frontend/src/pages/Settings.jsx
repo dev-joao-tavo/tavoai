@@ -31,17 +31,9 @@ const Settings = () => {
 
       if(response.data.is_logged_in === true){
         setWhatsappStatus("Connected");
-        console.log(response.data.is_logged_in)
-        console.log(response.data.is_logged_in)
-        console.log(response.data.is_logged_in)
-        console.log(response.data.is_logged_in)
       }
       if(response.data.is_logged_in === false){
         setWhatsappStatus("Disconnected");
-        console.log(response.data.is_logged_in)
-        console.log(response.data.is_logged_in)
-        console.log(response.data.is_logged_in)
-        console.log(response.data.is_logged_in)
       }
 
     } catch (error) {

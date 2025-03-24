@@ -16,7 +16,6 @@ export const apiRequest = async (url, options = {}) => {
     if (!response.ok) {
       if (response.status === 401) {
         // Handle unauthorized (e.g., token expired)
-        console.log("Unauthorized request. Logging out.");
         localStorage.removeItem("token"); // Remove invalid token
         // Optionally trigger logout from the state
       }

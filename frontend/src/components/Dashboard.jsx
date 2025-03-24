@@ -321,7 +321,6 @@ const Dashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
-      console.log(selectedBoard.id)
       const response = await axios.post(
         `${API_BASE_URL}/sendMessage`,
         {
@@ -335,7 +334,6 @@ const Dashboard = () => {
           },
         }
       );
-      console.log("Message sent:", response.data);
       alert(`Suas mensagens estão sendo enviadas!`);
     } catch (error) {
       console.error("Error sending message:", error);
