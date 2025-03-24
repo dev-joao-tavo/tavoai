@@ -480,7 +480,6 @@ const Dashboard = () => {
                     key={card.id}
                     card={card}
                     contacts={contacts}
-                    openConversation={() => navigate(`/conversation/${card.id}`)}
                     updateCardStatus={updateCardStatus}
                     deleteCard={deleteCard}
                   />

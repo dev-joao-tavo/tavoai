@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./Card.css"; // Ensure this import is correct
 
-const Card = ({ card, contacts, openConversation, updateCardStatus, deleteCard }) => {
+const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
   const [selectedStatus, setSelectedStatus] = useState(card.status);
   const [isClicked, setIsClicked] = useState(false);
 
