@@ -29,11 +29,19 @@ const Settings = () => {
         },
       });
 
-      if(response.data.is_logged_in = true){
+      if(response.data.is_logged_in === true){
         setWhatsappStatus("Connected");
+        console.log(response.data.is_logged_in)
+        console.log(response.data.is_logged_in)
+        console.log(response.data.is_logged_in)
+        console.log(response.data.is_logged_in)
       }
-      if(response.data.is_logged_in = false){
+      if(response.data.is_logged_in === false){
         setWhatsappStatus("Disconnected");
+        console.log(response.data.is_logged_in)
+        console.log(response.data.is_logged_in)
+        console.log(response.data.is_logged_in)
+        console.log(response.data.is_logged_in)
       }
 
     } catch (error) {
@@ -125,7 +133,6 @@ const Settings = () => {
       };
       
       const result = await updateProfile("", profileData);
-      console.log(result.message); // "Profile updated successfully"
     } catch (error) {
       console.error(error.message);
     }
@@ -135,8 +142,6 @@ const Settings = () => {
 
   // Save Messages Handler
   const handleSaveMessages = () => {
-    console.log("Agenda Messages:", agendaMessages);
-    console.log("Funnel Messages:", funnelMessages);
     alert("Messages saved!");
   };
 

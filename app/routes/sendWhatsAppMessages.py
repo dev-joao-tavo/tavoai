@@ -14,6 +14,7 @@ from sanic.response import json
 import re
 from datetime import datetime
 from sqlalchemy.orm import Session
+from selenium.common.exceptions import NoSuchElementException
 
 import time
 import random
@@ -46,16 +47,21 @@ async def get_phone_numbers_and_names_by_status_and_board(status: str, board_id:
 
 async def login_check(driver):
     try:
-        driver.get(f"https://web.whatsapp.com/send/?phone=+5531995854940")
+        driver.get("https://web.whatsapp.com/send/?phone=+5531995854940")
 
-        # Wait for page to fully load
+        # Wait for the page to fully load
         await asyncio.sleep(random.uniform(15, 20))  # Random sleep to simulate loading time
 
-        # Find the message input field
-        driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
+        # Try to find the message input field
+        test = driver.find_element(By.XPATH, '//div[@aria-label="Digite umma mensagem"]')
+        print(">>>>>",test )
         return True
-    except:    
-        return False
+    except NoSuchElementException:
+        return False  # Return False if the element is not found
+    except Exception as e:
+        print(f"Error in login_check: {e}")
+        return False  # Catch other unexpected errors and return False
+
 
 async def get_wpp_login_code(driver, user_phone_number):
     try:
@@ -271,9 +277,9 @@ async def whats_app_login_check(request):
             return response.json({"error": "User not found."}, status=404)
 
         driver = await asyncio.to_thread(initialize_driver, user_id)
-        user_phone_number = user.user_wpp_phone_number
         is_logged_in = await login_check(driver)
-        
+        print(";;;;;;;;;;;;;;;",is_logged_in)
+
         # Sleeping before sending the response if needed
         await asyncio.sleep(1)
         driver.quit()
