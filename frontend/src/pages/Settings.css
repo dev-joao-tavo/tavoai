@@ -55,6 +55,11 @@
   margin-bottom: 1rem;
 }
 
+.settings-page .button-group {
+  display: flex;
+  gap: 10px; /* Adds space between buttons */
+}
+
 .settings-page .button {
   padding: 0.5rem 1rem;
   background-color: #007bff;

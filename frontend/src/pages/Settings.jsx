@@ -157,7 +157,7 @@ const Settings = () => {
       <div className="section">
         <h2>Profile</h2>
         <div className="input-group">
-        <label htmlFor="name">Name</label>
+        <label htmlFor="name">Nome</label>
           <input
             type="text"
             value={name}
@@ -175,7 +175,7 @@ const Settings = () => {
           />
         </div>
         <div className="input-group">
-          <label htmlFor="phone_number">Phone Number</label>
+          <label htmlFor="phone_number">Número do WhatsApp</label>
           <input
             type="tel"
             value={phone}
@@ -184,7 +184,7 @@ const Settings = () => {
           />
         </div>
         <div className="input-group">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">Senha</label>
           <input
             type="password"
             value={password}
@@ -192,19 +192,25 @@ const Settings = () => {
             placeholder="Enter a new password"
           />
         </div>
-        <button className="button" onClick={handleSaveProfile}>Save Profile</button>
+        <button className="button" onClick={handleSaveProfile}>Atualizar perfil</button>
         </div>
 
       {/* WhatsApp Connection Section */}
       <div className="section">
-        <h2>WhatsApp Connection</h2>
+        <h2>Conexão com o WhatsApp</h2>
         <div className="status">
           <span>Status:</span> <span>{whatsappStatus}</span>
         </div>
-        <button className="button" onClick={handleWhatsAppLogin}> {isLoading ? "Loading..." : "Connect"} </button>
-        <button className="button" onClick={handleWhatsAppIsLoggedInCheck}> {isChecking ? "Checking..." : "Check Status"} </button>
-
+        <div className="button-group">
+          <button className="button" onClick={handleWhatsAppLogin}>
+            {isLoading ? "Carregando..." : "Conectar"}
+          </button>
+          <button className="button" onClick={handleWhatsAppIsLoggedInCheck}>
+            {isChecking ? "Checando..." : "Checar conexão"}
+          </button>
+        </div>
       </div>
+
 
       {/* Show modal if showModal is true */}
       {showModal && (
@@ -222,10 +228,10 @@ const Settings = () => {
         <h2>Messages</h2>
         <div className="messages-section">
           {/* Agenda Statuses */}
-          <h3>Agenda Statuses</h3>
+          <h3>Mensagens: agenda</h3>
           {agendaStatuses.map((status) => (
             <div key={status} className="input-group">
-              <label htmlFor="status">{status}</label>
+              <label htmlFor="status">{constants.statusTranslation[status] || status.toUpperCase()}              </label>
               <input
                 type="text"
                 value={agendaMessages[status].message1}
@@ -254,10 +260,10 @@ const Settings = () => {
           ))}
 
           {/* Funnel Statuses */}
-          <h3>Funnel Statuses</h3>
+          <h3>Mensagens: funil</h3>
           {funnelStatuses.map((status) => (
             <div key={status} className="input-group">
-              <label htmlFor="status">{status}</label>
+              <label htmlFor="status">{constants.statusTranslation[status] || status.toUpperCase()}</label>
               <input
                 type="text"
                 value={funnelMessages[status].message1}
@@ -285,7 +291,7 @@ const Settings = () => {
             </div>
           ))}
         </div>
-        <button className="button" onClick={handleSaveMessages}>Save Messages</button>
+        <button className="button" onClick={handleSaveMessages}>Atualizar mensagens</button>
       </div>
     </div>
   );
