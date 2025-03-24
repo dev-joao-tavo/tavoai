@@ -29,10 +29,10 @@ const Settings = () => {
         },
       });
 
-      if(response.data.status = 200){
+      if(response.data.is_logged_in = true){
         setWhatsappStatus("Connected");
       }
-      if(response.data.status = 500){
+      if(response.data.is_logged_in = false){
         setWhatsappStatus("Disconnected");
       }
 

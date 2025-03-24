@@ -44,6 +44,18 @@ async def get_phone_numbers_and_names_by_status_and_board(status: str, board_id:
             raise
     return phone_numbers_and_names
 
+async def login_check(driver):
+    try:
+        driver.get(f"https://web.whatsapp.com/send/?phone=+5531995854940")
+
+        # Wait for page to fully load
+        await asyncio.sleep(random.uniform(15, 20))  # Random sleep to simulate loading time
+
+        # Find the message input field
+        driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
+        return True
+    except:    
+        return False
 
 async def get_wpp_login_code(driver, user_phone_number):
     try:
@@ -235,3 +247,41 @@ async def update_last_message(contact_id):
         if contact:
             contact.last_message_contact = datetime.utcnow()
             await session.commit()  
+
+@app.route("/whatsAppLoginCheck", methods=["get"])
+async def whats_app_login_check(request):
+    driver = None  # Ensure driver is always available in the scope
+    
+    try:
+        user_id = get_user_from_token(request)
+        if not user_id:
+            raise Unauthorized("Invalid or expired token.")
+    
+    except Unauthorized as e:
+        return response.json({"error": str(e)}, status=401)
+    except Exception as e:
+        return response.json({"error": "An error occurred: " + str(e)}, status=400)
+
+    try:        
+        async with get_db_session() as session:
+            result = await session.execute(select(User).filter(User.id == user_id))
+            user = result.scalars().first()
+        
+        if not user:
+            return response.json({"error": "User not found."}, status=404)
+
+        driver = await asyncio.to_thread(initialize_driver, user_id)
+        user_phone_number = user.user_wpp_phone_number
+        is_logged_in = await login_check(driver)
+        
+        # Sleeping before sending the response if needed
+        await asyncio.sleep(1)
+        driver.quit()
+        if is_logged_in == True:
+           return response.json({"message": "You are already logged in!", "is_logged_in":is_logged_in},status=200)
+        if is_logged_in == False:
+           return response.json({"message": "You are NOT logged in!", "is_logged_in":is_logged_in},status=200)
+
+    except Exception as e:
+        driver.quit()
+        return response.json({"error": str(e)})
