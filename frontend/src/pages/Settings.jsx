@@ -155,6 +155,7 @@ const Settings = () => {
   
       {/* Profile Section */}
       <div className="section">
+        <br/>
         <div className="input-group">
         <label htmlFor="name">Nome</label>
           <input
@@ -194,21 +195,35 @@ const Settings = () => {
         <button className="button" onClick={handleSaveProfile}>Atualizar perfil</button>
         </div>
 
-      {/* WhatsApp Connection Section */}
-      <div className="section">
-        <h2>Conexão com o WhatsApp</h2>
-        <div className="status">
-          <span>Status:</span> <span>{whatsappStatus}</span>
-        </div>
-        <div className="button-group">
-          <button className="button" onClick={handleWhatsAppLogin}>
-            {isLoading ? "Carregando..." : "Conectar"}
-          </button>
-          <button className="button" onClick={handleWhatsAppIsLoggedInCheck}>
-            {isChecking ? "Checando..." : "Checar conexão"}
-          </button>
-        </div>
-      </div>
+{/* WhatsApp Connection Section */}
+<div className="section">
+  <h2>Conexão com o WhatsApp</h2>
+  <div className="status">
+    <span>Status:</span> 
+    <span style={{ display: 'inline-block', marginLeft: '8px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: whatsappStatus === "Connected" ? 'green' : whatsappStatus === "Disconnected" ? 'red' : 'gray' }}></span>
+    <span style={{ marginLeft: '8px' }}>
+      {whatsappStatus === "Connected" ? "Conectado" : 
+       whatsappStatus === "Disconnected" ? "Desconectado" : 
+       whatsappStatus}
+    </span>
+  </div>
+  
+  {(isLoading || isChecking) ? (
+    <div className="loading-container">
+      <div className="loading-circle"></div>
+      <p className="loading-text">{isLoading ? "Conectando..." : "Verificando conexão..."}</p>
+    </div>
+  ) : (
+    <div className="button-group">
+      <button className="button" onClick={handleWhatsAppLogin}>
+        Conectar
+      </button>
+      <button className="button" onClick={handleWhatsAppIsLoggedInCheck}>
+        Checar conexão
+      </button>
+    </div>
+  )}
+</div>
 
 
       {/* Show modal if showModal is true */}
