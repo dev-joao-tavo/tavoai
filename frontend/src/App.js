@@ -51,7 +51,7 @@ function App() {
           }
         />
         <Route
-          path="/Settings"
+          path="/settings"
           element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
               <Settings />
