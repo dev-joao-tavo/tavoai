@@ -42,12 +42,12 @@ const Header = ({ handleLogout }) => {
         Configurações
       </button>
 
-      <button
+      {/* <button
         onClick={() => window.open("https://pay.infinitepay.io/tavoai/Ri0x-1HOAcj6R35-19,90", "_blank")}
         className="header-button"
-      >
+      > 
         Assinatura
-      </button>
+      </button>*/}
       <button onClick={handleWhatsAppLogin} className="header-button" disabled={isLoading}>
         {isLoading ? "Carregando..." : "WhatsApp Login"}
       </button>
