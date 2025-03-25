@@ -134,7 +134,7 @@ const updateProfile = async (profileData) => {
     };
 
     // Send the update request to the backend
-    const response = await axios.post(`${constants.API_BASE_URL}/update-profile`, data, {
+    const response = await axios.post(`${constants.API_BASE_URL}/api/update-profile`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

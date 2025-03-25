@@ -6,7 +6,10 @@ from utils.utils import hash_password, verify_password, generate_token
 from db import get_db_session
 from models.models import User, Board
 from sanic_ext import Extend
-from utils.utils import hash_password
+from utils.utils import hash_password, get_user_from_token
+from sqlalchemy.exc import SQLAlchemyError
+import json
+
 
 auth_bp = Blueprint("auth", url_prefix="/api")
 CORS(auth_bp)  # Enable CORS for the auth blueprint
@@ -74,35 +77,130 @@ async def signup(request):
         token = await generate_token(new_user)
         return response.json({"message": "Cadastro feito com sucesso!", "token": token}, status=201)
 
-user_bp = Blueprint("user", url_prefix="/api/users")
+@auth_bp.post("/update-profile")
+async def update_profile(request):
+    try:
+        # Get user from token
+        user_id = get_user_from_token(request)
+        if not user_id:
+            return response.json({"error": "Invalid or missing token"}, status=401)
+        # Get and validate request data
+        try:
+            print(">>>>>>>>>>>>>>>>>",request)
+            data = await request.json()
+            print("???????????????????",data)
 
-@user_bp.put("/<user_id:int>")
-async def update_user(request):   
-    # Extract token from the request headers
-    token = request.headers.get("Authorization")
-    if not token:
-        return response.json({"message": "Unauthorized"}, status=401)
+        except json.JSONDecodeError:
+            return response.json({"error": "Invalid JSON data"}, status=400)
+    
+        new_phone = data.get('new_phone')
+        new_password = data.get('new_password')
+        new_email = data.get('new_email')
+        new_username = data.get('new_username')
 
-    data = request.json
-    new_phone = data.get("user_wpp_phone_number")
-    new_password = data.get("password")
+        # Validate at least one field is provided
+        if not any([new_phone, new_password, new_email, new_username]):
+            return response.json(
+                {"error": "No fields provided for update"}, 
+                status=400
+            )
+        print("..........")
+        async with get_db_session() as session:
+            try:
+                # Get user
+                result = await session.execute(select(User).where(User.id == user_id))
+                user = result.scalars().first()
 
-    if not new_phone and not new_password:
-        return response.json({"message": "No changes provided"}, status=400)
+                if not user:
+                    return response.json({"error": "User not found"}, status=404)
 
-    async with get_db_session() as session:
-        result = await session.execute(select(User).where(User.id == user_id))
-        user = result.scalars().first()
+                # Track updates for response
+                updated_fields = {}
 
-        if not user:
-            return response.json({"message": "User not found"}, status=404)
+                # Phone number update
+                if new_phone is not None:
+                    if new_phone != user.user_wpp_phone_number:
+                        existing = await session.execute(
+                            select(User).where(
+                                User.user_wpp_phone_number == new_phone,
+                                User.id != user_id
+                            )
+                        )
+                        if existing.scalars().first():
+                            return response.json(
+                                {"error": "Phone number already in use"},
+                                status=400
+                            )
+                        user.user_wpp_phone_number = new_phone
+                        updated_fields['phone'] = True
 
-        # Update fields
-        if new_phone:
-            user.user_wpp_phone_number = new_phone
-        if new_password:
-            user.password_hash = hash_password(new_password)  # Secure hashing
+                # Password update
+                if new_password is not None:
+                    if len(new_password) < 8:
+                        return response.json(
+                            {"error": "Password must be at least 8 characters"},
+                            status=400
+                        )
+                    user.set_password(new_password)
+                    updated_fields['password'] = True
 
-        await session.commit()
-        return response.json({"message": "Profile updated successfully"})
+                # Email update
+                if new_email is not None:
+                    if new_email != user.email:
+                        existing = await session.execute(
+                            select(User).where(
+                                User.email == new_email,
+                                User.id != user_id
+                            )
+                        )
+                        if existing.scalars().first():
+                            return response.json(
+                                {"error": "Email already in use"},
+                                status=400
+                            )
+                        user.email = new_email
+                        updated_fields['email'] = True
 
+                # Username update
+                if new_username is not None:
+                    if new_username != user.username:
+                        existing = await session.execute(
+                            select(User).where(
+                                User.username == new_username,
+                                User.id != user_id
+                            )
+                        )
+                        if existing.scalars().first():
+                            return response.json(
+                                {"error": "Username already in use"},
+                                status=400
+                            )
+                        user.username = new_username
+                        updated_fields['username'] = True
+
+                if not updated_fields:
+                    return response.json(
+                        {"message": "No changes detected"},
+                        status=200
+                    )
+
+                await session.commit()
+                return response.json({
+                    "message": "Profile updated successfully",
+                    "updated_fields": updated_fields
+                })
+
+            except SQLAlchemyError as e:
+                await session.rollback()
+                print(f"Database error during profile update: {str(e)}")
+                return response.json(
+                    {"error": "Database error occurred"},
+                    status=500
+                )
+
+    except Exception as e:
+        print(f"Unexpected error in update_profile: {str(e)}")
+        return response.json(
+            {"error": "An internal server error occurred"},
+            status=500
+        )
