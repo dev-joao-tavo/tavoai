@@ -6,7 +6,7 @@ from utils.utils import hash_password, verify_password, generate_token
 from db import get_db_session
 from models.models import User, Board
 from sanic_ext import Extend
-from utils.utils import hash_password, get_user_from_token
+from utils.utils import  get_user_from_token
 from sqlalchemy.exc import SQLAlchemyError
 import json
 
@@ -84,14 +84,9 @@ async def update_profile(request):
         user_id = get_user_from_token(request)
         if not user_id:
             return response.json({"error": "Invalid or missing token"}, status=401)
-        # Get and validate request data
-        try:
-            print(">>>>>>>>>>>>>>>>>",request)
-            data = await request.json()
-            print("???????????????????",data)
-
-        except json.JSONDecodeError:
-            return response.json({"error": "Invalid JSON data"}, status=400)
+        
+        
+        data = request.json
     
         new_phone = data.get('new_phone')
         new_password = data.get('new_password')
@@ -104,7 +99,6 @@ async def update_profile(request):
                 {"error": "No fields provided for update"}, 
                 status=400
             )
-        print("..........")
         async with get_db_session() as session:
             try:
                 # Get user
@@ -118,7 +112,7 @@ async def update_profile(request):
                 updated_fields = {}
 
                 # Phone number update
-                if new_phone is not None:
+                if new_phone is not "":
                     if new_phone != user.user_wpp_phone_number:
                         existing = await session.execute(
                             select(User).where(
@@ -135,17 +129,12 @@ async def update_profile(request):
                         updated_fields['phone'] = True
 
                 # Password update
-                if new_password is not None:
-                    if len(new_password) < 8:
-                        return response.json(
-                            {"error": "Password must be at least 8 characters"},
-                            status=400
-                        )
+                if new_password is not "":
                     user.set_password(new_password)
                     updated_fields['password'] = True
 
                 # Email update
-                if new_email is not None:
+                if new_email is not "":
                     if new_email != user.email:
                         existing = await session.execute(
                             select(User).where(
@@ -162,7 +151,7 @@ async def update_profile(request):
                         updated_fields['email'] = True
 
                 # Username update
-                if new_username is not None:
+                if new_username is not "":
                     if new_username != user.username:
                         existing = await session.execute(
                             select(User).where(
@@ -170,11 +159,6 @@ async def update_profile(request):
                                 User.id != user_id
                             )
                         )
-                        if existing.scalars().first():
-                            return response.json(
-                                {"error": "Username already in use"},
-                                status=400
-                            )
                         user.username = new_username
                         updated_fields['username'] = True
 

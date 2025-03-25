@@ -11,9 +11,9 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)  # Ensure this matches the migration
+    password_hash = Column(String, nullable=False)  
     user_wpp_phone_number = Column(String, primary_key=True, index=True)
-
+    user_current_status = Column(String)
 
     def set_password(self, password: str):
         """Hashes a password and stores it securely"""
