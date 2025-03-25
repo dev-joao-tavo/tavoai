@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from random import randint
 from utils.utils import hash_password, verify_password, generate_token
 from db import get_db_session
-from models.models import User, Board
+from models.models import User, Board, UserMessages
 from sanic_ext import Extend
 from utils.utils import  get_user_from_token
 from sqlalchemy.exc import SQLAlchemyError
@@ -184,6 +184,149 @@ async def update_profile(request):
 
     except Exception as e:
         print(f"Unexpected error in update_profile: {str(e)}")
+        return response.json(
+            {"error": "An internal server error occurred"},
+            status=500
+        )
+    
+@auth_bp.get("/get-profile")
+async def get_profile(request):
+    try:
+        # Get user from token
+        user_id = get_user_from_token(request)
+        if not user_id:
+            return response.json({"error": "Invalid or missing token"}, status=401)
+        
+        async with get_db_session() as session:
+            try:
+                # Get user
+                result = await session.execute(select(User).where(User.id == user_id))
+                user = result.scalars().first()
+
+                if not user:
+                    return response.json({"error": "User not found"}, status=404)
+
+                # Return the requested profile information
+                return response.json({
+                    "email": user.email,
+                    "phone": user.user_wpp_phone_number,
+                    "username": user.username
+                })
+
+            except SQLAlchemyError as e:
+                print(f"Database error during profile retrieval: {str(e)}")
+                return response.json(
+                    {"error": "Database error occurred"},
+                    status=500
+                )
+
+    except Exception as e:
+        print(f"Unexpected error in get_profile: {str(e)}")
+        return response.json(
+            {"error": "An internal server error occurred"},
+            status=500
+        )
+   
+
+
+@auth_bp.get("/get-messages")
+async def get_messages(request):
+    try:
+        # Get user from token
+        user_id = get_user_from_token(request)
+        if not user_id:
+            return response.json({"error": "Invalid or missing token"}, status=401)
+        
+        async with get_db_session() as session:
+            try:
+                # Get all messages for this user
+                result = await session.execute(
+                    select(UserMessages).where(UserMessages.user_id == user_id))
+                messages = result.scalars().all()
+
+                # Organize messages by status
+                organized_messages = {
+                    "agenda": {},
+                    "funnel": {}
+                }
+
+                for message in messages:
+                    # Determine if it's an agenda or funnel message
+                    status_type = "agenda" if message.status in agendaStatuses else "funnel"
+                    
+                    if message.status not in organized_messages[status_type]:
+                        organized_messages[status_type][message.status] = {}
+                    
+                    # Store message with its ID as key
+                    organized_messages[status_type][message.status][message.id] = message.message
+
+                return response.json(organized_messages)
+
+            except SQLAlchemyError as e:
+                print(f"Database error during messages retrieval: {str(e)}")
+                return response.json(
+                    {"error": "Database error occurred"},
+                    status=500
+                )
+
+    except Exception as e:
+        print(f"Unexpected error in get_messages: {str(e)}")
+        return response.json(
+            {"error": "An internal server error occurred"},
+            status=500
+        )
+
+@auth_bp.post("/update-messages")
+async def update_messages(request):
+    try:
+        # Get user from token
+        user_id = get_user_from_token(request)
+        if not user_id:
+            return response.json({"error": "Invalid or missing token"}, status=401)
+        
+        data = request.json
+        agenda_messages = data.get('agenda', {})
+        funnel_messages = data.get('funnel', {})
+
+        async with get_db_session() as session:
+            try:
+                # First delete existing messages for this user
+                await session.execute(
+                    delete(UserMessages).where(UserMessages.user_id == user_id))
+                
+                # Insert new agenda messages
+                for status, messages in agenda_messages.items():
+                    for message_id, message_content in messages.items():
+                        new_message = UserMessages(
+                            user_id=user_id,
+                            status=status,
+                            message=message_content
+                        )
+                        session.add(new_message)
+                
+                # Insert new funnel messages
+                for status, messages in funnel_messages.items():
+                    for message_id, message_content in messages.items():
+                        new_message = UserMessages(
+                            user_id=user_id,
+                            status=status,
+                            message=message_content
+                        )
+                        session.add(new_message)
+                
+                await session.commit()
+                return response.json({"message": "Messages updated successfully"})
+
+            except SQLAlchemyError as e:
+                await session.rollback()
+                print(f"Database error during messages update: {str(e)}")
+                return response.json(
+                    {"error": "Database error occurred"},
+                    status=500
+                )
+
+    except Exception as e:
+        print(f"Unexpected error in update_messages: {str(e)}")
         return response.json(
             {"error": "An internal server error occurred"},
             status=500
