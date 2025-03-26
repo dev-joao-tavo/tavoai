@@ -376,7 +376,6 @@ const Dashboard = () => {
     }
   };
 
-
   return (
     <div className="dashboard-container">
       {/* Header Component */}
@@ -403,7 +402,7 @@ const Dashboard = () => {
         </div>
       </div>
   
-      {/* Contact form remains the same */}
+      {/* Contact form */}
       <form onSubmit={handleAddCard} className="dashboard-form">
         <input
           type="text"
@@ -427,51 +426,50 @@ const Dashboard = () => {
       ) : (
         <div className="dashboard">
           {filteredStatuses.map((status) => {
-            // Get saved messages for this status
             const savedMessages = selectedBoard?.board_type === 'agenda' 
               ? agendaMessages[status] 
               : funnelMessages[status];
-
+  
             return (
               <div key={status} className="dashboard-column">
-                {/* ... other code ... */}
+                {/* RESTORED COLUMN TITLE WITH COUNTER */}
+                <h2 className="dashboard-title">
+                  {constants.statusTranslation[status] || status.toUpperCase()}
+                  <span className="card-counter"> ({cards[status].length})</span>
+                </h2>
+  
+                {/* Saved messages display */}
                 <div className="saved-messages">
                   {savedMessages ? (
                     <>
-                      {savedMessages.message1 && (
-                        <div className="message">
-                          <strong>1ª mensagem:</strong> {savedMessages.message1}
-                        </div>
-                      )}
-                      {savedMessages.message2 && (
-                        <div className="message">
-                          <strong>2ª mensagem:</strong> {savedMessages.message2}
-                        </div>
-                      )}
-                      {savedMessages.message3 && (
-                        <div className="message">
-                          <strong>3ª mensagem:</strong> {savedMessages.message3}
-                        </div>
-                      )}
-                      {!savedMessages.message1 && !savedMessages.message2 && !savedMessages.message3 && (
-                        <div className="message">Nenhuma mensagem definida</div>
-                      )}
+                      <div className="message">
+                        <strong>1ª mensagem:</strong> {savedMessages.message1 || "Não definida"}
+                      </div>
+                      <div className="message">
+                        <strong>2ª mensagem:</strong> {savedMessages.message2 || "Não definida"}
+                      </div>
+                      <div className="message">
+                        <strong>3ª mensagem:</strong> {savedMessages.message3 || "Não definida"}
+                      </div>
                     </>
                   ) : (
-                    <div className="message">Carregando mensagens...</div>
+                    <div className="message">Mensagens não carregadas</div>
                   )}
                 </div>
-
   
-                {/* Keep the send message button */}
+                {/* Send message button */}
                 <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>
-                  <button type="submit" className="button button-green">
-                    Enviar mensagem
+                  <button 
+                    type="submit" 
+                    className="button button-green"
+                    disabled={!savedMessages || isLoading}
+                  >
+                    {isLoading ? "Enviando..." : "Enviar mensagem"}
                   </button>
                 </form>
                 <br />
   
-                {/* Cards list remains the same */}
+                {/* Cards list */}
                 <div className="dashboard-cards">
                   {cards[status].map((card) => (
                     <Card
