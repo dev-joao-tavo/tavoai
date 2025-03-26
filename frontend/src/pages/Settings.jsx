@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from "react"; // Add useEffect import
+import React, { useState, useEffect } from "react";
 import "./Settings.css";
-import Header from "../components/Header.jsx"; // Adjust path if necessary
+import Header from "../components/Header.jsx";
 import axios from "axios";
-import WhatsAppLogin from "../components/WhatsAppLogin"; // Import the modal
+import WhatsAppLogin from "../components/WhatsAppLogin";
 import * as constants from '../utils/constants';
+
+// State for Messages Section
+const agendaStatuses = constants.agendaStatuses;
+const funnelStatuses = constants.funnelStatuses;
 
 const Settings = () => {
   // State for Profile Section
@@ -23,84 +27,22 @@ const Settings = () => {
 
   const [messagesError, setMessagesError] = useState(null);
   const [messagesSuccess, setMessagesSuccess] = useState(false);
+  // Then initialize messages state using the statuses
+  const [agendaMessages, setAgendaMessages] = useState(
+    agendaStatuses.reduce((acc, status) => {
+      acc[status] = { message1: '', message2: '', message3: '' };
+      return acc;
+    }, {})
+  );
+  
+  const [funnelMessages, setFunnelMessages] = useState(
+    funnelStatuses.reduce((acc, status) => {
+      acc[status] = { message1: '', message2: '', message3: '' };
+      return acc;
+    }, {})
+  );
 
-  // State for Messages Section
-  const agendaStatuses = constants.agendaStatuses;
-  const funnelStatuses = constants.funnelStatuses;
-
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found");
-          return;
-        }
-  
-        // Fetch profile data
-        const profileResponse = await axios.get(`${constants.API_BASE_URL}/api/get-profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-  
-        // Update profile state
-        setName(profileResponse.data.username || "");
-        setEmail(profileResponse.data.email || "");
-        setPhone(profileResponse.data.phone || "");
-  
-        // Fetch messages data
-        const messagesResponse = await axios.get(`${constants.API_BASE_URL}/get-messages`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-  
-        // Initialize empty message structures
-        const newAgendaMessages = {};
-        const newFunnelMessages = {};
-  
-        // Initialize all possible statuses
-        agendaStatuses.forEach(status => {
-          newAgendaMessages[status] = {};
-        });
-        funnelStatuses.forEach(status => {
-          newFunnelMessages[status] = {};
-        });
-  
-        // Process agenda messages
-        for (const status in messagesResponse.data.agenda) {
-          if (agendaStatuses.includes(status)) {
-            newAgendaMessages[status] = messagesResponse.data.agenda[status];
-          }
-        }
-  
-        // Process funnel messages
-        for (const status in messagesResponse.data.funnel) {
-          if (funnelStatuses.includes(status)) {
-            newFunnelMessages[status] = messagesResponse.data.funnel[status];
-          }
-        }
-  
-        setAgendaMessages(newAgendaMessages);
-        setFunnelMessages(newFunnelMessages);
-  
-        // Check WhatsApp status
-        await handleWhatsAppIsLoggedInCheck();
-  
-      } catch (error) {
-        console.error("Error fetching initial data:", error);
-        if (error.response?.status === 401) {
-          // Handle unauthorized (token expired)
-          localStorage.removeItem("token");
-          // Optionally redirect to login
-        }
-      } finally {
-        setIsProfileLoading(false);
-        setIsMessagesLoading(false);
-      }
-    };
-  
-    fetchInitialData();
-  }, []); // Empty dependency array means this runs once on mount
-
-  const handleWhatsAppIsLoggedInCheck = async() => {
+  const handleWhatsAppIsLoggedInCheck = async()   => {
     setIsChecking(true);
     try {
       const token = localStorage.getItem("token");
@@ -154,49 +96,82 @@ const Settings = () => {
   };
 
 
-  const [agendaMessages, setAgendaMessages] = useState(
-    agendaStatuses.reduce((acc, status) => {
-      acc[status] = {};
-      return acc;
-    }, {})
-  );
-  
-  const [funnelMessages, setFunnelMessages] = useState(
-    funnelStatuses.reduce((acc, status) => {
-      acc[status] = {};
-      return acc;
-    }, {})
-  );
-
-
-  const handleSaveMessages = async () => {
-    setIsUpdating(true);
-    setMessagesError(null);
-    setMessagesSuccess(false);
-    
+useEffect(() => {
+  const fetchInitialData = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error('No token found');
-  
-      const data = {
-        agenda: agendaMessages,
-        funnel: funnelMessages
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      // Fetch data in parallel
+      const [profileResponse, messagesResponse] = await Promise.all([
+        axios.get(`${constants.API_BASE_URL}/api/get-profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${constants.API_BASE_URL}/api/get-messages`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      // Update profile state
+      setName(profileResponse.data.username || "");
+      setEmail(profileResponse.data.email || "");
+      setPhone(profileResponse.data.phone || "");
+
+      // Process messages - extract only message1, message2, message3
+      const processMessages = (messagesObj, validStatuses) => {
+        return validStatuses.reduce((acc, status) => {
+          const serverMessages = messagesObj[status] || {};
+          acc[status] = {
+            message1: serverMessages.message1 || '',
+            message2: serverMessages.message2 || '',
+            message3: serverMessages.message3 || ''
+          };
+          return acc;
+        }, {});
       };
-  
-      await axios.post(`${constants.API_BASE_URL}/update-messages`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      setMessagesSuccess(true);
-      setTimeout(() => setMessagesSuccess(false), 3000);
+
+      setAgendaMessages(processMessages(messagesResponse.data.agenda, agendaStatuses));
+      setFunnelMessages(processMessages(messagesResponse.data.funnel, funnelStatuses));
+
     } catch (error) {
-      setMessagesError(error.response?.data?.message || error.message || 'Failed to update messages');
+      console.error("Error fetching initial data:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        // Optionally redirect to login
+      }
     } finally {
-      setIsUpdating(false);
+      setIsProfileLoading(false);
+      setIsMessagesLoading(false);
     }
   };
+
+  fetchInitialData();
+}, []);
+
+const handleSaveMessages = async () => {
+  setIsUpdating(true);
+  setMessagesError(null);
+  setMessagesSuccess(false);
+  
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post(`${constants.API_BASE_URL}/api/update-messages`, {
+      agenda: agendaMessages,
+      funnel: funnelMessages
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setMessagesSuccess(true);
+    setTimeout(() => setMessagesSuccess(false), 3000);
+  } catch (error) {
+    setMessagesError(error.response?.data?.message || "Failed to save messages");
+  } finally {
+    setIsUpdating(false);
+  }
+};
 
   // Handle Message Input Change
   const handleMessageChange = (section, status, field, value) => {
@@ -248,6 +223,11 @@ const updateProfile = async (profileData) => {
 
 // Handle save profile with loading states
 const handleSaveProfile = async () => {
+  if (password && password !== confirmPassword) {
+    setUpdateError("Passwords do not match");
+    return;
+  }
+
   setIsUpdating(true);
   setUpdateError(null);
   setUpdateSuccess(false);
@@ -257,13 +237,11 @@ const handleSaveProfile = async () => {
       name,
       email,
       phone,
-      password
+      password: password || undefined // Only send password if it's changed
     };
     
     await updateProfile(profileData);
     setUpdateSuccess(true);
-    
-    // Reset success message after 3 seconds
     setTimeout(() => setUpdateSuccess(false), 3000);
   } catch (error) {
     setUpdateError(error.response?.data?.message || error.message || 'Failed to update profile');
@@ -329,6 +307,9 @@ return (
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="Confirm your new password"
         />
+        {password && confirmPassword && password !== confirmPassword && (
+          <div className="error-message">Passwords do not match</div>
+        )}
       </div>
       
       {updateError && <div className="error-message">{updateError}</div>}
@@ -401,57 +382,63 @@ return (
     <div className="divider"></div>
 
     {/* Messages Section */}
-    <div className="section">
-  <h2>Suas mensagens</h2>
-  {messagesError && <div className="error-message">{messagesError}</div>}
-  {messagesSuccess && <div className="success-message">Mensagens atualizadas com sucesso!</div>}
-  
-  <div className="messages-section">
-    <h3>AGENDA</h3>
-    {agendaStatuses.map((status) => (
-      <div key={status} className="input-group">
-        <label>{constants.statusTranslation[status] || status.toUpperCase()}</label>
-        {Object.entries(agendaMessages[status] || {'1': ''}).map(([messageId, content]) => (
-  <input
-    key={messageId}
-    type="text"
-    value={content}
-    onChange={(e) => handleMessageChange("agenda", status, messageId, e.target.value)}
-    placeholder={`Message ${messageId}`}
-  />
-))}
-      </div>
-    ))}
+     
+  {/* Messages Section */}
+  <div className="section">
+    <h2>Suas mensagens</h2>
+    {messagesError && <div className="error-message">{messagesError}</div>}
+    {messagesSuccess && <div className="success-message">Mensagens atualizadas com sucesso!</div>}
+    
+    <div className="messages-section">
+      <h3>AGENDA</h3>
+      {agendaStatuses.map((status) => (
+        <div key={status} className="status-messages">
+          <label>{constants.statusTranslation[status] || status.toUpperCase()}</label>
+          {[1, 2, 3].map((num) => (
+            <input
+              key={`agenda-${status}-${num}`}
+              type="text"
+              value={agendaMessages[status][`message${num}`] || ''}
+              onChange={(e) => 
+                handleMessageChange("agenda", status, `message${num}`, e.target.value)
+              }
+              placeholder={`Mensagem ${num}`}
+            />
+          ))}
+        </div>
+      ))}
 
-    <h3>FUNIL</h3>
-    {funnelStatuses.map((status) => (
-      <div key={status} className="input-group">
-        <label>{constants.statusTranslation[status] || status.toUpperCase()}</label>
-        {Object.entries(agendaMessages[status] || {'1': ''}).map(([messageId, content]) => (
-  <input
-    key={messageId}
-    type="text"
-    value={content}
-    onChange={(e) => handleMessageChange("agenda", status, messageId, e.target.value)}
-    placeholder={`Message ${messageId}`}
-  />
-))}
-      </div>
-    ))}
+      <h3>FUNIL</h3>
+      {funnelStatuses.map((status) => (
+        <div key={status} className="status-messages">
+          <label>{constants.statusTranslation[status] || status.toUpperCase()}</label>
+          {[1, 2, 3].map((num) => (
+            <input
+              key={`funnel-${status}-${num}`}
+              type="text"
+              value={funnelMessages[status][`message${num}`] || ''}
+              onChange={(e) => 
+                handleMessageChange("funnel", status, `message${num}`, e.target.value)
+              }
+              placeholder={`Mensagem ${num}`}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+      <button 
+        className="button" 
+        onClick={handleSaveMessages}
+        disabled={isUpdating}
+      >
+        {isUpdating ? (
+          <>
+            <div className="loading-circle small"></div>
+            Atualizando...
+          </>
+        ) : 'Atualizar mensagens'}
+      </button>
   </div>
-  <button 
-    className="button" 
-    onClick={handleSaveMessages}
-    disabled={isUpdating}
-  >
-    {isUpdating ? (
-      <>
-        <div className="loading-circle small"></div>
-        Atualizando...
-      </>
-    ) : 'Atualizar mensagens'}
-  </button>
-</div>
   </div>
 );
 };

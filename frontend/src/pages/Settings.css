@@ -119,3 +119,45 @@
   background-color: #000; /* Black color, you can change it */
   margin: 20px auto; /* Center the line and give some space around it */
 }
+
+/* Fix for message input alignment */
+.status-messages {
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  width: 100%; /* Ensure full width */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.message-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%; /* Ensure full width */
+}
+
+.status-messages input {
+  width: calc(100% - 24px); /* Account for padding */
+  padding: 0.75rem 12px; /* Consistent horizontal padding */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin: 0; /* Remove any default margins */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Remove any conflicting grid styles */
+.messages-section {
+  display: block; /* Override any grid display */
+  width: 100%;
+}
+
+/* Ensure consistent container width */
+.settings-page {
+  padding: 20px;
+  padding-top: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}

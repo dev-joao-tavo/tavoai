@@ -9,7 +9,12 @@ from sanic_ext import Extend
 from utils.utils import  get_user_from_token
 from sqlalchemy.exc import SQLAlchemyError
 import json
+from sqlalchemy import delete
 
+agendaStatuses = [
+"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+  "schedule"
+]
 
 auth_bp = Blueprint("auth", url_prefix="/api")
 CORS(auth_bp)  # Enable CORS for the auth blueprint
@@ -232,45 +237,49 @@ async def get_profile(request):
 @auth_bp.get("/get-messages")
 async def get_messages(request):
     try:
-        # Get user from token
         user_id = get_user_from_token(request)
         if not user_id:
             return response.json({"error": "Invalid or missing token"}, status=401)
-        
+
         async with get_db_session() as session:
-            try:
-                # Get all messages for this user
-                result = await session.execute(
-                    select(UserMessages).where(UserMessages.user_id == user_id))
-                messages = result.scalars().all()
-
-                # Organize messages by status
-                organized_messages = {
-                    "agenda": {},
-                    "funnel": {}
-                }
-
-                for message in messages:
-                    # Determine if it's an agenda or funnel message
-                    status_type = "agenda" if message.status in agendaStatuses else "funnel"
-                    
-                    if message.status not in organized_messages[status_type]:
-                        organized_messages[status_type][message.status] = {}
-                    
-                    # Store message with its ID as key
-                    organized_messages[status_type][message.status][message.id] = message.message
-
-                return response.json(organized_messages)
-
-            except SQLAlchemyError as e:
-                print(f"Database error during messages retrieval: {str(e)}")
-                return response.json(
-                    {"error": "Database error occurred"},
-                    status=500
-                )
+            result = await session.execute(
+                select(UserMessages)
+                .where(UserMessages.user_id == user_id)
+            )
+            messages = result.scalars().all()
+            
+            agenda = {}
+            funnel = {}
+            
+            for msg in messages:
+                try:
+                    message_data = json.loads(msg.message)
+                    if not isinstance(message_data, dict):
+                        continue
+                        
+                    if msg.status.startswith("agenda_"):
+                        status = msg.status[7:]  # Remove "agenda_" prefix
+                        agenda[status] = {
+                            "message1": message_data.get("message1", ""),
+                            "message2": message_data.get("message2", ""),
+                            "message3": message_data.get("message3", "")
+                        }
+                    elif msg.status.startswith("funnel_"):
+                        status = msg.status[7:]  # Remove "funnel_" prefix
+                        funnel[status] = {
+                            "message1": message_data.get("message1", ""),
+                            "message2": message_data.get("message2", ""),
+                            "message3": message_data.get("message3", "")
+                        }
+                except json.JSONDecodeError:
+                    continue
+            
+            return response.json({
+                "agenda": agenda,
+                "funnel": funnel
+            })
 
     except Exception as e:
-        print(f"Unexpected error in get_messages: {str(e)}")
         return response.json(
             {"error": "An internal server error occurred"},
             status=500
@@ -288,45 +297,79 @@ async def update_messages(request):
         agenda_messages = data.get('agenda', {})
         funnel_messages = data.get('funnel', {})
 
+        # Validate the message structure
+        if not all(
+            all(isinstance(msg, dict) and 
+                {'message1', 'message2', 'message3'}.issubset(msg.keys())
+                for msg in messages.values())
+            for messages in [agenda_messages, funnel_messages]
+        ):
+            return response.json(
+                {"error": "Invalid message format. Each status must have message1, message2, message3"},
+                status=400
+            )
+
         async with get_db_session() as session:
             try:
-                # First delete existing messages for this user
+                # Delete existing messages for this user in a single operation
                 await session.execute(
-                    delete(UserMessages).where(UserMessages.user_id == user_id))
+                    delete(UserMessages).where(UserMessages.user_id == user_id)
+                )
                 
-                # Insert new agenda messages
+                # Prepare batch inserts for better performance
+                new_messages = []
+                
+                # Process agenda messages - store as JSON strings
                 for status, messages in agenda_messages.items():
-                    for message_id, message_content in messages.items():
-                        new_message = UserMessages(
+                    new_messages.append(
+                        UserMessages(
                             user_id=user_id,
-                            status=status,
-                            message=message_content
+                            status=f"agenda_{status}",  # Prefix with agenda_
+                            message=json.dumps({
+                                "message1": messages["message1"],
+                                "message2": messages["message2"],
+                                "message3": messages["message3"]
+                            })
                         )
-                        session.add(new_message)
+                    )
                 
-                # Insert new funnel messages
+                # Process funnel messages - store as JSON strings
                 for status, messages in funnel_messages.items():
-                    for message_id, message_content in messages.items():
-                        new_message = UserMessages(
+                    new_messages.append(
+                        UserMessages(
                             user_id=user_id,
-                            status=status,
-                            message=message_content
+                            status=f"funnel_{status}",  # Prefix with funnel_
+                            message=json.dumps({
+                                "message1": messages["message1"],
+                                "message2": messages["message2"],
+                                "message3": messages["message3"]
+                            })
                         )
-                        session.add(new_message)
+                    )
                 
+                # Bulk insert all messages
+                session.add_all(new_messages)
                 await session.commit()
-                return response.json({"message": "Messages updated successfully"})
+                
+                return response.json({
+                    "message": "Messages updated successfully",
+                    "updated_count": len(new_messages)
+                })
 
             except SQLAlchemyError as e:
                 await session.rollback()
-                print(f"Database error during messages update: {str(e)}")
                 return response.json(
                     {"error": "Database error occurred"},
                     status=500
                 )
+            except json.JSONDecodeError as e:
+                await session.rollback()
+                return response.json(
+                    {"error": "Message formatting error"},
+                    status=400
+                )
 
     except Exception as e:
-        print(f"Unexpected error in update_messages: {str(e)}")
         return response.json(
             {"error": "An internal server error occurred"},
             status=500
