@@ -21,7 +21,8 @@ const Dashboard = () => {
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [whatsAppCode, setWhatsAppCode] = useState(null);
-
+  const [agendaMessages, setAgendaMessages] = useState({});
+  const [funnelMessages, setFunnelMessages] = useState({});
   const [newCardTitle, setNewCardTitle] = useState("");
   const [newCardDescription, setNewCardDescription] = useState("");
   const [columnMessages, setColumnMessages] = useState(
@@ -40,10 +41,26 @@ const Dashboard = () => {
     return constants.statuses; // Default to all statuses
   };
   const filteredStatuses = getStatusesForBoard(selectedBoardType);
+  const fetchMessages = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${constants.API_BASE_URL}/api/get-messages`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAgendaMessages(response.data.agenda || {});
+      setFunnelMessages(response.data.funnel || {});
+    } catch (error) {
+      console.error("Error loading messages:", error);
+    }
+  };
+  
 
   useEffect(() => {
     fetchBoards();
     fetchContacts();
+    fetchMessages();
+
+    
   }, []);
 
   useEffect(() => {
@@ -275,15 +292,23 @@ const Dashboard = () => {
   const sendMessageForEachColumn = async (e, status) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
+      const messages = selectedBoard?.board_type === 'agenda' 
+        ? agendaMessages[status] 
+        : funnelMessages[status];
+  
+      if (!messages) {
+        throw new Error("No messages found for this status");
+      }
+  
+      await axios.post(
         `${constants.API_BASE_URL}/sendMessage`,
         {
           status,
-          ...columnMessages[status],
-          boardId: selectedBoard.id, // Assign it to a key
+          ...messages,
+          boardId: selectedBoard.id,
         },
         {
           headers: {
@@ -291,10 +316,10 @@ const Dashboard = () => {
           },
         }
       );
-      alert(`Suas mensagens estão sendo enviadas!`);
+      alert(`Mensagens enviadas com sucesso para ${status}!`);
     } catch (error) {
       console.error("Error sending message:", error);
-      alert(`Failed to send message for ${status} column.`);
+      alert(`Erro ao enviar mensagens: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -362,7 +387,7 @@ const Dashboard = () => {
         <h2>Seu assistente inteligente</h2>
       </div>
   
-      {/* Add a dropdown to switch between boards */}
+      {/* Board selector */}
       <div className="board-selector">
         <label>Selecione o quadro: </label>
         <div className="toggle-buttons">
@@ -378,6 +403,7 @@ const Dashboard = () => {
         </div>
       </div>
   
+      {/* Contact form remains the same */}
       <form onSubmit={handleAddCard} className="dashboard-form">
         <input
           type="text"
@@ -400,50 +426,66 @@ const Dashboard = () => {
         <div className="loading-spinner"></div>
       ) : (
         <div className="dashboard">
-          {filteredStatuses.map((status) => (
-            <div key={status} className="dashboard-column">
-              <h2 className="dashboard-title">
-                {constants.statusTranslation[status] || status.toUpperCase()}
-                {/* Add the live card counter here */}
-                <span className="card-counter"> ({cards[status].length})</span>
-              </h2>
+          {filteredStatuses.map((status) => {
+            // Get saved messages for this status
+            const savedMessages = selectedBoard?.board_type === 'agenda' 
+              ? agendaMessages[status] 
+              : funnelMessages[status];
+
+            return (
+              <div key={status} className="dashboard-column">
+                {/* ... other code ... */}
+                <div className="saved-messages">
+                  {savedMessages ? (
+                    <>
+                      {savedMessages.message1 && (
+                        <div className="message">
+                          <strong>1ª mensagem:</strong> {savedMessages.message1}
+                        </div>
+                      )}
+                      {savedMessages.message2 && (
+                        <div className="message">
+                          <strong>2ª mensagem:</strong> {savedMessages.message2}
+                        </div>
+                      )}
+                      {savedMessages.message3 && (
+                        <div className="message">
+                          <strong>3ª mensagem:</strong> {savedMessages.message3}
+                        </div>
+                      )}
+                      {!savedMessages.message1 && !savedMessages.message2 && !savedMessages.message3 && (
+                        <div className="message">Nenhuma mensagem definida</div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="message">Carregando mensagens...</div>
+                  )}
+                </div>
+
   
-              <div className="message-inputs">
-                {(columnMessages[status] ? ["message1", "message2", "message3"] : []).map(
-                  (messageKey, index) => (
-                    <div key={messageKey}>
-                      <input
-                        type="text"
-                        placeholder={`${index + 1}ª mensagem`}
-                        value={columnMessages[status]?.[messageKey] || ""}
-                        onChange={(e) => handleInputChange(status, messageKey, e.target.value)}
-                        className="custom-input"
-                      />
-                      <br />
-                    </div>
-                  )
-                )}
-              </div>
-              <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>
-                <button type="submit" className="button button-green">
-                  Enviar mensagem
-                </button>
-              </form>
-              <br />
+                {/* Keep the send message button */}
+                <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>
+                  <button type="submit" className="button button-green">
+                    Enviar mensagem
+                  </button>
+                </form>
+                <br />
   
-              <div className="dashboard-cards">
-                {cards[status].map((card) => (
-                  <Card
-                    key={card.id}
-                    card={card}
-                    contacts={contacts}
-                    updateCardStatus={updateCardStatus}
-                    deleteCard={deleteCard}
-                  />
-                ))}
+                {/* Cards list remains the same */}
+                <div className="dashboard-cards">
+                  {cards[status].map((card) => (
+                    <Card
+                      key={card.id}
+                      card={card}
+                      contacts={contacts}
+                      updateCardStatus={updateCardStatus}
+                      deleteCard={deleteCard}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
