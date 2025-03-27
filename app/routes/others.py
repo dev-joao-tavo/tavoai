@@ -45,13 +45,13 @@ async def get_cards(request, board_id):
         board_id = int(board_id)
         async with SessionLocal() as session:
             result = await session.execute(
-                text("SELECT id, title, status, contact_ID FROM cards WHERE board_id = :board_id"),
+                text("SELECT id, title, status, contact_ID, sending_message_status FROM cards WHERE board_id = :board_id"),
                 {"board_id": board_id}
             )
             cards = result.fetchall()
         
         cards_list = [
-            {"id": row[0], "title": row[1], "status": row[2], "contact_ID": row[3]}  # Added contact_ID
+            {"id": row[0], "title": row[1], "status": row[2], "contact_ID": row[3],"sending_message_status": row[4]}  # Added contact_ID
             for row in cards
         ]
 

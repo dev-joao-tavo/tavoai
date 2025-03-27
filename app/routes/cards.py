@@ -48,7 +48,8 @@ async def add_card_and_contact(request):
                 "id": contact_id,
                 "phone_number": phone_number,
                 "contact_name": contact_name,
-                "user_id": user_id
+                "user_id": user_id,
+                "sending_message_status": "OK",
             }
 
             # Insert contact into the database
@@ -65,11 +66,12 @@ async def add_card_and_contact(request):
                 "status": status,  # Use the status from the frontend
                 "board_id": int(board_id),  # Use the board_id from the frontend
                 "contact_ID": contact_id,
+                "sending_message_status":"OK"
             }
 
             # Insert card into the database
             await session.execute(
-                text("INSERT INTO cards (id, title, status, board_id, contact_ID) VALUES (:id, :title, :status, :board_id, :contact_ID) ON CONFLICT (id) DO NOTHING"),
+                text("INSERT INTO cards (id, title, status, board_id, contact_ID, sending_message_status) VALUES (:id, :title, :status, :board_id, :contact_ID, :sending_message_status) ON CONFLICT (id) DO NOTHING"),
                 card,
             )
 

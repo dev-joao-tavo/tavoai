@@ -373,28 +373,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleWhatsAppLogin = async () => {
-    setIsLoading(true);
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLogin`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Store the code in state
-      setWhatsAppCode(response.data.code);
-    } catch (error) {
-      console.error("Error on logging in your WhatsApp: ", error);
-      alert("Failed to login!");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
 
 
 

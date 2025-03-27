@@ -53,6 +53,7 @@ class Card(Base):
     title = Column(String, nullable=False)
     status = Column(String)
     last_message = Column(TIMESTAMP)
+    sending_message_status = Column(String)
 
 
 
