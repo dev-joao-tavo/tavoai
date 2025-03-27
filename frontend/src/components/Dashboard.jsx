@@ -31,6 +31,9 @@ const Dashboard = () => {
       return acc;
     }, {})
   );  
+  const [importFile, setImportFile] = useState(null);
+  const [importStatus, setImportStatus] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
   
   const getStatusesForBoard = (boardType) => {
     if (boardType === "funnel") {
@@ -68,6 +71,51 @@ const Dashboard = () => {
       fetchCards(selectedBoard.id);
     }
   }, [selectedBoard]);
+  
+  const handleImportContacts = async (e) => {
+    e.preventDefault();
+    if (!importFile || !selectedBoard) {
+      alert("Please select a file and a board first");
+      return;
+    }
+  
+    setIsImporting(true);
+    setImportStatus("Processing...");
+  
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('csv_file', importFile);
+      formData.append('board_id', selectedBoard.id);
+      formData.append('status', selectedBoard.board_type === "funnel" ? "day-1" : "monday");
+  
+      const response = await axios.post(
+        `${constants.API_BASE_URL}/import-contacts`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+  
+      setImportStatus(`Success: ${response.data.success_count} contacts imported, ${response.data.error_count} errors`);
+      if (response.data.error_count > 0) {
+        console.error("Import errors:", response.data.errors);
+      }
+      
+      // Refresh the cards and contacts after import
+      fetchCards(selectedBoard.id);
+      fetchContacts();
+    } catch (error) {
+      console.error("Import failed:", error);
+      setImportStatus(`Error: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setIsImporting(false);
+      setImportFile(null);
+    }
+  };
   
   const handleBoardChange = (e) => {
     const boardId = Number(e.target.value);
@@ -421,6 +469,33 @@ const Dashboard = () => {
         <button type="submit">Adicionar contato</button>
       </form>
   
+      {/* CSV Import form */}
+      <div className="import-section">
+        <h3>Importar contatos via CSV</h3>
+        <p>
+          <a 
+            href={`data:text/csv;charset=utf-8,${encodeURIComponent('Numero,Nome\n31987654321,João Silva\n31988776655,Maria Souza')}`} 
+            download="contatos_template.csv"
+          >
+            Baixar modelo CSV
+          </a>
+        </p>
+        <form onSubmit={handleImportContacts} className="dashboard-form">
+          <input
+            type="file"
+            accept=".csv"
+            onChange={(e) => setImportFile(e.target.files[0])}
+            disabled={isImporting}
+          />
+          <button 
+            type="submit" 
+            disabled={!importFile || isImporting || !selectedBoard}
+          >
+            {isImporting ? "Importando..." : "Importar CSV"}
+          </button>
+        </form>
+        {importStatus && <div className="import-status">{importStatus}</div>}
+      </div>
       {isLoading ? (
         <div className="loading-spinner"></div>
       ) : (

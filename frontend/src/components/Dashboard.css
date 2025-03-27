@@ -40,3 +40,36 @@
 .saved-messages strong {
   color: #555;
 }
+/* Add these styles to your Dashboard.css */
+.import-section {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.import-section h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.import-status {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.import-status.error {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.dashboard-form input[type="file"] {
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+}
