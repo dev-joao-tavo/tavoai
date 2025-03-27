@@ -1,34 +1,224 @@
-/* Close Button ("X") */
-.close-button {
-    top: 10px;
-    right: 10px;
-    background: rgba(255, 255, 255, 0.8); /* Slightly transparent white background */
-    border: none;
-    border-radius: 50%; /* Circular button */
-    width: 30px; /* Fixed size */
-    height: 30px; /* Fixed size */
-    font-size: 18px; /* Slightly smaller font */
-    cursor: pointer;
-    color: #666; /* Slightly gray color */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for visibility */
-    transition: all 0.3s ease; /* Smooth transition for hover effects */
-  }
-  
-  .close-button:hover:not(:disabled) {
-    color: red; /* Change color on hover */
-    background: rgba(255, 255, 255, 1); /* Solid white background on hover */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
-  }
-  
-  .close-button:disabled {
-    cursor: not-allowed; /* Change cursor to indicate the button is disabled */
-    opacity: 0.6; /* Reduce opacity to visually indicate the button is disabled */
-  }
+/* Base Card Styles */
+.card {
+  position: relative;
+  background-color: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
 
-  /* In your CSS file */
-.smaller-text {
-  font-size: 0.9rem;
+.card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem 1rem 0.5rem;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+  padding-right: 1.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Delete Button */
+.delete-button {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.25rem;
+  border-radius: 50%;
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-button:hover:not(.deleting) {
+  color: #ef4444;
+  background-color: #fee2e2;
+}
+
+.delete-button.deleting {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.delete-icon {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 2;
+}
+
+/* Card Content */
+.card-content {
+  padding: 0 1rem 1rem;
+}
+
+/* Contact Info */
+.contact-info {
+  margin-bottom: 0.75rem;
+}
+
+.phone-number,
+.contact-error {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.contact-error {
+  color: #ef4444;
+}
+
+.phone-icon,
+.error-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.375rem;
+  stroke-width: 2;
+}
+
+/* Status Container */
+.status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.status-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.status-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.25rem;
+}
+
+.status-sending {
+  background-color: #fffbeb;
+  color: #b45309;
+  border-color: #fcd34d;
+}
+
+.status-sending .status-icon {
+  animation: spin 1s linear infinite;
+}
+
+.status-ok {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.status-error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.status-default {
+  background-color: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.status-label {
+  margin-left: 0.25rem;
+}
+
+/* Last Message */
+.last-message {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+/* Dropdown */
+.dropdown-container {
+  position: relative;
+}
+
+.status-dropdown {
+  appearance: none;
+  background-color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 1.5rem 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-dropdown:hover {
+  border-color: #9ca3af;
+}
+
+.status-dropdown:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.dropdown-container::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  width: 0.75rem;
+  height: 0.75rem;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3e%3cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (min-width: 640px) {
+  .last-message {
+    max-width: 150px;
+  }
 }
