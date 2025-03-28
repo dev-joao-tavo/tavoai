@@ -110,11 +110,28 @@ const MessageHistory = () => {
       </div>
     );
   }
-
+  const countTodaysSuccessfulMessages = () => {
+    const today = new Date().toISOString().split('T')[0]; // Get today's date (YYYY-MM-DD)
+    
+    return messages.reduce((count, message) => {
+      const messageDate = message.sent_at.split('T')[0];
+      return messageDate === today ? count + message.success_count : count;
+    }, 0);
+  };
   return (
     <div className="message-history-container">
       <Header />
-      <h1>Histórico de Mensagens</h1>
+      <div className="header-section">
+        <div className="success-counter">
+          <div className="counter-icon">✓</div>
+          <div className="counter-content">
+            <span className="counter-label">Enviadas hoje</span>
+            <span className="counter-value">
+              {countTodaysSuccessfulMessages()}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Filter Controls */}
       <div className="filters">

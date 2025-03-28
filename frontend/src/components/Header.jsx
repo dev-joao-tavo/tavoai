@@ -17,6 +17,10 @@ const Header = ({ handleLogout }) => {
         Configurações
       </button>
 
+      <button onClick={() => (window.location.href = "/history")} className="header-button">
+        Histórico
+      </button>
+
       {/* <button
         onClick={() => window.open("https://pay.infinitepay.io/tavoai/Ri0x-1HOAcj6R35-19,90", "_blank")}
         className="header-button"

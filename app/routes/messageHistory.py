@@ -11,6 +11,33 @@ from sanic import Sanic
 
 app = Sanic.get_app()
 
+@app.get("/daily-count")
+async def get_daily_message_count(request):
+    user_id = get_user_from_token(request)
+    if not user_id:
+        raise BadRequest("Invalid or expired token.")
+
+    date_str = request.args.get("date")
+    if not date_str:
+        raise BadRequest("Date parameter is required")
+
+    try:
+        date = datetime.fromisoformat(date_str).date()
+        next_day = date + timedelta(days=1)
+    except ValueError:
+        raise BadRequest("Invalid date format. Use YYYY-MM-DD")
+
+    async with get_db_session() as session:
+        result = await session.execute(
+            select(func.sum(MessageHistory.total_recipients))
+            .where(MessageHistory.user_id == user_id)
+            .where(MessageHistory.sent_at >= date)
+            .where(MessageHistory.sent_at < next_day)
+        )
+        count = result.scalar() or 0
+        
+    return json({"count": count})
+
 @app.get("/message-history")
 async def get_message_history(request):
     """Get paginated message history with filters"""

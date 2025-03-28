@@ -271,3 +271,101 @@
     margin-left: 0;
   }
 }
+
+.todays-counter {
+  margin: 0.5rem 0 1.5rem;
+  padding: 0.5rem;
+  background: #f0fff4;
+  border: 1px solid #c6f6d5;
+  border-radius: 4px;
+  display: inline-block;
+  font-size: 0.95rem;
+}
+
+/* Header Section */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title-wrapper {
+  flex: 1;
+  min-width: 200px;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.divider {
+  height: 3px;
+  width: 60px;
+  background: #4f46e5; /* Purple accent color */
+  margin-top: 0.5rem;
+}
+
+/* Success Counter */
+.success-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  min-width: 180px;
+}
+
+.counter-icon {
+  background: #22c55e;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.counter-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.counter-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.counter-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #15803d;
+}
+
+/* Add to your CSS */
+.success-counter {
+  transition: all 0.3s ease;
+}
+
+.success-counter:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.counter-value {
+  transition: transform 0.2s ease;
+}
+
+.success-counter:hover .counter-value {
+  transform: scale(1.05);
+}
