@@ -21,6 +21,8 @@ const Dashboard = () => {
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [whatsAppCode, setWhatsAppCode] = useState(null);
+  // Add to your existing state declarations
+  const [dailyCount, setDailyCount] = useState(0);
   const [agendaMessages, setAgendaMessages] = useState({});
   const [funnelMessages, setFunnelMessages] = useState({});
   const [newCardTitle, setNewCardTitle] = useState("");
@@ -72,6 +74,29 @@ const Dashboard = () => {
     }
   }, [selectedBoard]);
   
+  useEffect(() => {
+    if (selectedBoard?.id) {
+      const fetchDailyCount = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const today = new Date().toISOString().split('T')[0];
+          const response = await axios.get(
+            `${constants.API_BASE_URL}/message-history/daily-count?date=${today}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          
+          );
+
+          setDailyCount(response.data.count || 0);
+        } catch (error) {
+          console.error("Error fetching daily count:", error);
+        }
+      };
+      fetchDailyCount();
+    }
+  }, [selectedBoard]);
+
   const handleImportContacts = async (e) => {
     e.preventDefault();
     if (!importFile || !selectedBoard) {
@@ -339,13 +364,45 @@ const Dashboard = () => {
   
   const sendMessageForEachColumn = async (e, status) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    if (cards[status].length === 0) {
+      alert("Não há cartões nesta coluna para enviar mensagens!");
+      return;
+    }
   
     try {
       const token = localStorage.getItem("token");
-      const messages = selectedBoard?.board_type === 'agenda' 
-        ? agendaMessages[status] 
-        : funnelMessages[status];
+      const today = new Date().toISOString().split('T')[0]; // Ensure correct date format
+  
+      // Fetch daily message count with the correct query parameter
+      const countResponse = await axios.get(
+        `${constants.API_BASE_URL}/message-history/daily-count?date=${today}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
+      const sentToday = countResponse.data.count || 0;
+      const dailyLimit = countResponse.data.limit || 200; // Get from backend
+      const remaining = Math.max(0, dailyLimit - sentToday);
+      const cardsToSend = cards[status].length;
+  
+      if (cardsToSend > remaining) {
+        alert(
+          `Limite diário excedido!\n` +
+          `Você já enviou ${sentToday} mensagens hoje.\n` +
+          `Limite diário: ${dailyLimit} mensagens\n` +
+          `Tentando enviar: ${cardsToSend}\n` +
+          `Você pode enviar no máximo ${remaining} mensagens hoje.`
+        );
+        return;
+      }
+  
+      setIsLoading(true);
+      const messages =
+        selectedBoard?.board_type === "agenda"
+          ? agendaMessages[status]
+          : funnelMessages[status];
   
       if (!messages) {
         throw new Error("No messages found for this status");
@@ -359,20 +416,18 @@ const Dashboard = () => {
           boardId: selectedBoard.id,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
+  
       alert(`Mensagens enviadas com sucesso para ${status}!`);
     } catch (error) {
       console.error("Error sending message:", error);
-      alert(`Erro ao enviar mensagens: ${error.message}`);
+      alert(`Erro ao enviar mensagens: ${error.response?.data?.error || error.message}`);
     } finally {
       setIsLoading(false);
     }
   };
-
 
 
 
@@ -515,10 +570,18 @@ const Dashboard = () => {
                   <button 
                     type="submit" 
                     className="button button-green"
-                    disabled={!savedMessages || isLoading}
+                    disabled={!savedMessages || isLoading || (200 - dailyCount) < cards[status].length}
                   >
-                    {isLoading ? "Enviando..." : "Enviar mensagem"}
+                    {isLoading ? "Enviando..." : `Enviar (${cards[status].length})`}
                   </button>
+                  <div className="daily-limit-info">
+                    {dailyCount}/200 mensagens hoje
+                    {(200 - dailyCount) < cards[status].length && (
+                      <div className="limit-warning">
+                        Limite excedido! Remova alguns contatos dessa coluna ou espere até amanhã.
+                      </div>
+                    )}
+                  </div>
                 </form>
                 <br />
   

@@ -4,12 +4,15 @@ from sanic.exceptions import BadRequest
 from random import randint
 from db import SessionLocal
 from sqlalchemy import text, update, and_ # Import text from sqlalchemy
-from models.models import Board, Contact, Card
+from models.models import Board, Contact, Card, User
 from db import get_db_session
 from sqlalchemy.future import select
 from utils.utils import get_user_from_token
 from sanic.exceptions import Unauthorized
 
+from datetime import timedelta
+from sanic.exceptions import Unauthorized, ServerError
+from sqlalchemy.exc import SQLAlchemyError
 import csv
 import io
 
@@ -438,3 +441,71 @@ async def get_message_details(request, history_id: int):
             
         except Exception as e:
             return json({"error": f"Database error: {str(e)}"}, status=500)
+        
+@app.get("/message-history/daily-count")  # Added missing leading slash
+async def get_daily_message_count(request):
+    """Returns the count of messages sent by the user today
+    ---
+    parameters:
+      - name: date
+        in: query
+        type: string
+        format: date
+        required: true
+        description: Date in YYYY-MM-DD format
+    responses:
+      200:
+        description: Returns message count
+        schema:
+          type: object
+          properties:
+            count:
+              type: integer
+              description: Total messages sent on specified date
+            limit:
+              type: integer
+              description: User's daily message limit
+      400:
+        description: Invalid request
+      401:
+        description: Unauthorized
+    """
+    # Authentication
+    user_id = get_user_from_token(request)
+    if not user_id:
+        raise Unauthorized("Invalid or expired token.")
+
+    # Input validation
+    date_str = request.args.get("date")
+    if not date_str:
+        raise BadRequest("Date parameter is required (YYYY-MM-DD)")
+
+    try:
+        date = datetime.fromisoformat(date_str).date()
+        next_day = date + timedelta(days=1)
+    except ValueError as e:
+        raise BadRequest(f"Invalid date format: {str(e)}. Use YYYY-MM-DD")
+
+    async with get_db_session() as session:
+        try:
+            # Get user's daily limit (could be stored in user table)
+            user = await session.get(User, user_id)
+            daily_limit = getattr(user, 'daily_message_limit', 200)  # Default 200
+            
+            # Get count of messages sent
+            result = await session.execute(
+                select(func.coalesce(func.sum(MessageHistory.total_recipients), 0))
+                .where(MessageHistory.user_id == user_id)
+                .where(MessageHistory.sent_at >= date)
+                .where(MessageHistory.sent_at < next_day)
+            )
+            count = result.scalar_one() or 0  # More explicit than scalar()
+            
+            return json({
+                "count": count,
+                "limit": daily_limit,
+                "remaining": max(0, daily_limit - count)  # Prevent negative numbers
+            })
+            
+        except SQLAlchemyError as e:
+            raise ServerError("Database error occurred")

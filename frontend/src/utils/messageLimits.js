@@ -7,7 +7,7 @@ export const checkDailyLimit = async (quantityToSend) => {
     const today = new Date().toISOString().split('T')[0];
     
     const response = await axios.get(
-      `${constants.API_BASE_URL}/message-history/daily-count?date=${today}`,
+      `${constants.API_BASE_URL}/message-history/daily-count`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
