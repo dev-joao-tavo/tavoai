@@ -1,27 +1,28 @@
+/* === Toggle Buttons === */
 .toggle-buttons {
-    display: inline-flex; /* Use inline-flex to keep the buttons in a single line */
-    border: 1px solid #ccc; /* Add a border around the entire group */
-    border-radius: 4px; /* Rounded corners for the group */
-    overflow: hidden; /* Ensure the inner buttons don't overflow the border */
-  }
-  
-  .toggle-button {
-    padding: 8px 16px;
-    border: none; /* Remove individual borders */
-    background-color: #f9f9f9;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-    margin: 0; /* Remove margin to ensure buttons are connected */
-  }
-  
-  .toggle-button:not(:last-child) {
-    border-right: 1px solid #ccc; /* Add a separator between buttons */
-  }
-  
-  .toggle-button.active {
-    background-color: #007bff;
-    color: white;
-  }
+  display: inline-flex;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.toggle-button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  margin: 0;
+}
+
+.toggle-button:not(:last-child) {
+  border-right: 1px solid #ccc;
+}
+
+.toggle-button.active {
+  background-color: #007bff;
+  color: white;
+}
   /* Add to your CSS file */
 .saved-messages {
   margin: 15px 0;
@@ -53,10 +54,15 @@
   color: #333;
 }
 
+/* === Status Messages === */
+.mini-status,
 .import-status {
-  margin-top: 10px;
-  padding: 8px;
-  border-radius: 4px;
+  font-size: 0.8rem;
+  padding: 4px;
+  margin-top: 4px;
+}
+
+.import-status {
   background: #e8f5e9;
   color: #2e7d32;
 }
@@ -66,27 +72,19 @@
   color: #c62828;
 }
 
-.dashboard-form input[type="file"] {
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 100%;
-}
-/* Add to your Dashboard.css */
+/* === Daily Limit Styles === */
 .daily-limit-info {
-  font-size: 0.8rem;
+  font-size: 0.8rem;  
   color: #666;
-  margin-top: 0.5rem;
-}
-
-.button[disabled] {
-  background-color: #ccc !important;
-  cursor: not-allowed;
 }
 
 .limit-warning {
   color: #d32f2f;
   font-weight: bold;
-  margin-top: 0.5rem;
+}
+
+/* === Disabled States === */
+button:disabled {
+  background-color: #ccc !important;
+  cursor: not-allowed;
 }

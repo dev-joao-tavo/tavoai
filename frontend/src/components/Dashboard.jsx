@@ -482,53 +482,61 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
-  
-      {/* Contact form */}
-      <form onSubmit={handleAddCard} className="dashboard-form">
+      <div className="compact-contact-form">
+  <form onSubmit={handleAddCard} className="dashboard-form">
+    <div className="form-row">
+      <input
+        type="text"
+        placeholder="Nome"
+        value={newCardTitle}
+        onChange={(e) => setNewCardTitle(e.target.value)}
+        required
+      />
+      <input
+        type="text"
+        placeholder="WhatsApp"
+        value={newCardDescription}
+        onChange={handlePhoneChange}
+        required
+      />
+      <button type="submit" className="add-button">+</button>
+    </div>
+
+    <div className="csv-upload-row">
+      <label className="csv-label">
         <input
-          type="text"
-          placeholder="Nome"
-          value={newCardTitle}
-          onChange={(e) => setNewCardTitle(e.target.value)}
-          required
+          type="file"
+          accept=".csv"
+          onChange={(e) => setImportFile(e.target.files[0])}
+          disabled={isImporting}
+          style={{ display: 'none' }}
         />
-        <input
-          type="text"
-          placeholder="Número de WhatsApp"
-          value={newCardDescription}
-          onChange={handlePhoneChange}
-          required
-        />
-        <button type="submit">Adicionar contato</button>
-      </form>
-  
-      {/* CSV Import form */}
-      <div className="import-section">
-        <h3>Importar contatos via CSV</h3>
-        <p>
-          <a 
-            href={`data:text/csv;charset=utf-8,${encodeURIComponent('Numero,Nome\n31987654321,João Silva\n31988776655,Maria Souza')}`} 
-            download="contatos_template.csv"
-          >
-            Baixar modelo CSV
-          </a>
-        </p>
-        <form onSubmit={handleImportContacts} className="dashboard-form">
-          <input
-            type="file"
-            accept=".csv"
-            onChange={(e) => setImportFile(e.target.files[0])}
-            disabled={isImporting}
-          />
-          <button 
-            type="submit" 
-            disabled={!importFile || isImporting || !selectedBoard}
-          >
-            {isImporting ? "Importando..." : "Importar CSV"}
-          </button>
-        </form>
-        {importStatus && <div className="import-status">{importStatus}</div>}
-      </div>
+        <span className="csv-button">
+          {importFile ? `📁 ${importFile.name}` : "Importar CSV"}
+        </span>
+      </label>
+      {importFile && (
+        <button
+          type="button"  // Note: Changed to prevent form submission conflict
+          onClick={handleImportContacts}
+          disabled={isImporting || !selectedBoard}
+          className="import-button"
+        >
+          {isImporting ? "⏳" : "↑"}
+        </button>
+      )}
+      <a
+        href={`data:text/csv;charset=utf-8,${encodeURIComponent('Numero,Nome\n31987654321,João Silva\n31988776655,Maria Souza')}`}
+        download="contatos_template.csv"
+        className="download-link"
+      >
+        ↓
+      </a>
+    </div>
+    {importStatus && <div className="mini-status">{importStatus}</div>}
+  </form>
+</div>
+
       {isLoading ? (
         <div className="loading-spinner"></div>
       ) : (
