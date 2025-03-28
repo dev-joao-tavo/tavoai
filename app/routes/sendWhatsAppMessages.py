@@ -225,7 +225,7 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
                         update(Card)
                         .where(Card.id == card_id)
                         .values(
-                            sending_message_status="OK",
+                            sending_message_status="SENT",
                             last_message=func.now()
                         )
                     )

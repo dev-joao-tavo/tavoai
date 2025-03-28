@@ -16,12 +16,21 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
         </svg>
       )
     },
-    OK: {
+    SENT: {
       label: "Enviado",
       color: "status-ok",
       icon: (
         <svg className="status-icon" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+        </svg>
+      )
+    },
+    NEVER_SENT: {
+      label: "Não Enviado",
+      color: "status-default",
+      icon: (
+        <svg className="status-icon" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
         </svg>
       )
     },
@@ -45,12 +54,41 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
     }
   };
 
-  const currentStatus = card.sending_message_status 
-    ? statusConfig[card.sending_message_status] 
-    : statusConfig.default;
-
   const contact = contacts.find((contact) => Number(contact.ID) === Number(card.contact_ID));
 
+  const isMessageFromToday = (dateString) => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  };
+
+  const getStatusConfig = () => {
+    // Handle NEVER_SENT explicitly
+    if (card.sending_message_status === 'NEVER_SENT') {
+      return statusConfig.NEVER_SENT;
+    }
+
+    // Handle SENT status with date check
+    if (card.sending_message_status === 'SENT') {
+      const lastMessageDate = contact?.last_message_contact;
+      return isMessageFromToday(lastMessageDate) 
+        ? statusConfig.SENT 
+        : statusConfig.default;
+    }
+
+    // Handle other known statuses
+    if (card.sending_message_status && statusConfig[card.sending_message_status]) {
+      return statusConfig[card.sending_message_status];
+    }
+
+    // Default fallback
+    return statusConfig.default;
+  };
+
+  const currentStatus = getStatusConfig();
+
+  
   const handleDelete = () => {
     if (!isDeleting) {
       setIsDeleting(true);
@@ -120,6 +158,13 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
             </span>
           )}
         </div>
+    
+        {/* Last message */}
+        {contact?.last_message_contact && (
+          <span className="last-message">
+            {formatLastMessageDate(contact.last_message_contact)}
+          </span>
+        )}
 
         {/* Status and message info */}
         <div className="status-container">
@@ -130,12 +175,7 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
               <span className="status-label">{currentStatus.label}</span>
             </span>
             
-            {/* Last message */}
-            {contact?.last_message_contact && (
-              <span className="last-message">
-                {formatLastMessageDate(contact.last_message_contact)}
-              </span>
-            )}
+
           </div>
 
           {/* Status dropdown */}

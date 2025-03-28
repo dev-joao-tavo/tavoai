@@ -49,7 +49,7 @@ async def add_card_and_contact(request):
                 "phone_number": phone_number,
                 "contact_name": contact_name,
                 "user_id": user_id,
-                "sending_message_status": "OK",
+                "sending_message_status": "NEVER_SENT",
             }
 
             # Insert contact into the database
@@ -66,7 +66,7 @@ async def add_card_and_contact(request):
                 "status": status,  # Use the status from the frontend
                 "board_id": int(board_id),  # Use the board_id from the frontend
                 "contact_ID": contact_id,
-                "sending_message_status":"OK"
+                "sending_message_status":"NEVER_SENT"
             }
 
             # Insert card into the database
