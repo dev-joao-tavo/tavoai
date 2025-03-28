@@ -1,7 +1,6 @@
 from sanic import Sanic, response
 from db import SessionLocal, get_db_session
 from sqlalchemy import select, update
-from typing import List
 import time
 from models.models import Card, Contact, Board, User
 from utils.utils import get_user_from_token
@@ -10,31 +9,75 @@ from selenium.webdriver.common.by import By
 import time
 from routes.configs import initialize_driver
 import asyncio
-from sanic.response import json
 import re
 from datetime import datetime
-from sqlalchemy.orm import Session
 from selenium.common.exceptions import NoSuchElementException
 # Standard library imports
 import asyncio
 import random
 import re
-from typing import List, Tuple, Dict, Any
+from typing import Any
 
 # Third-party imports
-from sanic import response
-from sanic.request import Request
 from sqlalchemy import select, update, func
-from sqlalchemy.orm import selectinload
 from selenium.webdriver.common.by import By
+from sanic import Sanic, response
 
 # Local application imports
 import time
 import random
 
+from datetime import datetime
+from models.models import MessageHistory  # Make sure this model exists
+
 app = Sanic.get_app()
 
-from typing import List, Tuple
+async def update_message_history(history_id, contact_id, success):
+    try:
+        async with get_db_session() as session:
+            history = await session.get(MessageHistory, history_id)
+            if not history:
+                return
+            
+            # Initialize lists if None
+            history.successful_recipients = history.successful_recipients or []
+            history.failed_recipients = history.failed_recipients or []
+            
+            if success:
+                if contact_id not in history.successful_recipients:  # Prevent duplicates
+                    history.successful_recipients.append(contact_id)
+                    history.success_count += 1
+            else:
+                if contact_id not in history.failed_recipients:  # Prevent duplicates
+                    history.failed_recipients.append(contact_id)
+                    history.failure_count += 1
+            
+            history.total_recipients = history.success_count + history.failure_count
+            await session.commit()
+    except Exception as e:
+        raise
+
+async def create_message_history(user_id, message_content, channel='whatsapp', message_type='transactional'):
+    try:
+        async with get_db_session() as session:
+            history = MessageHistory(
+                user_id=user_id,
+                message_content=message_content,
+                channel=channel,
+                message_type=message_type,
+                sent_at=datetime.utcnow(),
+                success_count=0,
+                failure_count=0,
+                total_recipients=0,
+                successful_recipients=[],
+                failed_recipients=[]
+            )
+            session.add(history)
+            await session.commit()
+            await session.refresh(history)
+            return history.id
+    except Exception as e:
+        raise
 
 async def get_phone_numbers_and_names_by_status_and_board(status, board_id):
     async with get_db_session() as session:
@@ -42,7 +85,6 @@ async def get_phone_numbers_and_names_by_status_and_board(status, board_id):
             select(
                 Contact.phone_number,
                 Contact.contact_name.label('name'),  # Fixed here
-
                 Contact.id.label('contact_id'),
                 Card.id.label('card_id')  # Make sure this is included
             )
@@ -124,6 +166,12 @@ async def send_whatsapp_messages(request):
         message3 = data.get('message3', '')
         board_id = data['boardId']
 
+        # Combine messages for history
+        full_message = "\n".join([msg for msg in [message1, message2, message3] if msg])
+        
+        # Create message history record
+        history_id = await create_message_history(user_id, full_message)
+
         # Get board and validate
         async with get_db_session() as session:
             board = await session.get(Board, board_id)
@@ -159,14 +207,16 @@ async def send_whatsapp_messages(request):
                 message1,
                 message2,
                 message3,
-                board_id
+                board_id,
+                history_id  # Pass history_id to the async function
             )
         )
 
         return response.json({
             "message": "Messages are being sent",
             "count": len(phone_numbers_and_names),
-            "board_id": board_id
+            "board_id": board_id,
+            "history_id": history_id
         })
 
     except Exception as e:
@@ -176,7 +226,7 @@ async def send_whatsapp_messages(request):
         )
 
 
-async def send_whatsapp_messages_async(user_id, contacts, message1, message2, message3, board_id):
+async def send_whatsapp_messages_async(user_id, contacts, message1, message2, message3, board_id, history_id):
     driver = None
     results = {
         'successful': [],
@@ -231,10 +281,12 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
                     )
                     results['successful'].append({'phone': phone, 'name': name})
                     await update_last_message(contact_id)
+                    
+                    # Update message history with success
+                    await update_message_history(history_id, contact_id, True)
 
                 except Exception as e:
                     error_msg = str(e)[:255]
-                    logger.error(f"Failed to send to {phone}: {error_msg}")
                     
                     await session.execute(
                         update(Card)
@@ -249,12 +301,15 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
                         'name': name,
                         'error': error_msg
                     })
+                    
+                    # Update message history with failure
+                    await update_message_history(history_id, contact_id, False)
+                    
                 finally:
                     await session.commit()
 
     except Exception as e:
         error_msg = str(e)
-        logger.error(f"Global messaging error: {error_msg}")
         results.update({
             'status': 'failed',
             'error': error_msg
@@ -272,17 +327,19 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
                         last_message=func.now()
                     )
                 )
+                # Update message history for all contacts as failed
+                for contact in contacts:
+                    _, _, contact_id, _, _ = contact
+                    await update_message_history(history_id, contact_id, False)
                 await session.commit()
         except Exception as db_error:
-            logger.error(f"Failed to update card statuses: {str(db_error)}")
-
+            raise
     finally:
         if driver:
             try:
                 driver.quit()
             except Exception as e:
-                logger.error(f"Error closing driver: {str(e)}")
-
+                raise
     return results
 
 

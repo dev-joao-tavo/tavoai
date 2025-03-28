@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import Settings from "./pages/Settings";
 import SettingsPage from "./pages/Settings";
+import MessageHistory from "./pages/MessageHistory";
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -55,6 +56,14 @@ function App() {
           element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
               <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <MessageHistory />
             </ProtectedRoute>
           }
         />
