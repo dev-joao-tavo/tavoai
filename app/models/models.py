@@ -12,7 +12,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)  
-    user_wpp_phone_number = Column(String, primary_key=True, index=True)
+    user_wpp_phone_number = Column(String, unique=True, index=True)
     user_current_status = Column(String)
     message_history = relationship("MessageHistory", back_populates="user")
 
