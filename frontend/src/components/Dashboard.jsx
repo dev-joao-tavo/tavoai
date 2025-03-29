@@ -5,9 +5,10 @@ import Card from "./Card";
 import Header from "./Header"; // Adjust path if necessary
 import "./Dashboard.css";
 import * as constants from '../utils/constants';
-
+import { FaEllipsisV } from 'react-icons/fa';
 
 const Dashboard = () => {
+  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [selectedBoardType, setSelectedBoardType] = useState(null); 
@@ -36,7 +37,42 @@ const Dashboard = () => {
   const [importFile, setImportFile] = useState(null);
   const [importStatus, setImportStatus] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [showContactPopup, setShowContactPopup] = useState(false);
+  const [currentStatusForPopup, setCurrentStatusForPopup] = useState(null);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(null); // Track which column's menu is open
+
+  // Function to handle the three-dot menu click
+  const handleOptionsClick = (status, e) => {
+    e.stopPropagation();
+    setCurrentStatusForPopup(status);
+    setShowOptionsMenu(showOptionsMenu === status ? null : status);
+  };
   
+// Rest of your functions remain exactly the same:
+const closeAllPopups = () => {
+  setShowOptionsMenu(null);
+  setShowContactPopup(false);
+};
+
+useEffect(() => {
+  const handleClickOutside = () => closeAllPopups();
+  document.addEventListener('click', handleClickOutside);
+  return () => document.removeEventListener('click', handleClickOutside);
+}, []);
+
+const handleSendFromMenu = (status, e) => {
+  e.stopPropagation();
+  sendMessageForEachColumn(e, status);
+  setShowOptionsMenu(null);
+};
+
+const handleAddContactClick = (status, e) => {
+  e.stopPropagation();
+  setCurrentStatusForPopup(status);
+  setShowContactPopup(true);
+  setShowOptionsMenu(null);
+};
+
   const getStatusesForBoard = (boardType) => {
     if (boardType === "funnel") {
       return constants.statuses.slice(0, 31); // First 31 statuses for "funnel"
@@ -457,7 +493,7 @@ const Dashboard = () => {
     }
   };
 
-  return (
+ return (
     <div className="dashboard-container">
       {/* Header Component */}
       <Header handleLogout={handleLogout} />
@@ -482,60 +518,80 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
-      <div className="compact-contact-form">
-  <form onSubmit={handleAddCard} className="dashboard-form">
-    <div className="form-row">
-      <input
-        type="text"
-        placeholder="Nome"
-        value={newCardTitle}
-        onChange={(e) => setNewCardTitle(e.target.value)}
-        required
-      />
-      <input
-        type="text"
-        placeholder="WhatsApp"
-        value={newCardDescription}
-        onChange={handlePhoneChange}
-        required
-      />
-      <button type="submit" className="add-button">+</button>
-    </div>
 
-    <div className="csv-upload-row">
-      <label className="csv-label">
-        <input
-          type="file"
-          accept=".csv"
-          onChange={(e) => setImportFile(e.target.files[0])}
-          disabled={isImporting}
-          style={{ display: 'none' }}
-        />
-        <span className="csv-button">
-          {importFile ? `📁 ${importFile.name}` : "Importar CSV"}
-        </span>
-      </label>
-      {importFile && (
-        <button
-          type="button"  // Note: Changed to prevent form submission conflict
-          onClick={handleImportContacts}
-          disabled={isImporting || !selectedBoard}
-          className="import-button"
+      {/* Contact Popup */}
+      {showContactPopup && (
+        <div 
+          className="contact-popup"
+          style={{
+            top: `${popupPosition.top}px`,
+            left: `${popupPosition.left}px`,
+          }}
+          onClick={(e) => e.stopPropagation()}
         >
-          {isImporting ? "⏳" : "↑"}
-        </button>
+          <h3>Adicionar Contato</h3>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (selectedBoard) {
+              let newCardStatus = currentStatusForPopup;
+              if (!newCardStatus) {
+                newCardStatus = selectedBoard.board_type === "funnel" ? "day-1" : "monday";
+              }
+              addCard(selectedBoard.id, newCardTitle, newCardDescription, newCardStatus);
+              setNewCardTitle("");
+              setNewCardDescription("");
+              setShowContactPopup(false);
+            }
+          }}>
+            <input
+              type="text"
+              placeholder="Nome do contato"
+              value={newCardTitle}
+              onChange={(e) => setNewCardTitle(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Telefone"
+              value={newCardDescription}
+              onChange={handlePhoneChange}
+              required
+            />
+            <div className="popup-buttons">
+              <button type="submit" className="button button-green">
+                Adicionar
+              </button>
+              <button 
+                type="button" 
+                className="button button-gray"
+                onClick={() => setShowContactPopup(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+
+          <div className="import-section">
+            <h4>Importar Contatos</h4>
+            <form onSubmit={handleImportContacts}>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={(e) => setImportFile(e.target.files[0])}
+                required
+              />
+              <button 
+                type="submit" 
+                className="button button-blue"
+                disabled={isImporting}
+              >
+                {isImporting ? "Importando..." : "Importar CSV"}
+              </button>
+            </form>
+            {importStatus && <div className="import-status">{importStatus}</div>}
+          </div>
+        </div>
       )}
-      <a
-        href={`data:text/csv;charset=utf-8,${encodeURIComponent('Numero,Nome\n31987654321,João Silva\n31988776655,Maria Souza')}`}
-        download="contatos_template.csv"
-        className="download-link"
-      >
-        ↓
-      </a>
-    </div>
-    {importStatus && <div className="mini-status">{importStatus}</div>}
-  </form>
-</div>
 
       {isLoading ? (
         <div className="loading-spinner"></div>
@@ -548,12 +604,43 @@ const Dashboard = () => {
   
             return (
               <div key={status} className="dashboard-column">
-                {/* RESTORED COLUMN TITLE WITH COUNTER */}
-                <h2 className="dashboard-title">
-                  {constants.statusTranslation[status] || status.toUpperCase()}
-                  <span className="card-counter"> ({cards[status].length})</span>
-                </h2>
+<div className="column-header">
+  <div className="dashboard-title-container">
+    <h2 className="dashboard-title">
+      {constants.statusTranslation[status] || status.toUpperCase()}
+      <span className="card-counter"> ({cards[status].length})</span>
+    </h2>
+  </div>
+ <div className="menu-container">
+  <button 
+    className="options-button"
+    onClick={(e) => handleOptionsClick(status, e)}
+  >
+    <FaEllipsisV />
+  </button>
   
+  {showOptionsMenu === status && (
+    <div 
+      className="options-menu"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button 
+        className="menu-item"
+        onClick={(e) => handleSendFromMenu(status, e)}
+        disabled={!savedMessages || isLoading || (200 - dailyCount) < cards[status].length}
+      >
+        Enviar Mensagem
+      </button>
+      <button 
+        className="menu-item"
+        onClick={(e) => handleAddContactClick(status, e)}
+      >
+        Adicionar Contato
+      </button>
+    </div>
+  )}
+</div>
+</div>  
                 {/* Saved messages display */}
                 <div className="saved-messages">
                   {savedMessages ? (
@@ -573,24 +660,14 @@ const Dashboard = () => {
                   )}
                 </div>
   
-                {/* Send message button */}
-                <form onSubmit={(e) => sendMessageForEachColumn(e, status)}>
-                  <button 
-                    type="submit" 
-                    className="button button-green"
-                    disabled={!savedMessages || isLoading || (200 - dailyCount) < cards[status].length}
-                  >
-                    {isLoading ? "Enviando..." : `Enviar (${cards[status].length})`}
-                  </button>
-                  <div className="daily-limit-info">
-                    {dailyCount}/200 mensagens hoje
-                    {(200 - dailyCount) < cards[status].length && (
-                      <div className="limit-warning">
-                        Limite excedido! Remova alguns contatos dessa coluna ou espere até amanhã.
-                      </div>
-                    )}
-                  </div>
-                </form>
+                <div className="daily-limit-info">
+                  {dailyCount}/200 mensagens hoje
+                  {(200 - dailyCount) < cards[status].length && (
+                    <div className="limit-warning">
+                      Limite excedido! Remova alguns contatos dessa coluna ou espere até amanhã.
+                    </div>
+                  )}
+                </div>
                 <br />
   
                 {/* Cards list */}

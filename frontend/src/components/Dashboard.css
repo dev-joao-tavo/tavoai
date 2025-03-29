@@ -1,7 +1,20 @@
-/* === Toggle Buttons === */
+/* ===== CSS Variables ===== */
+:root {
+  --primary-color: #007bff;
+  --success-bg: #e8f5e9;
+  --success-text: #2e7d32;
+  --error-bg: #ffebee;
+  --error-text: #c62828;
+  --border-color: #e0e0e0;
+  --hover-bg: #f0f0f0;
+  --text-muted: #666;
+  --shadow-sm: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* ===== Toggle Buttons ===== */
 .toggle-buttons {
   display: inline-flex;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -11,80 +24,251 @@
   border: none;
   background-color: #f9f9f9;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
+  transition: all 0.3s ease;
   margin: 0;
+  font-size: 0.9rem;
 }
 
 .toggle-button:not(:last-child) {
-  border-right: 1px solid #ccc;
+  border-right: 1px solid var(--border-color);
 }
 
 .toggle-button.active {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
+  font-weight: 500;
 }
-  /* Add to your CSS file */
+
+.toggle-button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* ===== Saved Messages ===== */
 .saved-messages {
   margin: 15px 0;
   padding: 10px;
   background: #f5f5f5;
   border-radius: 5px;
   text-align: left;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.saved-messages:hover {
+  background-color: var(--hover-bg);
 }
 
 .saved-messages .message {
   margin: 5px 0;
   padding: 5px;
   font-size: 0.9em;
+  line-height: 1.4;
 }
 
 .saved-messages strong {
   color: #555;
+  font-weight: 500;
 }
-/* Add these styles to your Dashboard.css */
+
+/* ===== Import Section ===== */
 .import-section {
   margin: 20px 0;
   padding: 15px;
   background: #f5f5f5;
   border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.import-section:hover {
+  box-shadow: var(--shadow-sm);
 }
 
 .import-section h3 {
   margin-top: 0;
   color: #333;
+  font-size: 1rem;
 }
 
-/* === Status Messages === */
+/* ===== Status Messages ===== */
 .mini-status,
 .import-status {
   font-size: 0.8rem;
-  padding: 4px;
-  margin-top: 4px;
+  padding: 6px 8px;
+  margin-top: 6px;
+  border-radius: 4px;
+  animation: fadeIn 0.3s ease;
 }
 
 .import-status {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--success-bg);
+  color: var(--success-text);
 }
 
 .import-status.error {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--error-bg);
+  color: var(--error-text);
 }
 
-/* === Daily Limit Styles === */
+/* ===== Daily Limit Styles ===== */
 .daily-limit-info {
-  font-size: 0.8rem;  
-  color: #666;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 8px 0;
 }
 
 .limit-warning {
-  color: #d32f2f;
-  font-weight: bold;
+  color: var(--error-text);
+  font-weight: 500;
 }
 
-/* === Disabled States === */
+/* ===== Disabled States ===== */
 button:disabled {
   background-color: #ccc !important;
   cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ===== Column Header ===== */
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  padding: 0 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.dashboard-title-container {
+  flex: 1;
+  text-align: center;
+}
+
+.dashboard-title {
+  display: inline-block;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.card-counter {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-left: 5px;
+  font-weight: normal;
+}
+
+/* ===== Options Menu ===== */
+
+
+.options-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  color: var(--text-muted);
+  margin-left: 10px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.options-button:hover {
+  color: #333;
+  background-color: var(--hover-bg);
+}
+
+.options-button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.options-menu {
+  position: absolute;
+  right: 0; /* Align to right of container */
+  top: calc(100% + 5px); /* Position below button with small gap */
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  z-index: 100;
+  min-width: 180px;
+  animation: slideDown 0.2s ease;
+}
+
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.menu-item:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+
+
+
+/* Add pointer arrow */
+.options-menu::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid var(--border-color);
+}
+
+.options-menu::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid white;
+  margin-bottom: -1px;
 }

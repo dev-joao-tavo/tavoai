@@ -32,7 +32,41 @@ body {
   align-items: flex-start;
   flex-wrap: nowrap; /* Prevents columns from stacking */
 }
+/* ===== Column Header ===== */
+.column-header {
+  position: relative; /* Needed for absolute positioning of menu */
+  text-align: center; /* Centers inline/inline-block children */
+  padding: 0 40px 8px; /* Right padding accommodates menu button */
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
 
+.dashboard-title-container {
+  display: inline-block; /* Allows text-align center to work */
+  margin: 0 auto; /* Additional centering */
+}
+
+.dashboard-title {
+  display: inline-block;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.card-counter {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-left: 5px;
+  font-weight: normal;
+}
+
+.menu-container {
+  position: absolute;
+  right: 10px;
+  top: 0;
+}
+
+/* Rest of your existing CSS for buttons and menu can remain the same */
 
 /* === dashboard Columns === */
 .dashboard-column {
@@ -48,14 +82,6 @@ body {
 }
 
 
-
-.dashboard-title {
-  font-size: 18px;
-  font-weight: bold;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #eaeaea;
-  margin-bottom: 10px;
-}
 
 /* === Cards === */
 .dashboard-card {
@@ -291,4 +317,13 @@ h2 {
 
 .board-selector select option {
   padding: 8px;
+}
+
+.options-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--text-muted);
+  margin-left: 10px;
 }
