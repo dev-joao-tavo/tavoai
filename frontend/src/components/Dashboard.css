@@ -272,3 +272,21 @@ button:disabled {
   border-bottom: 6px solid white;
   margin-bottom: -1px;
 }
+.contact-popup {
+  position: fixed;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  z-index: 1000;
+  width: 300px;
+}
+
+.contact-popup input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}

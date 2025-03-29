@@ -68,6 +68,11 @@ const handleSendFromMenu = (status, e) => {
 
 const handleAddContactClick = (status, e) => {
   e.stopPropagation();
+  const buttonRect = e.currentTarget.getBoundingClientRect();
+  setPopupPosition({
+    top: buttonRect.bottom + window.scrollY + 5, // 5px offset
+    left: buttonRect.left + window.scrollX
+  });
   setCurrentStatusForPopup(status);
   setShowContactPopup(true);
   setShowOptionsMenu(null);
