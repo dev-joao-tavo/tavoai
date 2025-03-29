@@ -1,124 +1,60 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { statusConfig } from "./statusConfig";
+import { 
+  getStatusConfig, 
+  isMessageFromToday, 
+  formatLastMessageDate 
+} from "./cardUtils";
 import "./Card.css";
+
+// Constants for dropdown options
+const DAY_OPTIONS = Array.from({ length: 31 }, (_, i) => ({
+  value: `day-${i + 1}`,
+  label: `${i + 1}º dia`,
+}));
+
+const WEEKDAY_OPTIONS = [
+  { value: "monday", label: "Segunda" },
+  { value: "tuesday", label: "Terça" },
+  { value: "wednesday", label: "Quarta" },
+  { value: "thursday", label: "Quinta" },
+  { value: "friday", label: "Sexta" },
+  { value: "saturday", label: "Sábado" },
+  { value: "sunday", label: "Domingo" },
+];
 
 const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
   const [selectedStatus, setSelectedStatus] = useState(card.status);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Status configuration
-  const statusConfig = {
-    SENDING: {
-      label: "Enviando",
-      color: "status-sending",
-      icon: (
-        <svg className="status-icon" viewBox="0 0 24 24">
-          <path className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-      )
-    },
-    SENT: {
-      label: "Enviado",
-      color: "status-ok",
-      icon: (
-        <svg className="status-icon" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-        </svg>
-      )
-    },
-    NEVER_SENT: {
-      label: "Não Enviado",
-      color: "status-default",
-      icon: (
-        <svg className="status-icon" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-        </svg>
-      )
-    },
-    ERROR: {
-      label: "Erro",
-      color: "status-error",
-      icon: (
-        <svg className="status-icon" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-        </svg>
-      )
-    },
-    default: {
-      label: "Pendente",
-      color: "status-default",
-      icon: (
-        <svg className="status-icon" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-        </svg>
-      )
-    }
-  };
+  // Memoized contact lookup
+  const contact = useMemo(
+    () => contacts.find((c) => Number(c.ID) === Number(card.contact_ID)),
+    [contacts, card.contact_ID]
+  );
 
-  const contact = contacts.find((contact) => Number(contact.ID) === Number(card.contact_ID));
+  // Memoized status calculation
+  const currentStatus = useMemo(
+    () => getStatusConfig(card, contact, statusConfig),
+    [card, contact]
+  );
 
-  const isMessageFromToday = (dateString) => {
-    if (!dateString) return false;
-    const date = new Date(dateString);
-    const today = new Date();
-    return date.toDateString() === today.toDateString();
-  };
-
-  const getStatusConfig = () => {
-    // Handle NEVER_SENT explicitly
-    if (card.sending_message_status === 'NEVER_SENT') {
-      return statusConfig.NEVER_SENT;
-    }
-
-    // Handle SENT status with date check
-    if (card.sending_message_status === 'SENT') {
-      const lastMessageDate = contact?.last_message_contact;
-      return isMessageFromToday(lastMessageDate) 
-        ? statusConfig.SENT 
-        : statusConfig.default;
-    }
-
-    // Handle other known statuses
-    if (card.sending_message_status && statusConfig[card.sending_message_status]) {
-      return statusConfig[card.sending_message_status];
-    }
-
-    // Default fallback
-    return statusConfig.default;
-  };
-
-  const currentStatus = getStatusConfig();
-
-  
-  const handleDelete = () => {
+  // Handlers with useCallback
+  const handleDelete = useCallback(() => {
     if (!isDeleting) {
       setIsDeleting(true);
       deleteCard(card.id);
     }
-  };
+  }, [isDeleting, deleteCard, card.id]);
 
-  const handleStatusChange = (event) => {
-    const newStatus = event.target.value;
-    setSelectedStatus(newStatus);
-    updateCardStatus(card.id, newStatus);
-  };
-
-  const formatLastMessageDate = (dateString) => {
-    if (!dateString) return "Nenhuma mensagem";
-    
-    const date = new Date(dateString);
-    const today = new Date();
-    
-    if (date.toDateString() === today.toDateString()) {
-      return `Enviada hoje às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
-    }
-    
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit"
-    }).format(date);
-  };
+  const handleStatusChange = useCallback(
+    (event) => {
+      const newStatus = event.target.value;
+      setSelectedStatus(newStatus);
+      updateCardStatus(card.id, newStatus);
+    },
+    [card.id, updateCardStatus]
+  );
 
   return (
     <div className="card">
@@ -132,9 +68,13 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
           disabled={isDeleting}
           aria-label="Remover card"
         >
-          <svg className="delete-icon" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          {isDeleting ? (
+            <span className="deleting-spinner">...</span>
+          ) : (
+            <svg className="delete-icon" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          )}
         </button>
       </div>
 
@@ -166,42 +106,31 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
           </span>
         )}
 
-        {/* Status and message info */}
+        {/* Status and dropdown */}
         <div className="status-container">
           <div className="status-message">
-            {/* Status badge */}
             <span className={`status-badge ${currentStatus.color}`}>
               {currentStatus.icon}
               <span className="status-label">{currentStatus.label}</span>
             </span>
-            
-
           </div>
 
-          {/* Status dropdown */}
           <div className="dropdown-container">
             <select
               className="status-dropdown"
               value={selectedStatus}
               onChange={handleStatusChange}
+              aria-label="Alterar status do card"
             >
-              {Array.from({ length: 14 }, (_, i) => (
-                <option key={`day-${i + 1}`} value={`day-${i + 1}`}>
-                  {i + 1}º dia
+              {DAY_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
                 </option>
               ))}
 
-              {[
-                { pt: "Segunda", en: "Monday" },
-                { pt: "Terça", en: "Tuesday" },
-                { pt: "Quarta", en: "Wednesday" },
-                { pt: "Quinta", en: "Thursday" },
-                { pt: "Sexta", en: "Friday" },
-                { pt: "Sábado", en: "Saturday" },
-                { pt: "Domingo", en: "Sunday" }
-              ].map(({ pt, en }) => (
-                <option key={pt} value={en.toLowerCase()}>
-                  {pt}
+              {WEEKDAY_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
                 </option>
               ))}
 
