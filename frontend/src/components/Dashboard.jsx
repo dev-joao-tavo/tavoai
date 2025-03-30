@@ -343,12 +343,19 @@ const Dashboard = () => {
   }, [fetchData]);
 
   useEffect(() => {
-    const handleClickOutside = () => {
-      setState(prev => ({ ...prev, showOptionsMenu: null, showContactPopup: false }));
+    const handleClickOutside = (e) => {
+      // Check if click is inside any options menu or contact popup
+      const isInsidePopup = e.target.closest('.options-menu, .contact-popup');
+      
+      if (!isInsidePopup) {
+        setState(prev => ({ ...prev, showOptionsMenu: null, showContactPopup: false }));
+      }
     };
+    
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
+  
 
   return (
     <div className="dashboard-container">
