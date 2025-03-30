@@ -151,16 +151,12 @@ const Dashboard = () => {
     }
   }, [state.boards]);
 
-  const handleAddCard = useCallback(async (e) => {
+  const handleAddCard = useCallback(async (e, status) => {
     e.preventDefault();
     if (!state.selectedBoard) {
       alert("Please select a board first.");
       return;
     }
-
-    const newCardStatus = state.selectedBoard.board_type === "funnel" 
-      ? "day-1" 
-      : "monday";
 
     try {
       const token = localStorage.getItem("token");
@@ -170,21 +166,21 @@ const Dashboard = () => {
           phone_number: state.newCardDescription,
           contact_name: state.newCardTitle,
           board_id: state.selectedBoard.id,
-          status: newCardStatus,
+          status: status, // Use the passed status
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       setState(prev => ({
         ...prev,
         cards: {
           ...prev.cards,
-          [newCardStatus]: [...prev.cards[newCardStatus], response.data.card]
+          [status]: [...prev.cards[status], response.data.card]
         },
         newCardTitle: "",
         newCardDescription: ""
       }));
-
+  
       const contactsRes = await axios.get(`${constants.API_BASE_URL}/contacts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -193,7 +189,7 @@ const Dashboard = () => {
       console.error("Error adding card:", error);
       alert(error.response?.data?.error || "An unexpected error occurred");
     }
-  }, [state.selectedBoard, state.newCardTitle, state.newCardDescription]);
+  }, [state.selectedBoard, state.newCardTitle, state.newCardDescription]);  
 
   const handleSendFromMenu = useCallback(async (status, e) => {
     e.preventDefault();
@@ -264,7 +260,7 @@ const Dashboard = () => {
     e.stopPropagation();
     setState(prev => ({
       ...prev,
-      currentStatusForPopup: status,
+      currentStatusForPopup: status, // This will be the column's status
       showContactPopup: true,
       showOptionsMenu: false
     }));
@@ -440,12 +436,13 @@ const Dashboard = () => {
                         
                         <form onSubmit={(e) => {
                           e.preventDefault();
+                          e.stopPropagation();
                           if (state.selectedBoard) {
-                            const newCardStatus = state.currentStatusForPopup || 
-                              (state.selectedBoard.board_type === "funnel" ? "day-1" : "monday");
-                            handleAddCard(e);
+                            // Use the current status from the popup (column status) instead of board-based default
+                            const newCardStatus = state.currentStatusForPopup;
+                            handleAddCard(e, newCardStatus); // Pass the status to handleAddCard
                           }
-                        }}>
+                        }}> 
                           <div className="form-group">
                             <label htmlFor="contact-name">Nome do contato</label>
                             <input
