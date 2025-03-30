@@ -376,6 +376,10 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
+     
+      <div className="daily-limit-info">
+      {state.dailyCount}/200 mensagens hoje
+      </div>
 
       {state.isLoading ? (
         <div className="loading-spinner"></div>
@@ -523,7 +527,6 @@ const Dashboard = () => {
                 </div>
   
                 <div className="daily-limit-info">
-                  {state.dailyCount}/200 mensagens hoje
                   {(200 - state.dailyCount) < state.cards[status].length && (
                     <div className="limit-warning">
                       Limite excedido! Remova alguns contatos dessa coluna ou espere até amanhã.

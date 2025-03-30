@@ -1,78 +1,98 @@
+:root {
+  --primary: #007bff;
+  --primary-hover: #0069d9;
+  --border: #e0e0e0;
+  --text: #333;
+  --text-light: #555;
+  --bg-light: #f8f9fa;
+  --radius: 4px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 .settings-page {
-  padding: 20px;
+  padding: 2rem;
   max-width: 800px;
   margin: 0 auto;
   box-sizing: border-box;
-}
-.settings-page .section {
-  margin-bottom: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.settings-page .section h2 {
-  margin-bottom: 1rem;
+.section {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.section h2 {
+  margin: 0 0 1.25rem;
   font-size: 1.5rem;
-  color: #333;
+  color: var(--text);
+  font-weight: 600;
 }
 
-.settings-page .input-group {
-  margin-bottom: 1rem;
-  text-align: left;
+.input-group {
+  margin-bottom: 1.25rem;
 }
 
-.settings-page .input-group label {
+.input-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: #555;
+  font-weight: 500;
+  color: var(--text-light);
+  font-size: 0.95rem;
 }
 
-.settings-page .input-group input {
+.input-group input {
   width: 100%;
-  padding: 0.5rem;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   font-size: 1rem;
+  transition: border-color 0.2s ease;
 }
 
-.settings-page .status {
-  margin-bottom: 1rem;
+.input-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
 }
 
-.settings-page .status span {
-  font-weight: bold;
-}
-
-.settings-page .messages-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.settings-page .messages-section h3 {
-  grid-column: 1 / -1;
-  font-size: 1.25rem;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.settings-page .button-group {
+.status {
   display: flex;
-  gap: 10px; /* Adds space between buttons */
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background: var(--bg-light);
+  border-radius: var(--radius);
 }
 
-.settings-page .button {
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
+.status span:first-child {
+  font-weight: 500;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.button {
+  padding: 0.75rem 1.25rem;
+  background: var(--primary);
   color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: var(--radius);
   font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.settings-page .button:hover {
-  background-color: #0056b3;
+.button:hover {
+  background: var(--primary-hover);
 }
 
 /* Loading Styles */
@@ -80,14 +100,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 20px 0;
-  gap: 12px;
+  gap: 1rem;
+  padding: 1.5rem 0;
 }
 
 .loading-circle {
-  border: 4px solid #f3f3f3; /* Light grey background */
-  border-top: 4px solid #25D366; /* WhatsApp green */
+  border: 3px solid rgba(0,0,0,0.1);
+  border-top: 3px solid var(--primary);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -95,61 +114,50 @@
 }
 
 .loading-text {
-  color: #555;
-  font-size: 14px;
-  text-align: center;
-  margin-top: 8px;
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+  border: none;
+}
+
+/* Messages Section */
+.messages-section {
+  margin-top: 2rem;
+}
+
+.messages-section h3 {
+  margin: 1.5rem 0 1rem;
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+.status-messages {
+  background: var(--bg-light);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.status-messages label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.status-messages input {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  box-sizing: border-box;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
-/* Status indicator alignment */
-.status {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-.divider {
-  width: 50%; /* Adjust the width to your preference */
-  height: 1px;
-  background-color: #000; /* Black color, you can change it */
-  margin: 20px auto; /* Center the line and give some space around it */
-}
-
-/* Fix for message input alignment */
-.status-messages {
-  background: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  padding: 1.25rem;
-  width: 100%; /* Ensure full width */
-  box-sizing: border-box; /* Include padding in width calculation */
-}
-
-.message-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  width: 100%; /* Ensure full width */
-}
-
-.status-messages input {
-  width: calc(100% - 24px); /* Account for padding */
-  padding: 0.75rem 12px; /* Consistent horizontal padding */
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  margin: 0; /* Remove any default margins */
-  box-sizing: border-box; /* Include padding in width calculation */
-}
-
-/* Remove any conflicting grid styles */
-.messages-section {
-  display: block; /* Override any grid display */
-  width: 100%;
-}
-
-/* Ensure consistent container width */
