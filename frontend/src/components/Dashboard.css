@@ -333,6 +333,7 @@
   background: var(--hover-bg);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
+  text-align: left;
 }
 
 .message {
