@@ -477,18 +477,31 @@ const Dashboard = () => {
                         <div className="import-section">
                           <h4>Importar Contatos</h4>
                           <form onSubmit={handleImportContacts}>
-                            <div className="file-input-wrapper">
-                              <input
-                                type="file"
-                                accept=".csv"
-                                onChange={(e) => setState(prev => ({ ...prev, importFile: e.target.files[0] }))}
-                                required
-                                id="csv-upload"
-                              />
-                              <label htmlFor="csv-upload" className="file-input-label">
-                                Selecionar arquivo CSV
-                              </label>
-                            </div>
+                          <div className="file-input-wrapper">
+                          <label 
+  className="file-input-label"
+  data-file={state.importFile ? state.importFile.name : ''}
+>
+  Selecionar arquivo CSV
+  <input
+    type="file"
+    accept=".csv"
+    onChange={(e) => {
+      const file = e.target.files[0];
+      setState(prev => ({ 
+        ...prev, 
+        importFile: file 
+      }));
+      // Update label's data-file attribute through state
+    }}
+    required
+    style={{ display: 'none' }}
+  />
+</label>
+</div>
+
+
+
                             <button 
                               type="submit" 
                               className="button button-blue full-width"
