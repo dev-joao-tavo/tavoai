@@ -329,10 +329,7 @@ const Dashboard = () => {
     setState(prev => ({ ...prev, newCardDescription: formatPhone(e.target.value) }));
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+  
 
   useEffect(() => {
     fetchData();
@@ -355,7 +352,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <Header handleLogout={handleLogout} />
+      <Header />
   
       <div className="title-container">
         <h1>Tavo.AI</h1>

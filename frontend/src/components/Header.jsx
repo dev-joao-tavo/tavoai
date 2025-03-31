@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import axios from "axios";
-import WhatsAppLogin from "./WhatsAppLogin"; // Import the modal
 import "./Header.css"; // Import the CSS file
 
-const API_BASE_URL = "https://api.tavoai.com";
 
-const Header = ({ handleLogout }) => {
+const Header = () => {
   
+
+
   return (
     <div className="header-container">
       <button onClick={() => (window.location.href = "/dashboard")} className="header-button">
@@ -26,10 +25,10 @@ const Header = ({ handleLogout }) => {
         className="header-button"
       > 
         Assinatura
-      </button>*/}
+      </button>
       <button onClick={handleLogout} className="header-button">
         Logout
-      </button>
+      </button>*/}
 
     </div>
   );

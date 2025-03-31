@@ -42,6 +42,11 @@ const Settings = () => {
     }, {})
   );
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/history";
+    };
+
   const handleWhatsAppIsLoggedInCheck = async()   => {
     setIsChecking(true);
     try {
@@ -439,6 +444,10 @@ return (
         ) : 'Atualizar mensagens'}
       </button>
   </div>
+
+  <button onClick={handleLogout}>
+        Logout
+      </button>
   </div>
 );
 };
