@@ -53,29 +53,29 @@ const Settings = () => {
         const token = localStorage.getItem("token");
     
         const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLoginCheck`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
     
-        if (response.status === 400) {
-          alert(`Mensagem: ${response.data.message}`);
-          setWhatsappStatus("Error: please try again");
+        if (response.data.is_logged_in) {
+          setWhatsappStatus("Connected");
         } else {
-          if (response.data.is_logged_in === true) {
-            setWhatsappStatus("Connected");
-          } else if (response.data.is_logged_in === false) {
-            setWhatsappStatus("Disconnected");
-          }
+          setWhatsappStatus("Disconnected");
         }
       } catch (error) {
-        console.error("Error on logging in your WhatsApp: ", error);
+        console.error("Erro ao verificar o login do WhatsApp:", error);
+    
+        if (error.response) {
+          alert(`Erro do servidor: ${error.response.data.message || "Ocorreu um erro inesperado."}`);
+        } else {
+          alert("Erro ao conectar-se ao servidor. Tente novamente.");
+        }
+    
         setWhatsappStatus("Error: please try again");
-        alert(`Error: ${error.response?.data?.error || error.message}`);
       } finally {
         setIsChecking(false);
       }
     };
+    
     const handleWhatsAppLogin = async () => {
       setIsLoading(true);
       setShowModal(true); // Show the modal as soon as the button is clicked
@@ -84,19 +84,18 @@ const Settings = () => {
         const token = localStorage.getItem("token");
     
         const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLogin`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
     
-        if (response.status === 400) {
-          alert(`Mensagem: ${response.data.message}`);
-        } else {
-          setWhatsAppCode(response.data.code); // Set the code when available
-        }
+        setWhatsAppCode(response.data.code); // Set the code when available
       } catch (error) {
-        console.error("Error on logging in your WhatsApp: ", error);
-        alert(`Error: ${error.response?.data?.error || error.message}`);
+        console.error("Erro ao fazer login no WhatsApp:", error);
+    
+        if (error.response) {
+          alert(`Erro do servidor: ${error.response.data.message || "Ocorreu um erro inesperado."}`);
+        } else {
+          alert("Erro ao conectar-se ao servidor. Tente novamente.");
+        }
       } finally {
         setIsLoading(false);
       }

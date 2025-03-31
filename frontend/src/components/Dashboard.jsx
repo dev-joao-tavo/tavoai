@@ -224,7 +224,7 @@ const Dashboard = () => {
         : state.funnelMessages[status];
   
       if (!messages) {
-        throw new Error("No messages found for this status");
+        throw new Error("Nenhuma mensagem encontrada para este status.");
       }
   
       const response = await axios.post(
@@ -237,15 +237,21 @@ const Dashboard = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
-      // Check if the backend response has status 400
-      if (response.status === 400) {
-        alert(`Mensagem: ${response.data.message}`);
-      } else {
+      // Handle successful response
+      if (response.status === 200) {
         alert(`Suas mensagens estão sendo enviadas!`);
       }
     } catch (error) {
-      console.error("Error sending message:", error);
-      alert(`Erro ao enviar mensagens: ${error.response?.data?.error || error.message}`);
+      console.error("Erro ao enviar mensagem:", error);
+  
+      if (error.response) {
+        // Handle backend errors
+        const backendMessage = error.response.data.message || "Ocorreu um erro inesperado.";
+        alert(`Erro do servidor: ${backendMessage}`);
+      } else {
+        // Handle network errors
+        alert("Erro ao conectar-se ao servidor. Tente novamente.");
+      }
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }

@@ -55,8 +55,8 @@ async def get_driver_status_from_user_id(user_id):
 
 def get_driver_status_message(status: str) -> str:
     messages = {
-        "SENDING_WPP_MESSAGES": "Messages are being sent. Please wait.",
-        "WPP_LOGIN": "WhatsApp login is in progress. Please try again later.",
-        "CHECKING_WPP_LOGIN": "Checking WhatsApp login status. Please wait.",
+        "SENDING_WPP_MESSAGES": "Algumas mensagens estão sendo enviadas. Por favor, aguarde e tente novamente em breve.",
+        "WPP_LOGIN": "O login no WhatsApp está sendo feito. Por favor, aguarde e tente novamente em breve.",
+        "CHECKING_WPP_LOGIN": "Estamos checando a sua conexão com o WhatsApp. Por favor, aguarde e tente novamente em breve.",
     }
-    return messages.get(status, "You can't do this now.")  # Default message
+    return messages.get(status, "Por favor, aguarde e tente novamente em breve.")  # Default message
