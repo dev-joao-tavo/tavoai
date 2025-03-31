@@ -147,7 +147,7 @@ async def send_whatsapp_messages(request):
             raise Unauthorized("Invalid or expired token.")
         driver_status = await get_driver_status_from_user_id(user_id)
         if driver_status!="FREE":
-            return response.json({"message": get_driver_status_message(driver_status)},status=393)
+            return response.json({"message": get_driver_status_message(driver_status)},status=400)
 
         data = request.json
         required_fields = ['status', 'message1', 'boardId']
@@ -372,7 +372,7 @@ async def whats_app_login(request):
        
         driver_status = await get_driver_status_from_user_id(user_id)
         if driver_status!="FREE":
-            return response.json({"message": get_driver_status_message(driver_status)},status=393)
+            return response.json({"message": get_driver_status_message(driver_status)},status=400)
 
     
     except Unauthorized as e:
@@ -434,7 +434,7 @@ async def whats_app_login_check(request):
         
         driver_status = await get_driver_status_from_user_id(user_id)
         if driver_status!="FREE":
-            return response.json({"message": get_driver_status_message(driver_status)},status=393)
+            return response.json({"message": get_driver_status_message(driver_status)},status=400)
 
     except Unauthorized as e:
         return response.json({"error": str(e)}, status=401)

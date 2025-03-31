@@ -193,41 +193,41 @@ const Dashboard = () => {
 
   const handleSendFromMenu = useCallback(async (status, e) => {
     e.preventDefault();
-    
+  
     if (state.cards[status].length === 0) {
       alert("Não há cartões nesta coluna para enviar mensagens!");
       return;
     }
-
+  
     try {
       const token = localStorage.getItem("token");
       const today = new Date().toISOString().split('T')[0];
-
+  
       const countResponse = await axios.get(
         `${constants.API_BASE_URL}/message-history/daily-count?date=${today}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       const sentToday = countResponse.data.count || 0;
       const dailyLimit = countResponse.data.limit || 200;
       const remaining = Math.max(0, dailyLimit - sentToday);
       const cardsToSend = state.cards[status].length;
-
+  
       if (cardsToSend > remaining) {
         alert(`Limite diário excedido!\nVocê já enviou ${sentToday} mensagens hoje.\nLimite diário: ${dailyLimit} mensagens\nTentando enviar: ${cardsToSend}\nVocê pode enviar no máximo ${remaining} mensagens hoje.`);
         return;
       }
-
+  
       setState(prev => ({ ...prev, isLoading: true }));
       const messages = state.selectedBoard?.board_type === "agenda"
         ? state.agendaMessages[status]
         : state.funnelMessages[status];
-
+  
       if (!messages) {
         throw new Error("No messages found for this status");
       }
-
-      await axios.post(
+  
+      const response = await axios.post(
         `${constants.API_BASE_URL}/sendMessage`,
         {
           status,
@@ -236,8 +236,13 @@ const Dashboard = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      alert(`Mensagens enviadas com sucesso para ${status}!`);
+  
+      // Check if the backend response has status 400
+      if (response.status === 400) {
+        alert(`Mensagem: ${response.data.message}`);
+      } else {
+        alert(`Suas mensagens estão sendo enviadas!`);
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       alert(`Erro ao enviar mensagens: ${error.response?.data?.error || error.message}`);
@@ -245,7 +250,7 @@ const Dashboard = () => {
       setState(prev => ({ ...prev, isLoading: false }));
     }
   }, [state.cards, state.selectedBoard, state.agendaMessages, state.funnelMessages]);
-
+  
   const handleOptionsClick = useCallback((status, e) => {
     e.stopPropagation();
     setState(prev => ({

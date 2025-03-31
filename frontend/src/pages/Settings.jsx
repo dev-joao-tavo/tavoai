@@ -46,61 +46,62 @@ const Settings = () => {
     localStorage.removeItem("token");
     window.location.href = "/history";
     };
-
-  const handleWhatsAppIsLoggedInCheck = async()   => {
-    setIsChecking(true);
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLoginCheck`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if(response.data.is_logged_in === true){
-        setWhatsappStatus("Connected");
+    
+    const handleWhatsAppIsLoggedInCheck = async () => {
+      setIsChecking(true);
+      try {
+        const token = localStorage.getItem("token");
+    
+        const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLoginCheck`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+    
+        if (response.status === 400) {
+          alert(`Mensagem: ${response.data.message}`);
+          setWhatsappStatus("Error: please try again");
+        } else {
+          if (response.data.is_logged_in === true) {
+            setWhatsappStatus("Connected");
+          } else if (response.data.is_logged_in === false) {
+            setWhatsappStatus("Disconnected");
+          }
+        }
+      } catch (error) {
+        console.error("Error on logging in your WhatsApp: ", error);
+        setWhatsappStatus("Error: please try again");
+        alert(`Error: ${error.response?.data?.error || error.message}`);
+      } finally {
+        setIsChecking(false);
       }
-      if(response.data.is_logged_in === false){
-        setWhatsappStatus("Disconnected");
+    };
+    const handleWhatsAppLogin = async () => {
+      setIsLoading(true);
+      setShowModal(true); // Show the modal as soon as the button is clicked
+    
+      try {
+        const token = localStorage.getItem("token");
+    
+        const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLogin`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+    
+        if (response.status === 400) {
+          alert(`Mensagem: ${response.data.message}`);
+        } else {
+          setWhatsAppCode(response.data.code); // Set the code when available
+        }
+      } catch (error) {
+        console.error("Error on logging in your WhatsApp: ", error);
+        alert(`Error: ${error.response?.data?.error || error.message}`);
+      } finally {
+        setIsLoading(false);
       }
-
-    } catch (error) {
-      console.error("Error on logging in your WhatsApp: ", error);
-      setWhatsappStatus("Error: please try again");
-      alert("Error: ", error);
-
-      
-    } finally {
-      setIsChecking(false);
-    }
-  }
-
-  const handleWhatsAppLogin = async () => {
-    setIsLoading(true);
-    setShowModal(true); // Show the modal as soon as the button is clicked
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await axios.get(`${constants.API_BASE_URL}/whatsAppLogin`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setWhatsAppCode(response.data.code); // Set the code when available
-
-    } catch (error) {
-      console.error("Error on logging in your WhatsApp: ", error);
-      alert("Error: ", error);
-      
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
+    };
+    
 useEffect(() => {
   const fetchInitialData = async () => {
     try {
