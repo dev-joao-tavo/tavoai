@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { FaHome, FaCog, FaHistory } from "react-icons/fa";
+import { useNavigate, useLocation } from "react-router-dom";
+import "./Header.css";
 
-import "./Header.css"; // Reuse your existing CSS or update it for the sidebar
-
-const Header = () => {
-  const [isOpen, setIsOpen] = useState(true); // Starts open by default
+const Header = ({ 
+  boards = [], 
+  selectedBoard, 
+  onBoardChange, 
+  dailyCount = 0 
+}) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -12,40 +18,69 @@ const Header = () => {
 
   return (
     <>
-      {/* Mobile Toggle Button (hidden on desktop) */}
-      <button className="header-toggle" onClick={toggleSidebar}>
+      <button 
+        className="header-toggle"
+        onClick={toggleSidebar}
+        aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
+        aria-expanded={isOpen}
+      >
         {isOpen ? "✕" : "☰"}
       </button>
 
-      {/* Sidebar-styled Header */}
       <div className={`header-container ${isOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <h1>Tavo.AI</h1>
+          <h2>Seu assistente inteligente</h2>
+        </div>
 
-        <button onClick={() => (window.location.href = "/dashboard")} className="header-button">
-          <FaHome /> Dashboard
-        </button>
-        <button
-          onClick={() => (window.location.href = "/settings")}
-          className="header-button"
-        >
-          Configurações
-        </button>
-        <button
-          onClick={() => (window.location.href = "/history")}
-          className="header-button"
-        >
-          Histórico
-        </button>
-        {/* Uncomment if needed:
-        <button
-          onClick={() => window.open("https://pay.infinitepay.io/tavoai/Ri0x-1HOAcj6R35-19,90", "_blank")}
-          className="header-button"
-        >
-          Assinatura
-        </button>
-        <button onClick={handleLogout} className="header-button">
-          Logout
-        </button>
-        */}
+        <div className="sidebar-board-selector">
+          {boards.map((board) => (
+            <button
+              key={board.id}
+              className={`sidebar-board-button ${
+                selectedBoard?.id === board.id ? "active" : ""
+              }`}
+              onClick={() => onBoardChange(board.id)}
+            >
+              {board.board_type === "funnel" 
+                ? "Funil" 
+                : board.board_type === "agenda" 
+                ? "Semanal" 
+                : board.board_type}
+            </button>
+          ))}
+        </div>
+
+        <div className="sidebar-navigation">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className={`header-button ${
+              location.pathname === "/dashboard" ? "active" : ""
+            }`}
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => navigate("/settings")}
+            className={`header-button ${
+              location.pathname === "/settings" ? "active" : ""
+            }`}
+          >
+            Configurações
+          </button>
+          <button
+            onClick={() => navigate("/history")}
+            className={`header-button ${
+              location.pathname === "/history" ? "active" : ""
+            }`}
+          >
+            Histórico
+          </button>
+        </div>
+
+        <div className="sidebar-daily-limit">
+          {dailyCount}/200 mensagens hoje
+        </div>
       </div>
     </>
   );
