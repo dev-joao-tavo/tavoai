@@ -371,7 +371,6 @@ const Dashboard = () => {
       </div>
   
       <div className="board-selector">
-        <label>Selecione o quadro: </label>
         <div className="toggle-buttons">
           {state.boards.map((board) => (
             <button

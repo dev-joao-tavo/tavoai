@@ -1,49 +1,48 @@
 import React, { useState } from "react";
-import "./Header.css"; // We'll create this CSS file next
+import { FaHome, FaCog, FaHistory } from "react-icons/fa";
+
+import "./Header.css"; // Reuse your existing CSS or update it for the sidebar
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(true); // Sidebar starts open by default
+  const [isOpen, setIsOpen] = useState(true); // Starts open by default
 
-  // Toggle sidebar (for mobile)
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
   return (
     <>
-      {/* Mobile Hamburger Button (only visible on small screens) */}
-      <button className="sidebar-toggle" onClick={toggleSidebar}>
+      {/* Mobile Toggle Button (hidden on desktop) */}
+      <button className="header-toggle" onClick={toggleSidebar}>
         {isOpen ? "✕" : "☰"}
       </button>
 
-      {/* Sidebar */}
-      <div className={`sidebar ${isOpen ? "open" : ""}`}>
-        <button
-          onClick={() => (window.location.href = "/dashboard")}
-          className="sidebar-button"
-        >
-          Dashboard
+      {/* Sidebar-styled Header */}
+      <div className={`header-container ${isOpen ? "open" : ""}`}>
+
+        <button onClick={() => (window.location.href = "/dashboard")} className="header-button">
+          <FaHome /> Dashboard
         </button>
         <button
           onClick={() => (window.location.href = "/settings")}
-          className="sidebar-button"
+          className="header-button"
         >
           Configurações
         </button>
         <button
           onClick={() => (window.location.href = "/history")}
-          className="sidebar-button"
+          className="header-button"
         >
           Histórico
         </button>
-        {/* Uncomment if needed
+        {/* Uncomment if needed:
         <button
           onClick={() => window.open("https://pay.infinitepay.io/tavoai/Ri0x-1HOAcj6R35-19,90", "_blank")}
-          className="sidebar-button"
+          className="header-button"
         >
           Assinatura
         </button>
-        <button onClick={handleLogout} className="sidebar-button">
+        <button onClick={handleLogout} className="header-button">
           Logout
         </button>
         */}

@@ -1,11 +1,11 @@
-/* Sidebar Container */
-.sidebar {
+/* Header Container (Now a Sidebar) */
+.header-container {
     position: fixed;
     top: 0;
     left: 0;
     width: 250px;
     height: 100vh;
-    background: #2c3e50; /* Dark background (change as needed) */
+    background: #2c3e50; /* Match your theme */
     padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transform: translateX(-100%); /* Hidden by default on mobile */
@@ -13,13 +13,13 @@
     z-index: 1000;
   }
   
-  /* Sidebar Open State */
-  .sidebar.open {
+  /* Open State */
+  .header-container.open {
     transform: translateX(0);
   }
   
-  /* Sidebar Buttons */
-  .sidebar-button {
+  /* Header Buttons (Sidebar Style) */
+  .header-button {
     display: block;
     width: 100%;
     padding: 12px;
@@ -33,12 +33,12 @@
     transition: background 0.2s;
   }
   
-  .sidebar-button:hover {
+  .header-button:hover {
     background: #2980b9;
   }
   
-  /* Mobile Toggle Button (hidden on desktop) */
-  .sidebar-toggle {
+  /* Mobile Toggle Button */
+  .header-toggle {
     display: none;
     position: fixed;
     top: 10px;
@@ -54,13 +54,13 @@
   
   /* Responsive Behavior */
   @media (max-width: 768px) {
-    .sidebar-toggle {
+    .header-toggle {
       display: block;
     }
   }
   
   @media (min-width: 769px) {
-    .sidebar {
+    .header-container {
       transform: translateX(0); /* Always visible on desktop */
     }
   }
