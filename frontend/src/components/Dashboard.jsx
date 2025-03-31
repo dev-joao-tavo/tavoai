@@ -403,7 +403,7 @@ const Dashboard = () => {
                             <button 
                               className="menu-item"
                               onClick={(e) => handleSendFromMenu(status, e)}
-                              disabled={!savedMessages || state.isLoading || (200 - state.dailyCount) < state.cards[status].length}
+                              disabled={!savedMessages || state.isLoading || (250 - state.dailyCount) < state.cards[status].length}
                             >
                               Enviar Mensagem
                             </button>
