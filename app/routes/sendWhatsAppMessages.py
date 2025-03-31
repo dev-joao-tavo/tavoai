@@ -1,21 +1,15 @@
 from sanic import Sanic, response
 from db import SessionLocal, get_db_session
 from sqlalchemy import select, update
-import time
 from models.models import Card, Contact, Board, User
 from utils.utils import get_user_from_token,get_driver_status_from_user_id,get_driver_status_message
 from sanic.exceptions import Unauthorized
-from selenium.webdriver.common.by import By
 import time
 from routes.configs import initialize_driver,quit_driver
 import asyncio
 import re
 from datetime import datetime
-from selenium.common.exceptions import NoSuchElementException
 # Standard library imports
-import asyncio
-import random
-import re
 from typing import Any
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -26,7 +20,6 @@ from selenium.webdriver.common.by import By
 from sanic import Sanic, response
 
 # Local application imports
-import time
 import random
 
 from datetime import datetime
