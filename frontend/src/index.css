@@ -11,6 +11,8 @@
   --background-color: #f8f9fa;
   --text-color: #333;
   --shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  --sidebar-width: 250px; /* Match your sidebar's width */
+
 }
 
 /* === General Styles === */
@@ -318,4 +320,18 @@ h2 {
   padding: 5px;
   color: var(--text-muted);
   margin-left: 10px;
+}
+
+/* For pages with sidebar (e.g., Settings) */
+.main-content {
+  margin-left: var(--sidebar-width); /* Push content right on desktop */
+  padding: 2rem;
+  transition: margin 0.3s ease; /* Smooth transition for mobile toggle */
+}
+
+/* Mobile behavior: Sidebar hidden by default */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0; /* Full width on mobile */
+  }
 }

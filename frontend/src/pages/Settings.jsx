@@ -255,17 +255,17 @@ const handleSaveProfile = async () => {
   }
 };
 return (
-  <div className="settings-page">
-    <Header/>
-  
-    {/* Loading overlay */}
-    {(isProfileLoading || isMessagesLoading) && (
-      <div className="loading-overlay">
-        <div className="loading-circle large"></div>
-        <p className="loading-text">Carregando dados...</p>
-      </div>
-    )}
-
+ <div className="app-container">
+      <Header />
+      <main className="main-content">
+        <div className="settings-page">
+          {/* Loading overlay */}
+          {(isProfileLoading || isMessagesLoading) && (
+            <div className="loading-overlay">
+              <div className="loading-circle large"></div>
+              <p className="loading-text">Carregando dados...</p>
+            </div>
+          )}
     {/* Profile Section */}
     <div className="section">
       <div className="input-group">
@@ -444,12 +444,13 @@ return (
         ) : 'Atualizar mensagens'}
       </button>
   </div>
-
-  <button onClick={handleLogout}>
-        Logout
-      </button>
-  </div>
-);
+  <button onClick={handleLogout} className="logout-button">
+            Logout
+          </button>
+        </div>
+      </main>
+    </div>
+  );
 };
 
 export default Settings;
