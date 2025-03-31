@@ -50,8 +50,7 @@ async def get_driver_status_from_user_id(user_id):
             select(User).where(User.id == user_id).with_for_update()
         )
         user = result.scalars().first()
-
-        return user.driver_status if user else "FREE"  # ✅ Default to "FREE"
+        return user.driver_status 
 
 
 def get_driver_status_message(status: str) -> str:

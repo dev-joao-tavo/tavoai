@@ -247,6 +247,14 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
                 try:
                     phone, name, contact_id, card_id, _ = contact  # Unpack all fields including status
                     
+                    result = await session.execute(
+                        select(User).where(User.id == user_id).with_for_update()
+                    )
+                    driver_status = result.scalars().first().driver_status 
+
+                    if driver_status != "SENDING_WPP_MESSAGES":
+                        break
+
                     # Update status to SENDING
                     await session.execute(
                         update(Card)
@@ -255,7 +263,9 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
                             sending_message_status="SENDING"
                         )
                     )
+                    
                     await session.commit()
+
 
                     # Send message logic
                     clean_number = re.sub(r"\D", "", phone)
