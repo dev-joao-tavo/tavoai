@@ -49,6 +49,8 @@ async def signup(request):
     password = data.get("password")
     user_wpp_phone_number = data.get("phone")
     user_id = randint(1, 99999999)  # Ensure unique username
+    driver_status = "FREE"
+
 
 
     if not email or not password:
@@ -61,7 +63,7 @@ async def signup(request):
             return response.json({"message": "Email already in use"}, status=400)
 
         # Create new user
-        new_user = User(id=user_id, email=email, username=username, password_hash=hash_password(password),user_wpp_phone_number=user_wpp_phone_number)
+        new_user = User(id=user_id, email=email, username=username, password_hash=hash_password(password),user_wpp_phone_number=user_wpp_phone_number,driver_status=driver_status)
         session.add(new_user)
         await session.flush()  # Ensure new_user gets an ID
 

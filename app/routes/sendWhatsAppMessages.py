@@ -3,11 +3,11 @@ from db import SessionLocal, get_db_session
 from sqlalchemy import select, update
 import time
 from models.models import Card, Contact, Board, User
-from utils.utils import get_user_from_token
+from utils.utils import get_user_from_token,get_driver_status_from_user_id,get_driver_status_message
 from sanic.exceptions import Unauthorized
 from selenium.webdriver.common.by import By
 import time
-from routes.configs import initialize_driver
+from routes.configs import initialize_driver,quit_driver
 import asyncio
 import re
 from datetime import datetime
@@ -17,6 +17,8 @@ import asyncio
 import random
 import re
 from typing import Any
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 # Third-party imports
 from sqlalchemy import select, update, func
@@ -95,21 +97,20 @@ async def get_phone_numbers_and_names_by_status_and_board(status, board_id):
         return result.all()  # This will now return (phone, name, contact_id, card_id)
 
 async def login_check(driver):
+    if driver is None:
+        return False  # Ensure driver is valid
+
     try:
         driver.get("https://web.whatsapp.com/send/?phone=+5531995854940")
 
-        # Wait for the page to fully load
-        await asyncio.sleep(random.uniform(15, 20))  # Random sleep to simulate loading time
-
-        # Try to find the message input field
-        test = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
+        # Wait dynamically for the message input field
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Digite uma mensagem"]'))
+        )
         return True
-    except NoSuchElementException:
-        return False  # Return False if the element is not found
-    except Exception as e:
-        print(f"Error in login_check: {e}")
-        return False  # Catch other unexpected errors and return False
-
+    except Exception:
+        return False  # Return False if element is not found
+    
 
 async def get_wpp_login_code(driver, user_phone_number):
     try:
@@ -151,6 +152,9 @@ async def send_whatsapp_messages(request):
         user_id = get_user_from_token(request)
         if not user_id:
             raise Unauthorized("Invalid or expired token.")
+        driver_status = await get_driver_status_from_user_id(user_id)
+        if driver_status!="FREE":
+            return response.json({"message": get_driver_status_message(driver_status)},status=393)
 
         data = request.json
         required_fields = ['status', 'message1', 'boardId']
@@ -236,7 +240,8 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
     }
 
     try:
-        driver = await asyncio.to_thread(initialize_driver, user_id)
+        driver = await initialize_driver(user_id,new_process_status="SENDING_WPP_MESSAGES")
+
         async with get_db_session() as session:
             for contact in contacts:
                 try:
@@ -337,7 +342,8 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
     finally:
         if driver:
             try:
-                driver.quit()
+                await quit_driver(user_id, driver)
+
             except Exception as e:
                 raise
     return results
@@ -360,6 +366,11 @@ async def whats_app_login(request):
         user_id = get_user_from_token(request)
         if not user_id:
             raise Unauthorized("Invalid or expired token.")
+       
+        driver_status = await get_driver_status_from_user_id(user_id)
+        if driver_status!="FREE":
+            return response.json({"message": get_driver_status_message(driver_status)},status=393)
+
     
     except Unauthorized as e:
         return response.json({"error": str(e)}, status=401)
@@ -374,7 +385,8 @@ async def whats_app_login(request):
         if not user:
             return response.json({"error": "User not found."}, status=404)
 
-        driver = await asyncio.to_thread(initialize_driver, user_id)
+        driver = await initialize_driver(user_id,new_process_status="WPP_LOGIN")
+
         user_phone_number = user.user_wpp_phone_number
         code = await get_wpp_login_code(driver, user_phone_number)
         
@@ -392,12 +404,12 @@ async def whats_app_login(request):
     finally:
         # Start an asynchronous task to sleep and quit the driver concurrently
         if driver:
-            asyncio.create_task(sleep_and_quit(driver))
+            asyncio.create_task(sleep_and_quit(driver, user_id))
 
 # Define the sleep and quit logic in an async function
-async def sleep_and_quit(driver):
+async def sleep_and_quit(driver, user_id):
     await asyncio.sleep(60)  # Sleep for 60 seconds
-    driver.quit()  # Quit the driver
+    await quit_driver(user_id, driver)
 
 async def update_last_message(contact_id):
     async with get_db_session() as session:
@@ -416,7 +428,11 @@ async def whats_app_login_check(request):
         user_id = get_user_from_token(request)
         if not user_id:
             raise Unauthorized("Invalid or expired token.")
-    
+        
+        driver_status = await get_driver_status_from_user_id(user_id)
+        if driver_status!="FREE":
+            return response.json({"message": get_driver_status_message(driver_status)},status=393)
+
     except Unauthorized as e:
         return response.json({"error": str(e)}, status=401)
     except Exception as e:
@@ -429,18 +445,22 @@ async def whats_app_login_check(request):
         
         if not user:
             return response.json({"error": "User not found."}, status=404)
+       
+        driver = await initialize_driver(user_id,new_process_status="CHECKING_WPP_LOGIN")
 
-        driver = await asyncio.to_thread(initialize_driver, user_id)
+        if not driver:
+            return {"message": "Failed to initialize WebDriver"}
+
         is_logged_in = await login_check(driver)
 
         # Sleeping before sending the response if needed
         await asyncio.sleep(1)
-        driver.quit()
+        await quit_driver(user_id, driver)
         if is_logged_in == True:
            return response.json({"message": "You are already logged in!", "is_logged_in":is_logged_in},status=200)
         if is_logged_in == False:
            return response.json({"message": "You are NOT logged in!", "is_logged_in":is_logged_in},status=200)
 
     except Exception as e:
-        driver.quit()
+        await quit_driver(user_id, driver)
         return response.json({"error": str(e)})

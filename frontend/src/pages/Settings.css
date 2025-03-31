@@ -161,3 +161,30 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.file-input-label {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #f0f0f0;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-weight: 500;
+  color: #555;
+}
+
+.file-input-label:hover {
+  background-color: #e9e9e9;
+  border-color: #007bff;
+}
+
+/* Optional: Show selected filename */
+.file-input-label::after {
+  content: attr(data-file);
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #007bff;
+}

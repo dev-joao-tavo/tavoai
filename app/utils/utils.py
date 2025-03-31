@@ -1,7 +1,9 @@
 from passlib.context import CryptContext
-import datetime
 import jwt
 from sanic.exceptions import Unauthorized
+from db import get_db_session
+from models.models import User
+from sqlalchemy.future import select
 
 SECRET_KEY = "your_secret_key"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -41,3 +43,21 @@ def get_user_from_token(request):
         raise Unauthorized("Token has expired.")
     except jwt.InvalidTokenError:
         raise Unauthorized("Invalid token.")
+
+async def get_driver_status_from_user_id(user_id):
+    async with get_db_session() as session:  # ✅ Ensure this is an async session
+        result = await session.execute(
+            select(User).where(User.id == user_id).with_for_update()
+        )
+        user = result.scalars().first()
+
+        return user.driver_status if user else "FREE"  # ✅ Default to "FREE"
+
+
+def get_driver_status_message(status: str) -> str:
+    messages = {
+        "SENDING_WPP_MESSAGES": "Messages are being sent. Please wait.",
+        "WPP_LOGIN": "WhatsApp login is in progress. Please try again later.",
+        "CHECKING_WPP_LOGIN": "Checking WhatsApp login status. Please wait.",
+    }
+    return messages.get(status, "You can't do this now.")  # Default message

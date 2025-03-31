@@ -15,6 +15,7 @@ class User(Base):
     user_wpp_phone_number = Column(String, unique=True, index=True)
     user_current_status = Column(String)
     message_history = relationship("MessageHistory", back_populates="user")
+    driver_status = Column(String)
 
     def set_password(self, password: str):
         """Hashes a password and stores it securely"""
