@@ -244,3 +244,99 @@
     max-width: 150px;
   }
 }
+
+/* Notes Section */
+.notes-section {
+  margin-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+}
+
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.notes-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+}
+
+.notes-toggle {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.notes-content {
+  margin-top: 8px;
+}
+
+.notes-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  resize: vertical;
+  margin-bottom: 8px;
+}
+
+.save-notes-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.save-notes-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+
+/* Contact Edit Styles */
+.contact-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-edit-input {
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.edit-contact-button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.save-contact-button {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}

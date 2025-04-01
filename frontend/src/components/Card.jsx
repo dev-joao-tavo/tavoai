@@ -1,8 +1,12 @@
 import { useState, useMemo, useCallback } from "react";
+import { FiEdit2, FiSave, FiPhone } from 'react-icons/fi';
+import axios from "axios";
+import * as constants from '../utils/constants';
+import PropTypes from 'prop-types';
+
 import { statusConfig } from "./statusConfig";
 import { 
   getStatusConfig, 
-  isMessageFromToday, 
   formatLastMessageDate 
 } from "./cardUtils";
 import "./Card.css";
@@ -23,15 +27,23 @@ const WEEKDAY_OPTIONS = [
   { value: "sunday", label: "Domingo" },
 ];
 
-const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
-  const [selectedStatus, setSelectedStatus] = useState(card.status);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  // Memoized contact lookup
+const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes }) => {
+  // Memoized contact lookup (moved to top)
   const contact = useMemo(
     () => contacts.find((c) => Number(c.ID) === Number(card.contact_ID)),
     [contacts, card.contact_ID]
   );
+
+  // State declarations
+  const [selectedStatus, setSelectedStatus] = useState(card.status);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [notes, setNotes] = useState(card.notes || "");
+  const [isNotesVisible, setIsNotesVisible] = useState(false);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [isSavingContact, setIsSavingContact] = useState(false);
+  const [contactName, setContactName] = useState(contact?.name || "");
+  const [contactPhone, setContactPhone] = useState(contact?.phone_number || "");
 
   // Memoized status calculation
   const currentStatus = useMemo(
@@ -56,8 +68,65 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
     [card.id, updateCardStatus]
   );
 
+  const toggleNotesVisibility = useCallback(() => {
+    setIsNotesVisible((prev) => !prev);
+  }, []);
+
+  const handleSaveNotes = useCallback(async () => {
+    if (notes === (card.notes || "")) return;
+  
+    setIsSavingNotes(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${constants.API_BASE_URL}/cards/${card.id}/notes`,
+        { notes },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      updateCardNotes(card.id, notes);
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      alert("Failed to save notes. Please try again.");
+    } finally {
+      setIsSavingNotes(false);
+    }
+  }, [notes, card.id, card.notes, updateCardNotes]);
+
+  const handleSaveContact = useCallback(async () => {
+    if (!contact) return;
+  
+    setIsSavingContact(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${constants.API_BASE_URL}/contacts/${contact.ID}`,
+        {
+          name: contactName,
+          phone_number: contactPhone
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      setIsEditingContact(false);
+    } catch (error) {
+      console.error("Error updating contact:", error);
+      alert("Failed to update contact. Please check the details and try again.");
+    } finally {
+      setIsSavingContact(false);
+    }
+  }, [contact, contactName, contactPhone]);
+
   return (
-    <div className="card">
+    <div className="card" aria-live="polite">
       {/* Card header */}
       <div className="card-header">
         <h3 className="card-title">{card.title}</h3>
@@ -88,20 +157,46 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
       <div className="card-content">
         {/* Contact info */}
         <div className="contact-info">
-          {contact ? (
-            <span className="phone-number">
-              <svg className="phone-icon" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-              {contact.phone_number}
-            </span>
+          {isEditingContact ? (
+            <div className="contact-edit-form">
+              <input
+                type="text"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                className="contact-edit-input"
+                placeholder= {card.title}
+                aria-label="Contact name"
+              />
+              <input
+                type="tel"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                className="contact-edit-input"
+                placeholder="Phone number"
+                aria-label="Phone number"
+              />
+              <button 
+                onClick={handleSaveContact}
+                className="save-contact-button"
+                disabled={isSavingContact}
+              >
+                {isSavingContact ? 'Saving...' : <FiSave />}
+              </button>
+            </div>
           ) : (
-            <span className="contact-error">
-              <svg className="error-icon" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Contato não encontrado
-            </span>
+            <>
+              <span className="phone-number">
+                <FiPhone className="phone-icon" />
+                {contact?.phone_number || "No phone"}
+                <button 
+                  onClick={() => setIsEditingContact(true)}
+                  className="edit-contact-button"
+                  aria-label="Edit contact"
+                >
+                  <FiEdit2 size={14} />
+                </button>
+              </span>
+            </>
           )}
         </div>
     
@@ -144,9 +239,62 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
             </select>
           </div>
         </div>
+
+        {/* Collapsible notes section */}
+        <div className="notes-section">
+          <div className="notes-header" onClick={toggleNotesVisibility}>
+            <span className="notes-label">NOTES</span>
+            <button 
+              className="notes-toggle" 
+              aria-label={isNotesVisible ? "Hide notes" : "Show notes"}
+            >
+              {isNotesVisible ? '−' : '+'}
+            </button>
+          </div>
+          
+          {isNotesVisible && (
+            <div className="notes-content">
+              <textarea
+                className="notes-textarea"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add notes..."
+                aria-label="Card notes"
+              />
+              <button 
+                className="save-notes-button"
+                onClick={handleSaveNotes}
+                disabled={notes === (card.notes || "") || isSavingNotes}
+              >
+                {isSavingNotes ? 'Saving...' : <><FiSave /> Save</>}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
+};
+
+Card.propTypes = {
+  card: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+    contact_ID: PropTypes.number.isRequired,
+    notes: PropTypes.string,
+  }).isRequired,
+  contacts: PropTypes.arrayOf(
+    PropTypes.shape({
+      ID: PropTypes.number.isRequired,
+      name: PropTypes.string,
+      phone_number: PropTypes.string,
+      last_message_contact: PropTypes.string,
+    })
+  ).isRequired,
+  updateCardStatus: PropTypes.func.isRequired,
+  deleteCard: PropTypes.func.isRequired,
+  updateCardNotes: PropTypes.func.isRequired,
 };
 
 export default Card;
