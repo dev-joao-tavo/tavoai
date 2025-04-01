@@ -72,7 +72,13 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
             <span className="deleting-spinner">...</span>
           ) : (
             <svg className="delete-icon" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <path 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M6 18L18 6M6 6l12 12" 
+              />
             </svg>
           )}
         </button>
@@ -109,7 +115,7 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard }) => {
         {/* Status and dropdown */}
         <div className="status-container">
           <div className="status-message">
-            <span className={`status-badge ${currentStatus.color}`}>
+            <span className={`card-status-badge ${currentStatus.color}`}>
               {currentStatus.icon}
               <span className="status-label">{currentStatus.label}</span>
             </span>

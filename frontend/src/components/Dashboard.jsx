@@ -295,19 +295,40 @@ const Dashboard = () => {
 
   const handleImportContacts = useCallback(async (e) => {
     e.preventDefault();
-    if (!state.importFile || !state.selectedBoard) {
-      alert("Please select a file and a board first");
+    
+    // Validate inputs
+    if (!state.importFile) {
+      setState(prev => ({ ...prev, 
+        importStatus: "Error: Por favor selecione um arquivo CSV"
+      }));
       return;
     }
 
-    setState(prev => ({ ...prev, isImporting: true, importStatus: "Processing..." }));
+    if (!state.selectedBoard) {
+      setState(prev => ({ ...prev,
+        importStatus: "Error: Nenhum quadro selecionado"
+      }));
+      return;
+    }
+
+    if (!state.currentStatusForPopup) {
+      setState(prev => ({ ...prev,
+        importStatus: "Error: Nenhuma coluna selecionada"
+      }));
+      return;
+    }
+
+    setState(prev => ({ ...prev, 
+      isImporting: true, 
+      importStatus: "Processando..." 
+    }));
 
     try {
       const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append('csv_file', state.importFile);
       formData.append('board_id', state.selectedBoard.id);
-      formData.append('status', state.selectedBoard.board_type === "funnel" ? "day-1" : "monday");
+      formData.append('status', state.currentStatusForPopup); // Use the column's status
 
       const response = await axios.post(
         `${constants.API_BASE_URL}/import-contacts`,
@@ -322,25 +343,33 @@ const Dashboard = () => {
 
       setState(prev => ({
         ...prev,
-        importStatus: `Success: ${response.data.success_count} contacts imported, ${response.data.error_count} errors`,
+        importStatus: `Sucesso: ${response.data.success_count} contatos importados` +
+                     (response.data.error_count > 0 ? 
+                      `, ${response.data.error_count} erros` : ""),
         importFile: null
       }));
       
-      fetchCards(state.selectedBoard.id);
-      const contactsRes = await axios.get(`${constants.API_BASE_URL}/contacts`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setState(prev => ({ ...prev, contacts: contactsRes.data.contacts }));
+      // Refresh data
+      await Promise.all([
+        fetchCards(state.selectedBoard.id),
+        axios.get(`${constants.API_BASE_URL}/contacts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(res => {
+          setState(prev => ({ ...prev, contacts: res.data.contacts }))
+        })
+      ]);
+
     } catch (error) {
-      console.error("Import failed:", error);
+      console.error("Erro na importação:", error);
       setState(prev => ({
         ...prev,
-        importStatus: `Error: ${error.response?.data?.error || error.message}`
+        importStatus: `Erro: ${error.response?.data?.error || error.message || "Falha na importação"}`
       }));
     } finally {
       setState(prev => ({ ...prev, isImporting: false }));
     }
-  }, [state.importFile, state.selectedBoard, fetchCards]);
+  }, [state.importFile, state.selectedBoard, state.currentStatusForPopup, fetchCards]);
+
 
   const formatPhone = (value) => {
     let cleaned = value.replace(/\D/g, "");
