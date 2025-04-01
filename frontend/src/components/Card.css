@@ -309,34 +309,85 @@
   cursor: not-allowed;
 }
 
-
 /* Contact Edit Styles */
 .contact-edit-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px; /* Increased gap for better spacing */
+  padding: 12px;
+  background: #f8f9fa; /* Light background for the form */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
 
 .contact-edit-input {
-  padding: 6px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 8px 12px; /* More comfortable padding */
+  border: 1px solid #ced4da;
+  border-radius: 6px; /* Slightly larger radius */
   font-size: 0.875rem;
+  transition: border-color 0.15s ease-in-out; /* Smooth transition */
 }
 
-.edit-contact-button {
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  margin-left: 6px;
+.contact-edit-input:focus {
+  outline: none;
+  border-color: #80bdff; /* Highlight when focused */
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Focus ring */
+}
+
+.button-group {
+  display: flex;
+  gap: 8px; /* Space between buttons */
 }
 
 .save-contact-button {
   background: #28a745;
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
+  border-radius: 6px;
+  padding: 8px 16px; /* Larger click area */
   cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  flex: 1; /* Makes buttons equal width */
+}
+
+.save-contact-button:hover {
+  background: #218838; /* Darker on hover */
+}
+
+.save-contact-button:disabled {
+  background: #94d3a2; /* Different color when disabled */
+  cursor: not-allowed;
+}
+
+.close-contact-button {
+  background: #f1f3f5; /* Light gray background */
+  color: #495057; /* Dark gray text */
+  border: 1px solid #dee2e6; /* Subtle border */
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1; /* Makes buttons equal width */
+}
+
+.close-contact-button:hover {
+  background: #e9ecef; /* Slightly darker on hover */
+  border-color: #ced4da;
+}
+
+/* For the edit button (you might want to add this too) */
+.edit-contact-button {
+  background: none;
+  border: none;
+  color: #495057;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.edit-contact-button:hover {
+  background: #f1f3f5;
 }

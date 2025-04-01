@@ -1,5 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { FiEdit2, FiSave, FiPhone } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
+
 import axios from "axios";
 import * as constants from '../utils/constants';
 import PropTypes from 'prop-types';
@@ -96,7 +98,7 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes })
       setIsSavingNotes(false);
     }
   }, [notes, card.id, card.notes, updateCardNotes]);
-
+  
   const handleSaveContact = useCallback(async () => {
     if (!contact) return;
   
@@ -179,9 +181,16 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes })
                 onClick={handleSaveContact}
                 className="save-contact-button"
                 disabled={isSavingContact}
-              >
+              >                
                 {isSavingContact ? 'Saving...' : <FiSave />}
-              </button>
+              </button>      
+              <button 
+                onClick={() => setIsEditingContact(false)}  // Note: false should be lowercase
+                className="close-contact-button"
+                disabled={isSavingContact}
+              >                
+                <FiX /> {/* You might want to add an icon like a close (X) icon */}
+              </button> 
             </div>
           ) : (
             <>
