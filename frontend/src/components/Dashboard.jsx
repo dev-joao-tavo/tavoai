@@ -7,6 +7,9 @@ import "./Dashboard.css";
 import * as constants from '../utils/constants';
 import { FaEllipsisV } from 'react-icons/fa';
 
+import { useLocation } from "react-router-dom";
+
+
 const Dashboard = () => {
   // Consolidated state
   const [state, setState] = useState({
@@ -27,6 +30,7 @@ const Dashboard = () => {
     currentStatusForPopup: null,
     showOptionsMenu: null
   });
+  const location = useLocation();
 
   const navigate = useNavigate();
 
@@ -579,7 +583,14 @@ const Dashboard = () => {
                       </div>
                     </>
                   ) : (
-                    <div className="message">Mensagens não carregadas</div>
+                    <div>
+                      <button
+                        onClick={() => navigate("/settings")}
+                        className={`header-button ${
+                          location.pathname === "/settings" ? "active" : ""
+                        }`}
+                      ></button>
+                    </div>
                   )}
                 </div>
   

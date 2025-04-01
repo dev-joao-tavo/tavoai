@@ -104,41 +104,51 @@ async def login_check(driver):
     except Exception:
         return False  # Return False if element is not found
     
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 
 async def get_wpp_login_code(driver, user_phone_number):
+    start_time = time.time()
     try:
-        driver.get(f"https://web.whatsapp.com/")
+        # 1. Load WhatsApp Web
+        print("Loading WhatsApp Web...")
+        driver.get("https://web.whatsapp.com/")
+        await asyncio.sleep(5)  # Initial page load
 
-        # Wait for page to fully load
-        await asyncio.sleep(random.uniform(8, 12))  # Random sleep to simulate loading time
-
-        # Click on the chevron icon
-        chevron_button = driver.find_element(By.CSS_SELECTOR, '[data-icon="chevron"]')
-        chevron_button.click()
-        await asyncio.sleep(2)
-
-        # Find the phone input field using a more specific CSS selector
-        phone_input = driver.find_element(By.CSS_SELECTOR, "input[aria-label='Insira seu número de telefone.']")
-        phone_input.clear()  # Clear the field before entering the new number
-        phone_input.send_keys(f"{user_phone_number}")
+        # 2. TAB navigation to open phone login
+        actions = ActionChains(driver)
+        actions.send_keys(Keys.TAB, Keys.TAB, Keys.ENTER).perform()
+        print("Used TAB navigation to open phone login")
         await asyncio.sleep(1)
 
-        # Click on the "Next" button
-        next_button = driver.find_element(By.XPATH, "//div[contains(text(), 'Avançar')]")
-        next_button.click()
-        await asyncio.sleep(3)  # Wait for the next screen to load
+        # 3. Enter phone number with country code
+        actions.send_keys(Keys.TAB, Keys.TAB).perform()
 
-        # Get the login code
-        code_div = driver.find_element(By.CSS_SELECTOR, '[data-link-code]')
-        login_code = code_div.get_attribute("data-link-code")
+        actions.send_keys(f"+55{user_phone_number}").perform()
+        print("Phone number entered")
+        await asyncio.sleep(1)
 
-        print("WhatsApp Web Login Code:", login_code)
+        # 4. Submit form (TAB to focus then ENTER)
+        actions.send_keys(Keys.TAB, Keys.ENTER).perform()
+        print("Form submitted")
+        await asyncio.sleep(3)  # Wait for verification
+
+        # 5. Retrieve login code
+        login_code = WebDriverWait(driver, 15).until(
+            lambda d: d.find_element(By.CSS_SELECTOR, '[data-link-code]').get_attribute('data-link-code')
+        )
+        print(f"Success in {time.time()-start_time:.2f}s - Code: {login_code}")
         return login_code
-        
-    except Exception as e:
-        print(f"Error! Não foi possível identificar o : {e}")
-        return None
 
+    except Exception as e:
+        print(f"Failed after {time.time()-start_time:.2f}s: {str(e)}")
+        try:
+            error = driver.find_element(By.CSS_SELECTOR, '[role="alert"]')
+            print(f"WhatsApp Error: {error.text}")
+        except:
+            pass
+        return None
+    
 @app.route("/sendMessage", methods=["POST"])
 async def send_whatsapp_messages(request):
     try:
