@@ -276,6 +276,22 @@ const Dashboard = () => {
       showOptionsMenu: false
     }));
   }, []);
+  
+  const handleDownloadSample = () => {
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      "Numero,Nome\n" +
+      "31987654321,João Silva\n" +
+      "31988776655,Maria Souza";
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "sample_contacts.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleImportContacts = useCallback(async (e) => {
     e.preventDefault();
@@ -417,9 +433,105 @@ const Dashboard = () => {
                         )}
                         
                         {state.showContactPopup && state.currentStatusForPopup === status && (
-                          <div className="contact-popup">
-                            {/* ... (keep existing contact popup JSX) ... */}
-                          </div>
+   <div className="contact-popup">
+   <div className="popup-header">
+     <h3>Adicionar Contato</h3>
+     <button 
+       className="close-button"
+       onClick={() => setState(prev => ({ ...prev, showContactPopup: false }))}
+       aria-label="Fechar"
+     >
+       &times;
+     </button>
+   </div>
+   
+   <form onSubmit={(e) => {
+     e.preventDefault();
+     e.stopPropagation();
+     if (state.selectedBoard) {
+       // Use the current status from the popup (column status) instead of board-based default
+       const newCardStatus = state.currentStatusForPopup;
+       handleAddCard(e, newCardStatus); // Pass the status to handleAddCard
+     }
+   }}> 
+     <div className="form-group">
+       <label htmlFor="contact-name">Nome do contato</label>
+       <input
+         id="contact-name"
+         type="text"
+         value={state.newCardTitle}
+         onChange={(e) => setState(prev => ({ ...prev, newCardTitle: e.target.value }))}
+         required
+       />
+     </div>
+     
+     <div className="form-group">
+       <label htmlFor="contact-phone">Telefone</label>
+       <input
+         id="contact-phone"
+         type="text"
+         value={state.newCardDescription}
+         onChange={handlePhoneChange}
+         required
+       />
+     </div>
+
+       {/* Simple link for downloading the sample CSV */}
+       <a
+        href="#"
+        onClick={handleDownloadSample}
+        style={{
+          display: "block",
+          marginTop: "10px",
+          color: "#007bff",
+          textDecoration: "none",
+        }}
+      >
+        Baixar arquivo exemplo
+      </a>
+
+     <button type="submit" className="button button-green full-width">
+       Adicionar
+     </button>
+   </form>
+
+   <div className="import-section">
+  <h4>Importar Contatos</h4>
+  <form onSubmit={handleImportContacts}>
+    <div className="file-input-wrapper">
+      <label className="file-input-label">
+        {state.importFile ? state.importFile.name : "Selecionar arquivo CSV"}
+        <input
+          type="file"
+          accept=".csv"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            setState((prev) => ({
+              ...prev,
+              importFile: file,
+            }));
+          }}
+          style={{ display: "none" }}
+        />
+      </label>
+    </div>
+
+    <button 
+      type="submit" 
+      className="button button-blue full-width"
+      disabled={state.isImporting}
+    >
+      {state.isImporting ? "Importando..." : "Importar CSV"}
+    </button>
+  </form>
+  {state.importStatus && (
+    <div className={`import-status ${state.importStatus.includes("Error") ? "error" : "success"}`}>
+      {state.importStatus}
+    </div>
+  )}
+</div>
+ </div>
+
                         )}
                       </div>
                     </div>
