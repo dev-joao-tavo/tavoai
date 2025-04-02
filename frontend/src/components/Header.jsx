@@ -9,7 +9,7 @@ const Header = ({
   selectedBoard, 
   onBoardChange 
 }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [todaysCount, setTodaysCount] = useState(`-`);
   const navigate = useNavigate();
   const location = useLocation();

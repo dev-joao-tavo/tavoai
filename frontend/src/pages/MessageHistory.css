@@ -8,7 +8,7 @@
   --error-dark: #dc3545;
   --border: #ddd;
   --text-dark: #2d3748;
-  --text-muted: #cacaca;
+  --text-muted: #666;
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
   --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
   --radius-sm: 4px;
@@ -681,96 +681,84 @@ body {
     padding: 20px;
   }
 }
-/* Chart section styles */
-.chart-section {
-  margin: 1rem 0;
-  padding: 1rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow-x: auto; /* Allows horizontal scrolling if needed */
-}
 
+/* Period Selector - Clean & Functional */
 .chart-period-selector {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin; /* Firefox */
+  -webkit-overflow-scrolling: touch; /* iOS smooth scroll */
 }
 
+/* Scrollbar styling (WebKit browsers) */
+.chart-period-selector::-webkit-scrollbar {
+  height: 4px;
+}
+
+.chart-period-selector::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.chart-period-selector::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+/* Period Buttons */
 .chart-period-selector button {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  background: #f5f5f5;
-  border-radius: 4px;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #e0e0e0;
+  background: #f8f8f8;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
   font-size: 0.9rem;
-  flex: 1; /* Make buttons share space equally */
-  min-width: 80px; /* Minimum width for buttons */
+  font-weight: 500;
+  color: #555;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  transition: all 0.2s ease;
+}
+
+/* Button States */
+.chart-period-selector button:hover {
+  background: #eee;
+  border-color: #d0d0d0;
+}
+
+.chart-period-selector button:active {
+  transform: scale(0.98);
 }
 
 .chart-period-selector button.active {
   background: #4CAF50;
   color: white;
   border-color: #388E3C;
+  box-shadow: 0 2px 4px rgba(56, 142, 60, 0.2);
 }
 
-.chart-period-selector button:hover {
-  background: #e0e0e0;
+/* Focus state for accessibility */
+.chart-period-selector button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
 }
 
-.chart-period-selector button.active:hover {
-  background: #388E3C;
-}
-
-.chart-container {
-  height: 300px; /* Smaller default height */
-  position: relative;
-  min-width: 300px; /* Prevent chart from becoming too narrow */
-}
-
-/* Loading state for chart */
-.chart-section .loading {
-  text-align: center;
-  padding: 1rem;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-/* Mobile-specific adjustments */
-@media (max-width: 768px) {
-  .chart-section {
-    padding: 0.75rem;
-    margin: 0.5rem 0;
-  }
-  
-  .chart-container {
-    height: 250px;
-  }
-  
+/* Responsive Adjustments */
+@media (min-width: 768px) {
   .chart-period-selector {
-    gap: 0.3rem;
-  }
-  
-  .chart-period-selector button {
-    padding: 0.4rem 0.5rem;
-    font-size: 0.8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 1rem;
+    padding-bottom: 0;
   }
 }
 
-@media (max-width: 480px) {
-  .chart-container {
-    height: 200px;
-  }
-  
-  .chart-section .loading {
-    padding: 0.5rem;
-    font-size: 0.8rem;
-  }
-  
-  /* Adjust chart labels for very small screens */
-  .chart-container canvas {
-    font-size: 10px !important;
-  }
+.chart-period-selector {
+  justify-content: center;
+  scroll-snap-type: x proximity;
 }
