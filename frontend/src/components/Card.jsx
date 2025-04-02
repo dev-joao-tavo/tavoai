@@ -36,7 +36,7 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes })
   // State declarations
   const [selectedStatus, setSelectedStatus] = useState(card.status);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [notes, setNotes] = useState(card.notes || "");
+  const [notes, setNotes] = useState(contact?.notes || contact?.each_contact_notes || "");
   const [isNotesVisible, setIsNotesVisible] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
@@ -72,14 +72,23 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes })
   }, []);
 
   const handleSaveNotes = useCallback(async () => {
-    if (notes === (card.notes || "")) return;
+    if (!contact) return;
+    
+    // Compare against the contact's current notes
+    const currentNotes = contact.notes || contact.each_contact_notes || "";
+    if (notes === currentNotes) return;
   
     setIsSavingNotes(true);
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `${constants.API_BASE_URL}/cards/${card.id}/notes`,
-        { notes },
+        `${constants.API_BASE_URL}/contacts/${contact.ID}`,
+        { 
+          notes,  // or each_contact_notes, depending on your API
+          // Preserve other contact fields
+          contact_name: contact.name,
+          phone_number: contact.phone_number
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -87,14 +96,17 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes })
           }
         }
       );
-      updateCardNotes(card.id, notes);
+      // Update the parent component if needed
+      if (updateCardNotes) {
+        updateCardNotes(card.id, notes);
+      }
     } catch (error) {
       console.error("Error saving notes:", error);
       alert("Failed to save notes. Please try again.");
     } finally {
       setIsSavingNotes(false);
     }
-  }, [notes, card.id, card.notes, updateCardNotes]);
+  }, [notes, contact, card.id, updateCardNotes]);
   
   const handleSaveContact = useCallback(async () => {
     if (!contact) return;
@@ -246,37 +258,37 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes })
           </div>
         </div>
 
-        {/* Collapsible notes section */}
-        <div className="notes-section">
-          <div className="notes-header" onClick={toggleNotesVisibility}>
-            <span className="notes-label">NOTES</span>
-            <button 
-              className="notes-toggle" 
-              aria-label={isNotesVisible ? "Hide notes" : "Show notes"}
-            >
-              {isNotesVisible ? '−' : '+'}
-            </button>
-          </div>
-          
-          {isNotesVisible && (
-            <div className="notes-content">
-              <textarea
-                className="notes-textarea"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes..."
-                aria-label="Card notes"
-              />
-              <button 
-                className="save-notes-button"
-                onClick={handleSaveNotes}
-                disabled={notes === (card.notes || "") || isSavingNotes}
-              >
-                {isSavingNotes ? 'Saving...' : <><FiSave /> Save</>}
-              </button>
-            </div>
-          )}
-        </div>
+{/* Collapsible notes section */}
+<div className="notes-section">
+  <div className="notes-header" onClick={toggleNotesVisibility}>
+    <span className="notes-label">NOTES</span>
+    <button 
+      className="notes-toggle" 
+      aria-label={isNotesVisible ? "Hide notes" : "Show notes"}
+    >
+      {isNotesVisible ? '−' : '+'}
+    </button>
+  </div>
+  
+  {isNotesVisible && (
+    <div className="notes-content">
+      <textarea
+        className="notes-textarea"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Add your notes here..."
+        aria-label="Card notes"
+      />
+      <button 
+        className="save-notes-button"
+        onClick={handleSaveNotes}
+        disabled={notes === (contact?.notes || contact?.each_contact_notes || "") || isSavingNotes}
+      >
+        {isSavingNotes ? 'Saving...' : <><FiSave /> Save</>}
+      </button>
+    </div>
+  )}
+</div>
       </div>
     </div>
   );

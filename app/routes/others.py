@@ -110,7 +110,7 @@ async def get_contacts(request):
 
     async with SessionLocal() as session:
         result = await session.execute(
-            text("SELECT id, phone_number, contact_name, last_message_contact FROM contacts WHERE user_id = :user_id"),
+            text("SELECT id, phone_number, contact_name, last_message_contact, each_contact_notes FROM contacts WHERE user_id = :user_id"),
             {"user_id": user_id}
         )
         contacts = result.fetchall()
@@ -120,7 +120,8 @@ async def get_contacts(request):
         "ID": row[0], 
         "phone_number": row[1], 
         "contact_name": row[2], 
-        "last_message_contact": row[3].isoformat() if row[3] else None  # Convert datetime to string
+        "last_message_contact": row[3].isoformat() if row[3] else None,  # Convert datetime to string
+        "each_contact_notes":row[4]
     }
     for row in contacts
 ]

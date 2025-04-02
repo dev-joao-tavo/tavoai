@@ -597,7 +597,6 @@ async def update_contact(request, contact_id: int):
                     "phone_number": contact.phone_number,
                     "contact_name": contact.contact_name,
                     "notes": contact.each_contact_notes,
-                    "last_updated": contact.last_message_contact.isoformat()
                 }
             })
             
@@ -641,7 +640,6 @@ async def update_contact_notes(request, contact_id: int):
                 "success": True,
                 "id": contact.id,
                 "updated_notes": contact.each_contact_notes,
-                "last_updated": contact.last_message_contact.isoformat()
             })
             
         except Exception as e:
