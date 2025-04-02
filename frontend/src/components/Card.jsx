@@ -7,14 +7,18 @@ import PropTypes from 'prop-types';
 import { statusConfig } from "./statusConfig";
 import { getStatusConfig, formatLastMessageDate } from "./cardUtils";
 import "./Card.css";
+import { toast } from 'react-toastify';
 
 // Phone number formatting utilities
 const formatPhoneNumber = (phone) => {
-  if (!phone) return "No phone";
+  if (!phone) return "";
   const cleaned = phone.replace(/\D/g, '');
-  const match = cleaned.match(/^(\d{2})(\d{1})(\d{4})(\d{4})$/);
-  return match ? `(${match[1]}) ${match[2]} ${match[3]}-${match[4]}` : phone;
+  if (cleaned.length <= 2) return `(${cleaned}`;
+  if (cleaned.length <= 3) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+  if (cleaned.length <= 7) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3)}`;
+  return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)}-${cleaned.slice(7, 11)}`;
 };
+
 
 const unformatPhoneNumber = (formatted) => {
   return formatted.replace(/\D/g, '');
@@ -77,25 +81,29 @@ const Card = ({ card, contacts = [], updateCardStatus, deleteCard, updateCardNot
 
   const handleSaveNotes = useCallback(async () => {
     if (!contact) return;
-
+  
     setIsSavingNotes(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        console.error("No token found");
+        toast.error("Session expired. Please log in again.", {
+          position: "top-center",
+          autoClose: 3000,
+        });
         return;
       }
-
+  
       await axios.put(
         `${constants.API_BASE_URL}/contacts/${contact.ID}`,
         { each_contact_notes: notes },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setShowNotesSaved(true);
-      setTimeout(() => setShowNotesSaved(false), 2000);
-
-      // Refresh contacts to ensure consistency
+  
+      toast.success("Notes saved successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+  
       if (refreshContacts) {
         const contactsRes = await axios.get(`${constants.API_BASE_URL}/contacts`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -104,43 +112,79 @@ const Card = ({ card, contacts = [], updateCardStatus, deleteCard, updateCardNot
       }
     } catch (error) {
       console.error("Error saving notes:", error);
-      alert("Failed to save notes. Please try again.");
+      toast.error("Failed to save notes. Please try again.", {
+        position: "top-center",
+        autoClose: 5000,
+      });
     } finally {
       setIsSavingNotes(false);
+      setShowNotesSaved(false); // Remove the inline saved confirmation
     }
   }, [notes, contact, refreshContacts]);
-
+  
+  
   const handleSaveContact = useCallback(async () => {
     if (!contact) return;
+  
+    // Validate phone number format
+    const cleanedPhone = contactPhone.replace(/\D/g, '');
+    if (cleanedPhone.length < 10 || cleanedPhone.length > 11) {
+      toast.error("Número deve ter 10 ou 11 dígitos", {
+        position: "top-center",
+        autoClose: 5000,
+      });
+      return;
+    }
+  
+    // Format phone number before saving
+    const formattedPhone = formatPhoneNumber(cleanedPhone);
   
     setIsSavingContact(true);
     try {
       const token = localStorage.getItem("token");
       
-      // 1. Update the contact via API
-      await axios.put(
+      const response = await axios.put(
         `${constants.API_BASE_URL}/contacts/${contact.ID}`,
         {
           contact_name: contactName,
-          phone_number: contactPhone
+          phone_number: cleanedPhone // Save as unformatted number
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
-      // 2. Fetch fresh contacts list
+      toast.success("Contato atualizado com sucesso!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+  
       const contactsRes = await axios.get(`${constants.API_BASE_URL}/contacts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
   
-      // 3. Update parent state with fresh contacts
       if (refreshContacts) {
         refreshContacts(contactsRes.data.contacts);
       }
   
+      // Update local state with formatted phone for display
+      setContactPhone(formattedPhone);
       setIsEditingContact(false);
+  
     } catch (error) {
       console.error("Error updating contact:", error);
-      alert("Failed to update contact. Please try again.");
+      
+      // Handle duplicate contact error
+      if (error.response?.data?.error?.includes("já existe")) {
+        toast.error("Esse contato já existe e não pode ser adicionado novamente", {
+          position: "top-center",
+          autoClose: 5000,
+        });
+      } else {
+        toast.error(error.response?.data?.error || "Erro ao atualizar contato", {
+          position: "top-center",
+          autoClose: 5000,
+        });
+      }
+      
       // Revert to original values
       setContactName(contact.contact_name || contact.name || "");
       setContactPhone(unformatPhoneNumber(contact.phone_number || ""));
@@ -148,14 +192,20 @@ const Card = ({ card, contacts = [], updateCardStatus, deleteCard, updateCardNot
       setIsSavingContact(false);
     }
   }, [contact, contactName, contactPhone, refreshContacts]);
-
+  
+  
+  
   const handleDelete = useCallback(() => {
     if (!isDeleting) {
       setIsDeleting(true);
+      toast.info("Deleting card...", {
+        position: "top-right",
+        autoClose: 2000,
+      });
       deleteCard(card.id);
     }
   }, [isDeleting, deleteCard, card.id]);
-
+  
   const handleStatusChange = useCallback(
     (event) => {
       const newStatus = event.target.value;
@@ -229,10 +279,14 @@ const Card = ({ card, contacts = [], updateCardStatus, deleteCard, updateCardNot
               />
               <input
                 type="tel"
-                value={contactPhone}
+                value={formatPhoneNumber(contactPhone)}
                 onChange={(e) => {
-                  const input = e.target.value.replace(/\D/g, '');
-                  if (input.length <= 11) setContactPhone(input);
+                  const input = e.target.value;
+                  // Only allow digits and maintain cursor position
+                  const cleaned = input.replace(/\D/g, '');
+                  if (cleaned.length <= 11) {
+                    setContactPhone(cleaned);
+                  }
                 }}
                 className="contact-edit-input"
                 placeholder="(XX) 9 9999-9999"

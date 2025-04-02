@@ -1,32 +1,51 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "./Login.css"; // Reuse Login.css
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import "./Login.css";
 
 const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
-
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Clear previous errors
+    toast.dismiss();
+
+    // Validate fields
     if (!email || !password || !confirmPassword || !phone) {
-      setError('Please fill in all fields.');
+      toast.error('Por favor, preencha todos os campos.', {
+        position: "top-center",
+        autoClose: 5000,
+      });
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Erro: suas senhas devem ser iguais.');
+      toast.error('Erro: suas senhas devem ser iguais.', {
+        position: "top-center",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    // Validate phone number (digits only)
+    const cleanedPhone = phone.replace(/\D/g, '');
+    if (cleanedPhone.length < 10 || cleanedPhone.length > 11) {
+      toast.error('Número de telefone inválido. Deve ter 10 ou 11 dígitos.', {
+        position: "top-center",
+        autoClose: 5000,
+      });
       return;
     }
 
     setIsLoading(true);
-    setError('');
 
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/signup`, {
@@ -34,55 +53,53 @@ const Signup = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, phone }),
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          phone: cleanedPhone // Send unformatted number
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message || 'Cadastro feito com sucesso!');
-        navigate('/login'); // Redirect to login page
+        toast.success(data.message || 'Cadastro realizado com sucesso!', {
+          position: "top-center",
+          autoClose: 3000,
+          onClose: () => navigate('/login') // Redirect after toast closes
+        });
       } else {
-        setError(data.message || 'Signup failed. Please try again.');
+        throw new Error(data.message || 'Erro no cadastro. Tente novamente.');
       }
     } catch (error) {
       console.error('Signup error:', error);
-      setError('Something went wrong. Please try again.');
+      toast.error(error.message || 'Erro ao conectar com o servidor.', {
+        position: "top-center",
+        autoClose: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const formatPhone = (value) => {
-    // Remove all non-numeric characters
     let cleaned = value.replace(/\D/g, "");
+    if (cleaned.length > 11) cleaned = cleaned.slice(0, 11);
 
-    // Limit to 11 digits
-    if (cleaned.length > 11) {
-      cleaned = cleaned.slice(0, 11);
-    }
-
-    // Apply formatting (31) 9 9999-9999
-    if (cleaned.length <= 2) {
-      return `(${cleaned}`;
-    } else if (cleaned.length <= 3) {
-      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
-    } else if (cleaned.length <= 7) {
-      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3)}`;
-    } else {
-      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
-    }
+    if (cleaned.length <= 2) return `(${cleaned}`;
+    if (cleaned.length <= 3) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+    if (cleaned.length <= 7) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3)}`;
+    return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
   };
 
-  const handleChange = (e) => {
+  const handlePhoneChange = (e) => {
     setPhone(formatPhone(e.target.value));
   };
 
-
   return (
-    <div className="login-container"> {/* Reuse login-container */}
+    <div className="login-container">
+      <ToastContainer /> {/* Add this near your root component */}
       <h2>Crie sua conta</h2>
-      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email:</label>
@@ -114,13 +131,12 @@ const Signup = () => {
             required
           />
         </div>
-
         <div className="form-group">
           <label>Número de WhatsApp:</label>
           <input
             type="tel"
             value={phone}
-            onChange={handleChange}
+            onChange={handlePhoneChange}
             placeholder="(31) 9 9999-9999"
             required
           />
