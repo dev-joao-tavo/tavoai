@@ -42,6 +42,7 @@ class Contact(Base):
     contact_name = Column(String)
     user_id = Column(Integer)
     last_message_contact = Column(TIMESTAMP)
+    each_contact_notes = Column(String)
 
 
 
