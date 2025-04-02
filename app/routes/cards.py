@@ -509,3 +509,141 @@ async def get_daily_message_count(request):
             
         except SQLAlchemyError as e:
             raise ServerError("Database error occurred")
+
+
+from datetime import datetime
+from typing import Optional
+
+@app.get("/contacts/<contact_id:int>")
+async def get_contact(request, contact_id: int):
+    """Get a single contact by ID"""
+    user_id = get_user_from_token(request)
+    if not user_id:
+        raise BadRequest("Invalid or expired token.")
+
+    async with get_db_session() as session:
+        try:
+            # Get contact with user validation
+            contact_result = await session.execute(
+                select(Contact).where(
+                    and_(
+                        Contact.id == contact_id,
+                        Contact.user_id == user_id
+                    )
+                )
+            )
+            contact = contact_result.scalars().first()
+            
+            if not contact:
+                raise NotFound("Contact not found or not owned by user")
+
+            return json({
+                "id": contact.id,
+                "phone_number": contact.phone_number,
+                "contact_name": contact.contact_name,
+                "last_message_contact": contact.last_message_contact.isoformat() if contact.last_message_contact else None,
+                "notes": contact.each_contact_notes
+            })
+            
+        except Exception as e:
+            return json({"error": f"Database error: {str(e)}"}, status=500)
+
+@app.put("/contacts/<contact_id:int>")
+async def update_contact(request, contact_id: int):
+    """Update contact information"""
+    user_id = get_user_from_token(request)
+    if not user_id:
+        raise BadRequest("Invalid or expired token.")
+
+    data = request.json
+    if not data:
+        raise BadRequest("No data provided")
+
+    async with get_db_session() as session:
+        try:
+            # Verify contact exists and belongs to user
+            contact_result = await session.execute(
+                select(Contact).where(
+                    and_(
+                        Contact.id == contact_id,
+                        Contact.user_id == user_id
+                    )
+                )
+            )
+            contact = contact_result.scalars().first()
+            
+            if not contact:
+                raise NotFound("Contact not found or not owned by user")
+
+            # Update fields if they exist in request
+            if "phone_number" in data:
+                if not data["phone_number"]:
+                    raise BadRequest("Phone number cannot be empty")
+                contact.phone_number = data["phone_number"]
+                
+            if "contact_name" in data:
+                contact.contact_name = data["contact_name"]
+                
+            if "notes" in data:
+                contact.each_contact_notes = data["notes"]
+
+            contact.last_message_contact = datetime.utcnow()
+            await session.commit()
+
+            return json({
+                "success": True,
+                "updated_contact": {
+                    "id": contact.id,
+                    "phone_number": contact.phone_number,
+                    "contact_name": contact.contact_name,
+                    "notes": contact.each_contact_notes,
+                    "last_updated": contact.last_message_contact.isoformat()
+                }
+            })
+            
+        except Exception as e:
+            await session.rollback()
+            return json({"error": f"Database error: {str(e)}"}, status=500)
+
+@app.patch("/contacts/<contact_id:int>/notes")
+async def update_contact_notes(request, contact_id: int):
+    """Update just the notes for a contact"""
+    user_id = get_user_from_token(request)
+    if not user_id:
+        raise BadRequest("Invalid or expired token.")
+
+    data = request.json
+    if not data or "notes" not in data:
+        raise BadRequest("Notes content is required")
+
+    async with get_db_session() as session:
+        try:
+            # Verify contact exists and belongs to user
+            contact_result = await session.execute(
+                select(Contact).where(
+                    and_(
+                        Contact.id == contact_id,
+                        Contact.user_id == user_id
+                    )
+                )
+            )
+            contact = contact_result.scalars().first()
+            
+            if not contact:
+                raise NotFound("Contact not found or not owned by user")
+
+            # Update notes
+            contact.each_contact_notes = data["notes"]
+            contact.last_message_contact = datetime.utcnow()
+            await session.commit()
+
+            return json({
+                "success": True,
+                "id": contact.id,
+                "updated_notes": contact.each_contact_notes,
+                "last_updated": contact.last_message_contact.isoformat()
+            })
+            
+        except Exception as e:
+            await session.rollback()
+            return json({"error": f"Database error: {str(e)}"}, status=500)

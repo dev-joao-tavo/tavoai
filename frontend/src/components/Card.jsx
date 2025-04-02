@@ -7,10 +7,7 @@ import * as constants from '../utils/constants';
 import PropTypes from 'prop-types';
 
 import { statusConfig } from "./statusConfig";
-import { 
-  getStatusConfig, 
-  formatLastMessageDate 
-} from "./cardUtils";
+import { getStatusConfig, formatLastMessageDate } from "./cardUtils";
 import "./Card.css";
 
 // Constants for dropdown options
@@ -108,7 +105,7 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes })
       await axios.put(
         `${constants.API_BASE_URL}/contacts/${contact.ID}`,
         {
-          name: contactName,
+          contact_name: contactName,
           phone_number: contactPhone
         },
         {
@@ -196,7 +193,7 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes })
             <>
               <span className="phone-number">
                 <FiPhone className="phone-icon" />
-                {contact?.phone_number || "No phone"}
+                {contact?.phone_number || "No phone"}  
                 <button 
                   onClick={() => setIsEditingContact(true)}
                   className="edit-contact-button"
