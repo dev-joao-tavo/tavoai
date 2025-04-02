@@ -1,9 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react'; // Added useCallback here
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { format, parseISO, subDays, eachDayOfInterval } from 'date-fns'; // Removed unused isSameDay
 import './MessageHistory.css';
 import Header from "../components/Header.jsx";
 import axios from "../api/api";
 import * as constants from '../utils/constants';
-import { format, parseISO } from 'date-fns';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const MessageHistory = () => {
   const [error, setError] = useState(null);
@@ -22,9 +27,70 @@ const MessageHistory = () => {
     startDate: '',
     endDate: ''
   });
+  const [chartData, setChartData] = useState(null);
+  const [timePeriod, setTimePeriod] = useState('week'); // 'week' or 'month'
+  const [chartLoading, setChartLoading] = useState(true);
 
   const token = localStorage.getItem('token');
 
+  // Function to fetch data for the chart
+  
+// Also, make sure to wrap fetchMessageStats in useCallback to prevent infinite loops
+const fetchMessageStats = useCallback(async (period) => {
+  try {
+    setChartLoading(true);
+    const endDate = new Date();
+    const startDate = period === 'week' ? subDays(endDate, 7) : subDays(endDate, 30);
+    
+    const response = await axios.get(
+      `${constants.API_BASE_URL}/message-history?start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}&status=success`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const messages = response.data.data || [];
+    prepareChartData(messages, startDate, endDate, period);
+  } catch (error) {
+    console.error('Error fetching message stats:', error);
+    setError('Erro ao carregar estatísticas de mensagens');
+  } finally {
+    setChartLoading(false);
+  }
+}, [token]); // Add token as dependency
+
+  // Function to prepare chart data
+  const prepareChartData = (messages, startDate, endDate, period) => {
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+    
+    const dataByDate = days.map(day => {
+      const dayStr = day.toISOString().split('T')[0];
+      const dayMessages = messages.filter(msg => 
+        msg.sent_at && msg.sent_at.split('T')[0] === dayStr
+      );
+      const total = dayMessages.reduce((sum, msg) => sum + (msg.success_count || 0), 0);
+      return {
+        date: day,
+        label: format(day, period === 'week' ? 'EEE' : 'dd MMM'),
+        value: total
+      };
+    });
+
+    setChartData({
+      labels: dataByDate.map(d => d.label),
+      datasets: [
+        {
+          label: 'Mensagens enviadas com sucesso',
+          data: dataByDate.map(d => d.value),
+          backgroundColor: '#4CAF50',
+          borderColor: '#388E3C',
+          borderWidth: 1
+        }
+      ]
+    });
+  };
   const fetchMessageHistory = async (page = 1, perPage = 10) => {
     try {
       setLoading(true);
@@ -83,9 +149,11 @@ const MessageHistory = () => {
     }
   };
 
-  useEffect(() => {
-    fetchMessageHistory(pagination.page, pagination.perPage);
-  }, [filters, pagination.perPage]);
+    // Fix the useEffect dependency array issue
+    useEffect(() => {
+      fetchMessageStats(timePeriod);
+      fetchMessageHistory(pagination.page, pagination.perPage);
+    }, [filters, pagination.perPage, timePeriod]); // Removed fetchMessageStats from dependencies
 
   const countTodaysSuccessfulMessages = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -128,6 +196,36 @@ const MessageHistory = () => {
     );
   }
 
+  // Add this chart options constant
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: `Mensagens enviadas com sucesso - Última ${timePeriod === 'week' ? 'semana' : 'mês'}`,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Número de mensagens'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Dia'
+        }
+      }
+    }
+  };
+
+
   return (
     <div className="app-container">
       <Header 
@@ -149,14 +247,32 @@ const MessageHistory = () => {
             </div>
           )}
 
-          <div className="header-section">
-            <div className="success-counter" aria-live="polite">
-              <div className="counter-icon">✓</div>
-              <div className="counter-content">
-                <span className="counter-label">Enviadas hoje</span>
-                <span className="counter-value">{todaysCount}</span>
-              </div>
+          
+          <div className="chart-section">
+            <div className="chart-period-selector">
+              <button 
+                className={timePeriod === 'week' ? 'active' : ''}
+                onClick={() => setTimePeriod('week')}
+              >
+                Semanal
+              </button>
+              <button 
+                className={timePeriod === 'month' ? 'active' : ''}
+                onClick={() => setTimePeriod('month')}
+              >
+                Mensal
+              </button>
             </div>
+            
+            {chartLoading ? (
+              <div className="loading">Carregando gráfico...</div>
+            ) : chartData ? (
+              <div className="chart-container">
+                <Bar options={chartOptions} data={chartData} />
+              </div>
+            ) : (
+              <div className="empty-state">Nenhum dado disponível para o gráfico</div>
+            )}
           </div>
 
           <form className="filters" onSubmit={handleFilterSubmit}>

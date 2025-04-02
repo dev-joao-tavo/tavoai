@@ -200,3 +200,34 @@
   border-radius: 4px;
   text-align: center;
 }
+
+.sidebar-daily-limit {
+  margin-top: auto;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.counter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.counter-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.counter-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #4CAF50; /* Green for success */
+}
+
+.limit-text {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}

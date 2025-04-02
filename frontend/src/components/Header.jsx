@@ -1,16 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "../api/api";
+import * as constants from '../utils/constants';
 import "./Header.css";
 
 const Header = ({ 
   boards = [], 
   selectedBoard, 
-  onBoardChange, 
-  dailyCount = 0 
+  onBoardChange 
 }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [todaysCount, setTodaysCount] = useState(`-`);
   const navigate = useNavigate();
   const location = useLocation();
+  const token = localStorage.getItem('token');
+
+  const fetchTodaysMessages = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await axios.get(
+        `${constants.API_BASE_URL}/message-history?start_date=${today}&status=success`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      const count = response.data.data?.reduce((total, message) => total + (message.success_count || 0), 0) || 0;
+      setTodaysCount(count);
+    } catch (error) {
+      console.error('Error fetching today\'s messages:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTodaysMessages();
+    
+    // Refresh count every hour
+    const interval = setInterval(fetchTodaysMessages, 3600000);
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -79,7 +109,11 @@ const Header = ({
         </div>
 
         <div className="sidebar-daily-limit">
-          {dailyCount}/200 mensagens hoje
+          <div className="counter-content">
+            <span className="counter-label">Enviadas hoje</span>
+            <span className="counter-value">{todaysCount}</span>
+          </div>
+          <div className="limit-text">Limite: 200 mensagens</div>
         </div>
       </div>
     </>
