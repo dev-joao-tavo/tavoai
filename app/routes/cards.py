@@ -584,8 +584,8 @@ async def update_contact(request, contact_id: int):
             if "contact_name" in data:
                 contact.contact_name = data["contact_name"]
                 
-            if "notes" in data:
-                contact.each_contact_notes = data["notes"]
+            if "each_contact_notes" in data:
+                contact.each_contact_notes = data["each_contact_notes"]
 
             contact.last_message_contact = datetime.utcnow()
             await session.commit()
