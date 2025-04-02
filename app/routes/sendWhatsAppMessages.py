@@ -113,7 +113,7 @@ async def get_wpp_login_code(driver, user_phone_number):
         # 1. Load WhatsApp Web
         print("Loading WhatsApp Web...")
         driver.get("https://web.whatsapp.com/")
-        await asyncio.sleep(5)  # Initial page load
+        await asyncio.sleep(10)  # Initial page load
 
         # 2. TAB navigation to open phone login
         actions = ActionChains(driver)
@@ -131,7 +131,6 @@ async def get_wpp_login_code(driver, user_phone_number):
         # 4. Submit form (TAB to focus then ENTER)
         actions.send_keys(Keys.TAB, Keys.ENTER).perform()
         print("Form submitted")
-        await asyncio.sleep(3)  # Wait for verification
 
         # 5. Retrieve login code
         login_code = WebDriverWait(driver, 15).until(
@@ -273,20 +272,24 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
                     # Send message logic
                     clean_number = re.sub(r"\D", "", phone)
                     driver.get(f"https://web.whatsapp.com/send/?phone=+55{clean_number}")
-                    await asyncio.sleep(random.uniform(15, 20))
 
-                    message_box = driver.find_element(By.XPATH, '//div[@aria-label="Digite uma mensagem"]')
+                    message_box = WebDriverWait(driver, 20).until(
+                        EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Digite uma mensagem"]'))
+                    )
+
                     messages = [msg.replace("@nome", name) 
                               for msg in [message1, message2, message3] if msg]
 
                     for msg in messages:
                         for char in msg:
                             message_box.send_keys(char)
-                            await asyncio.sleep(random.uniform(0.1, 0.3))
+                            await asyncio.sleep(random.uniform(0.05, 0.15))
                         
-                        await asyncio.sleep(random.uniform(1, 2))
-                        driver.find_element(By.XPATH, '//span[@data-icon="send"]').click()
-                        await asyncio.sleep(random.uniform(3, 5))
+                        send_button = WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable((By.XPATH, '//span[@data-icon="send"]'))
+                        )
+                        send_button.click()               
+                        await asyncio.sleep(random.uniform(2, 4))
 
                     # Update to success
                     await session.execute(
@@ -403,8 +406,6 @@ async def whats_app_login(request):
         user_phone_number = user.user_wpp_phone_number
         code = await get_wpp_login_code(driver, user_phone_number)
         
-        # Sleeping before sending the response if needed
-        await asyncio.sleep(1)
         return response.json({"message": "Add this code to your WhatsApp", "code": code})
 
     except Exception as e:
@@ -466,8 +467,6 @@ async def whats_app_login_check(request):
 
         is_logged_in = await login_check(driver)
 
-        # Sleeping before sending the response if needed
-        await asyncio.sleep(1)
         await quit_driver(user_id, driver)
         if is_logged_in == True:
            return response.json({"message": "You are already logged in!", "is_logged_in":is_logged_in},status=200)

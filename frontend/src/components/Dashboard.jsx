@@ -6,7 +6,8 @@ import Header from "./Header";
 import "./Dashboard.css";
 import * as constants from '../utils/constants';
 import { FaEllipsisV } from 'react-icons/fa';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useLocation } from "react-router-dom";
 
 
@@ -157,24 +158,60 @@ const Dashboard = () => {
 
   const handleAddCard = useCallback(async (e, status) => {
     e.preventDefault();
+    
+    // Validate inputs first
     if (!state.selectedBoard) {
-      alert("Please select a board first.");
+      toast.error("Por favor selecione um quadro primeiro.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
       return;
     }
-
+  
+    if (!state.newCardTitle.trim()) {
+      toast.error("Por favor insira um nome para o contato.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+  
+    if (!state.newCardDescription.trim()) {
+      toast.error("Por favor insira um número de telefone.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+  
+    const loadingToast = toast.loading("Adicionando contato...", {
+      position: "top-right"
+    });
+  
     try {
       const token = localStorage.getItem("token");
+      const phoneNumber = state.newCardDescription.replace(/\D/g, ''); // Clean phone number
+      
+      // Validate phone number format
+      if (phoneNumber.length < 10 || phoneNumber.length > 11) {
+        throw new Error("Número de telefone inválido. Deve ter 10 ou 11 dígitos.");
+      }
+  
       const response = await axios.post(
         `${constants.API_BASE_URL}/addCardandContact`,
         {
-          phone_number: state.newCardDescription,
-          contact_name: state.newCardTitle,
+          phone_number: phoneNumber,
+          contact_name: state.newCardTitle.trim(),
           board_id: state.selectedBoard.id,
-          status: status, // Use the passed status
+          status: status,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000 // 10 second timeout
+        }
       );
   
+      // Update state optimistically
       setState(prev => ({
         ...prev,
         cards: {
@@ -182,54 +219,128 @@ const Dashboard = () => {
           [status]: [...prev.cards[status], response.data.card]
         },
         newCardTitle: "",
-        newCardDescription: ""
+        newCardDescription: "",
+        showContactPopup: false // Close popup on success
       }));
   
-      const contactsRes = await axios.get(`${constants.API_BASE_URL}/contacts`, {
-        headers: { Authorization: `Bearer ${token}` }
+      // Refresh contacts in background
+      try {
+        const contactsRes = await axios.get(`${constants.API_BASE_URL}/contacts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setState(prev => ({ ...prev, contacts: contactsRes.data.contacts }));
+      } catch (contactsError) {
+        console.error("Error refreshing contacts:", contactsError);
+        // Non-critical error, just log it
+      }
+  
+      toast.update(loadingToast, {
+        render: "✅ Contato adicionado com sucesso!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
-      setState(prev => ({ ...prev, contacts: contactsRes.data.contacts }));
+  
     } catch (error) {
       console.error("Error adding card:", error);
-      alert(error.response?.data?.error || "An unexpected error occurred");
+      
+      let errorMessage = "Erro desconhecido ao adicionar contato";
+      if (error.message.includes("Número de telefone inválido")) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.code === "ECONNABORTED") {
+        errorMessage = "Tempo limite excedido. Tente novamente.";
+      }
+  
+      toast.update(loadingToast, {
+        render: (
+          <div>
+            <div>{errorMessage}</div>
+          </div>
+        ),
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+  
+    } finally {
+      // Any cleanup if needed
     }
-  }, [state.selectedBoard, state.newCardTitle, state.newCardDescription]);  
+  }, [state.selectedBoard, state.newCardTitle, state.newCardDescription]);
 
+  // 4. Replace all alerts with toast notifications:
   const handleSendFromMenu = useCallback(async (status, e) => {
     e.preventDefault();
   
+    // Early validation
     if (state.cards[status].length === 0) {
-      alert("Não há cartões nesta coluna para enviar mensagens!");
+      toast.error("Não há cartões nesta coluna para enviar mensagens!", {
+        position: "top-center",
+        autoClose: 3000,
+      });
       return;
     }
   
     try {
       const token = localStorage.getItem("token");
       const today = new Date().toISOString().split('T')[0];
+      
+      // Show loading state immediately
+      const loadingToast = toast.loading("Verificando limite diário...", {
+        position: "top-right"
+      });
   
-      const countResponse = await axios.get(
+      // 1. Check daily limits
+      const { data: { count: sentToday = 0, limit: dailyLimit = 200 } } = await axios.get(
         `${constants.API_BASE_URL}/message-history/daily-count?date=${today}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
-      const sentToday = countResponse.data.count || 0;
-      const dailyLimit = countResponse.data.limit || 200;
       const remaining = Math.max(0, dailyLimit - sentToday);
       const cardsToSend = state.cards[status].length;
   
       if (cardsToSend > remaining) {
-        alert(`Limite diário excedido!\nVocê já enviou ${sentToday} mensagens hoje.\nLimite diário: ${dailyLimit} mensagens\nTentando enviar: ${cardsToSend}\nVocê pode enviar no máximo ${remaining} mensagens hoje.`);
+        toast.update(loadingToast, {
+          render: (
+            <div>
+              <strong>Limite diário excedido!</strong>
+              <div style={{marginTop: '8px'}}>
+                • Enviadas hoje: {sentToday}<br/>
+                • Limite diário: {dailyLimit}<br/>
+                • Tentando enviar: {cardsToSend}<br/>
+                • Disponível: {remaining}
+              </div>
+            </div>
+          ),
+          type: "error",
+          isLoading: false,
+          autoClose: 10000,
+        });
         return;
       }
   
+      // 2. Prepare messages
       setState(prev => ({ ...prev, isLoading: true }));
       const messages = state.selectedBoard?.board_type === "agenda"
         ? state.agendaMessages[status]
         : state.funnelMessages[status];
   
-      if (!messages) {
-        throw new Error("Nenhuma mensagem encontrada para este status.");
+      if (!messages?.message1) {
+        toast.update(loadingToast, {
+          render: "Nenhuma mensagem configurada para este status!",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+        return;
       }
+  
+      // 3. Start sending
+      toast.update(loadingToast, {
+        render: `Iniciando envio de ${cardsToSend} mensagens...`,
+        autoClose: false,
+      });
   
       const response = await axios.post(
         `${constants.API_BASE_URL}/sendMessage`,
@@ -238,29 +349,68 @@ const Dashboard = () => {
           ...messages,
           boardId: state.selectedBoard.id,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 30000 // 30 second timeout
+        }
       );
   
-      // Handle successful response
-      if (response.status === 200) {
-        alert(`Suas mensagens estão sendo enviadas!`);
-      }
+      // 4. Success handling
+      toast.update(loadingToast, {
+        render: `✅ ${cardsToSend} mensagens em processamento!`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
+  
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
+      
+      // 5. Enhanced error handling
+      let errorMessage = "Erro desconhecido";
+      let showRetry = true;
   
       if (error.response) {
-        // Handle backend errors
-        const backendMessage = error.response.data.message || "Ocorreu um erro inesperado.";
-        alert(`Erro do servidor: ${backendMessage}`);
-      } else {
-        // Handle network errors
-        alert("Erro ao conectar-se ao servidor. Tente novamente.");
+        errorMessage = error.response.data.message || 
+                     error.response.data.error || 
+                     "Erro no servidor";
+        showRetry = error.response.status !== 403; // Don't retry forbidden errors
+      } else if (error.code === "ECONNABORTED") {
+        errorMessage = "Tempo limite excedido";
+      } else if (error.request) {
+        errorMessage = "Sem conexão com o servidor";
       }
+  
+      toast.error(
+        <div>
+          <div>{errorMessage}</div>
+          {showRetry && (
+            <button 
+              onClick={() => handleSendFromMenu(status, e)}
+              style={{
+                marginTop: '8px',
+                padding: '4px 8px',
+                background: '#fff',
+                border: '1px solid #ccc',
+                borderRadius: '4px'
+              }}
+            >
+              Tentar novamente
+            </button>
+          )}
+        </div>,
+        {
+          position: "top-center",
+          autoClose: false,
+          closeOnClick: false,
+        }
+      );
+  
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }
   }, [state.cards, state.selectedBoard, state.agendaMessages, state.funnelMessages]);
-  
+
   const handleOptionsClick = useCallback((status, e) => {
     e.stopPropagation();
     setState(prev => ({
@@ -418,6 +568,19 @@ const Dashboard = () => {
 
   return (
     <div className="app-container">
+<ToastContainer 
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  rtl={false}
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme="light"
+/>
+  
       <Header 
         boards={state.boards}
         selectedBoard={state.selectedBoard}

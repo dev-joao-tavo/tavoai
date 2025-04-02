@@ -372,3 +372,16 @@
     max-width: 300px;
   }
 }
+
+
+/* Add to your CSS */
+.Toastify__toast {
+  font-family: inherit;
+  border-radius: 8px;
+}
+.Toastify__toast--error {
+  background: #ff6b6b;
+}
+.Toastify__toast--success {
+  background: #51cf66;
+}
