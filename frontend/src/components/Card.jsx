@@ -36,44 +36,119 @@ const WEEKDAY_OPTIONS = [
   { value: "sunday", label: "Domingo" },
 ];
 
-const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes, refreshContacts, refreshCards }) => {
-  // Memoized contact lookup
-  const contact = useMemo(
-    () => contacts.find((c) => Number(c.ID) === Number(card.contact_ID)),
-    [contacts, card.contact_ID]
-  );
+const Card = ({ card, contacts = [], updateCardStatus, deleteCard, updateCardNotes, refreshContacts, refreshCards }) => {
+  // Find contact first
+  const contact = useMemo(() => {
+    return Array.isArray(contacts) 
+      ? contacts.find((c) => Number(c?.ID) === Number(card?.contact_ID)) 
+      : null;
+  }, [contacts, card?.contact_ID]);
 
-  // State declarations
+  // State declarations with safe defaults
   const [selectedStatus, setSelectedStatus] = useState(card.status);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [notes, setNotes] = useState(contact?.each_contact_notes || "");
+  const [notes, setNotes] = useState("");
   const [isNotesVisible, setIsNotesVisible] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [showNotesSaved, setShowNotesSaved] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [isSavingContact, setIsSavingContact] = useState(false);
-  const [contactName, setContactName] = useState(contact?.contact_name || contact?.name || "");
-  const [contactPhone, setContactPhone] = useState(unformatPhoneNumber(contact?.phone_number || ""));
-  const [localContact, setLocalContact] = useState(contact);
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
 
-  // Refresh data when contact changes
-  useEffect(() => {
-    if (contact) {
-      setLocalContact(contact);
-      setNotes(contact.each_contact_notes || "");
-      setContactName(contact.contact_name || contact?.name || "");
-      setContactPhone(unformatPhoneNumber(contact.phone_number || ""));
-    }
-  }, [contact]);
-  
-
-  // Memoized status calculation
   const currentStatus = useMemo(
     () => getStatusConfig(card, contact, statusConfig),
     [card, contact]
   );
 
-  // Handlers with useCallback
+  // Initialize state when contact changes
+  useEffect(() => {
+    if (contact) {
+      setNotes(contact.each_contact_notes || contact.notes || "");
+      setContactName(contact.contact_name || contact.name || "");
+      setContactPhone(unformatPhoneNumber(contact.phone_number || ""));
+    } else {
+      // Reset if no contact found
+      setNotes("");
+      setContactName("");
+      setContactPhone("");
+    }
+  }, [contact]);
+
+  const handleSaveNotes = useCallback(async () => {
+    if (!contact) return;
+
+    setIsSavingNotes(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      await axios.put(
+        `${constants.API_BASE_URL}/contacts/${contact.ID}`,
+        { each_contact_notes: notes },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setShowNotesSaved(true);
+      setTimeout(() => setShowNotesSaved(false), 2000);
+
+      // Refresh contacts to ensure consistency
+      if (refreshContacts) {
+        const contactsRes = await axios.get(`${constants.API_BASE_URL}/contacts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        refreshContacts(contactsRes.data.contacts);
+      }
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      alert("Failed to save notes. Please try again.");
+    } finally {
+      setIsSavingNotes(false);
+    }
+  }, [notes, contact, refreshContacts]);
+
+  const handleSaveContact = useCallback(async () => {
+    if (!contact) return;
+  
+    setIsSavingContact(true);
+    try {
+      const token = localStorage.getItem("token");
+      
+      // 1. Update the contact via API
+      await axios.put(
+        `${constants.API_BASE_URL}/contacts/${contact.ID}`,
+        {
+          contact_name: contactName,
+          phone_number: contactPhone
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      // 2. Fetch fresh contacts list
+      const contactsRes = await axios.get(`${constants.API_BASE_URL}/contacts`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+  
+      // 3. Update parent state with fresh contacts
+      if (refreshContacts) {
+        refreshContacts(contactsRes.data.contacts);
+      }
+  
+      setIsEditingContact(false);
+    } catch (error) {
+      console.error("Error updating contact:", error);
+      alert("Failed to update contact. Please try again.");
+      // Revert to original values
+      setContactName(contact.contact_name || contact.name || "");
+      setContactPhone(unformatPhoneNumber(contact.phone_number || ""));
+    } finally {
+      setIsSavingContact(false);
+    }
+  }, [contact, contactName, contactPhone, refreshContacts]);
+
   const handleDelete = useCallback(() => {
     if (!isDeleting) {
       setIsDeleting(true);
@@ -94,86 +169,27 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes, r
     setIsNotesVisible((prev) => !prev);
   }, []);
 
-  const handleSaveNotes = useCallback(async () => {
-    if (!contact) return;
-  
-    const currentNotes = contact?.each_contact_notes || contact?.notes || "";
-    if (notes === currentNotes) return;
-  
-    setIsSavingNotes(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token found. User might not be authenticated.");
-        alert("You are not authenticated. Please log in again.");
-        return;
-      }
-  
-      await axios.put(
-        `${constants.API_BASE_URL}/contacts/${contact.ID}`,
-        { each_contact_notes: notes },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-  
-      // Only show confirmation after successful save
-      setShowNotesSaved(true);
-      setTimeout(() => setShowNotesSaved(false), 2000);
-  
-      // Refresh data to ensure consistency
-      if (refreshContacts) refreshContacts();
-      if (refreshCards) refreshCards();
-    } catch (error) {
-      console.error("Error saving notes:", error);
-      alert("Failed to save notes. Please try again.");
-      // Revert to the last saved notes if save fails
-      setNotes(currentNotes);
-    } finally {
-      setIsSavingNotes(false);
-    }
-  }, [notes, contact, refreshContacts, refreshCards]);
-  
-
-
-  const handleSaveContact = useCallback(async () => {
-    if (!localContact) return;
-  
-    setIsSavingContact(true);
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `${constants.API_BASE_URL}/contacts/${localContact.ID}`,
-        {
-          contact_name: contactName,
-          phone_number: contactPhone
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      // Update local state
-      setLocalContact({
-        ...localContact,
-        contact_name: contactName,
-        phone_number: contactPhone
-      });
-      
-      // Notify parent if needed
-      if (refreshContacts) refreshContacts();
-      
-      setIsEditingContact(false);
-    } catch (error) {
-      console.error("Error updating contact:", error);
-      alert("Failed to update contact. Please check the details and try again.");
-    } finally {
-      setIsSavingContact(false);
-    }
-  }, [localContact, contactName, contactPhone, refreshContacts]);
-  
+  // Don't render if no contact found
+  if (!contact) {
+    return (
+      <div className="card error">
+        <div className="card-header">
+          <h3 className="card-title">Contact not found</h3>
+        </div>
+        <div className="card-content">
+          <p>This card references a contact that doesn't exist.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card" aria-live="polite">
       {/* Card header */}
       <div className="card-header">
-      <h3 className="card-title">{localContact.contact_name}</h3>
+        <h3 className="card-title">
+          {isEditingContact ? contactName : contact.contact_name || contact.name}
+        </h3>
         
         <button
           onClick={handleDelete}
@@ -199,68 +215,67 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes, r
 
       {/* Card content */}
       <div className="card-content">
-      
-  {/* Contact info */}
-  <div className="contact-info">
-    {isEditingContact ? (
-      <div className="contact-edit-form">
-        <input
-          type="text"
-          value={contactName}
-          onChange={(e) => setContactName(e.target.value)}
-          className="contact-edit-input"
-          placeholder={card.title}
-          aria-label="Contact name"
-        />
-        <input
-          type="tel"
-          value={contactPhone}
-          onChange={(e) => {
-            // Auto-format while typing
-            const input = e.target.value.replace(/\D/g, '');
-            if (input.length <= 11) {
-              setContactPhone(input);
-            }
-          }}
-          className="contact-edit-input"
-          placeholder="(XX) 9 9999-9999"
-          aria-label="Phone number"
-        />
-        <button 
-          onClick={handleSaveContact}
-          className="save-contact-button"
-          disabled={isSavingContact}
-        >                
-          {isSavingContact ? 'Saving...' : <FiSave />}
-        </button>      
-        <button 
-          onClick={() => setIsEditingContact(false)}
-          className="close-contact-button"
-          disabled={isSavingContact}
-        >                
-          <FiX />
-        </button> 
-      </div>
-    ) : (
-      <>
-        <span className="phone-number">
-          <FiPhone className="phone-icon" />
-          {formatPhoneNumber(localContact?.phone_number) || "No phone"}
-          <button 
-            onClick={() => setIsEditingContact(true)}
-            className="edit-contact-button"
-            aria-label="Edit contact"
-          >
-            <FiEdit2 size={14} />
-          </button>
-        </span>
-      </>
-    )}
-  </div>
+        {/* Contact info */}
+        <div className="contact-info">
+          {isEditingContact ? (
+            <div className="contact-edit-form">
+              <input
+                type="text"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                className="contact-edit-input"
+                placeholder="Contact name"
+                disabled={isSavingContact}
+              />
+              <input
+                type="tel"
+                value={contactPhone}
+                onChange={(e) => {
+                  const input = e.target.value.replace(/\D/g, '');
+                  if (input.length <= 11) setContactPhone(input);
+                }}
+                className="contact-edit-input"
+                placeholder="(XX) 9 9999-9999"
+                disabled={isSavingContact}
+              />
+              <button 
+                onClick={handleSaveContact}
+                className="save-contact-button"
+                disabled={isSavingContact}
+              >
+                {isSavingContact ? (
+                  <div className="loading-spinner"></div>
+                ) : (
+                  <FiSave />
+                )}
+              </button>
+              <button 
+                onClick={() => setIsEditingContact(false)}
+                className="close-contact-button"
+                disabled={isSavingContact}
+              >
+                <FiX />
+              </button>
+            </div>
+          ) : (
+            <>
+              <span className="phone-number">
+                <FiPhone className="phone-icon" />
+                {formatPhoneNumber(contact.phone_number) || "No phone"}
+                <button 
+                  onClick={() => setIsEditingContact(true)}
+                  className="edit-contact-button"
+                  aria-label="Edit contact"
+                >
+                  <FiEdit2 size={14} />
+                </button>
+              </span>
+            </>
+          )}
+        </div>
 
-    
         {/* Last message */}
-        {contact?.last_message_contact && (
+        {contact.last_message_contact && (
           <span className="last-message">
             {formatLastMessageDate(contact.last_message_contact)}
           </span>
@@ -299,45 +314,47 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes, r
           </div>
         </div>
 
- {/* Notes section with save confirmation */}
- <div className="notes-section">
-    <div className="notes-header" onClick={toggleNotesVisibility}>
-      <span className="notes-label">NOTES</span>
-      <button className="notes-toggle" aria-label={isNotesVisible ? "Hide notes" : "Show notes"}>
-        {isNotesVisible ? '−' : '+'}
-      </button>
-    </div>
-    
-    {isNotesVisible && (
-      <div className="notes-content">
-      <textarea
-          className="notes-textarea"
-          value={notes || ""}  // Ensure it handles null/undefined
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Add your notes here..."
-          aria-label="Card notes"
-        />
-      <div className="notes-actions">
-      <button 
-  className="save-notes-button"
-  onClick={handleSaveNotes}
-  disabled={
-    notes === (contact?.each_contact_notes || contact?.notes || "") || 
-    isSavingNotes
-  }
->
-  {isSavingNotes ? 'Saving...' : <><FiSave /> Save</>}
-</button>
-        {showNotesSaved && (
-          <span className="notes-saved-confirmation">
-            <FiCheck /> Saved!
-          </span>
-        )}
-      </div>
-    </div>
-    )}
-  </div>
-
+        {/* Notes section with save confirmation */}
+        <div className="notes-section">
+          <div className="notes-header" onClick={toggleNotesVisibility}>
+            <span className="notes-label">NOTES</span>
+            <button className="notes-toggle">
+              {isNotesVisible ? '−' : '+'}
+            </button>
+          </div>
+          
+          {isNotesVisible && (
+            <div className="notes-content">
+              <textarea
+                className="notes-textarea"
+                value={notes || ""}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add your notes here..."
+              />
+              <div className="notes-actions">
+              <button 
+              onClick={handleSaveNotes}
+              disabled={isSavingNotes || notes === (contact.each_contact_notes || contact?.notes || "")}
+              className="save-notes-button"
+            >
+              {isSavingNotes ? (
+                <div className="loading-spinner small"></div>
+              ) : (
+                <>
+                  <FiSave size={14} />
+                  <span>Save</span>
+                </>
+              )}
+            </button>             
+               {showNotesSaved && (
+                  <span className="notes-saved-confirmation">
+                    <FiCheck /> Saved!
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -358,6 +375,7 @@ Card.propTypes = {
       phone_number: PropTypes.string,
       last_message_contact: PropTypes.string,
       each_contact_notes: PropTypes.string,
+      notes: PropTypes.string,
     })
   ).isRequired,
   updateCardStatus: PropTypes.func.isRequired,

@@ -296,7 +296,13 @@ const Dashboard = () => {
     link.click();
     document.body.removeChild(link);
   };
-
+  const refreshContacts = useCallback((newContacts) => {
+    setState(prev => ({
+      ...prev,
+      contacts: newContacts
+    }));
+  }, []);
+  
   const handleImportContacts = useCallback(async (e) => {
     e.preventDefault();
     
@@ -604,13 +610,14 @@ const Dashboard = () => {
                     
                     <div className="dashboard-cards">
                       {state.cards[status].map((card) => (
-                        <Card
-                          key={card.id}
-                          card={card}
-                          contacts={state.contacts}
-                          updateCardStatus={updateCardStatus}
-                          deleteCard={deleteCard}
-                        />
+                    <Card
+                key={card.id}
+                card={card}
+                contacts={state.contacts}
+                updateCardStatus={updateCardStatus}
+                deleteCard={deleteCard}
+                refreshContacts={refreshContacts} // Make sure this is passed
+/>
                       ))} 
                     </div>
                   </div>

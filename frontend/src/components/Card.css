@@ -246,11 +246,12 @@
   }
 }
 
-/* Notes Section */
+/* /* Notes Section */
 .notes-section {
   margin-top: 12px;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 8px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 12px;
+  transition: all 0.2s ease;
 }
 
 .notes-header {
@@ -259,6 +260,12 @@
   align-items: center;
   cursor: pointer;
   padding: 4px 0;
+  user-select: none;
+}
+
+.notes-header:hover {
+  background-color: #f9f9f9;
+  border-radius: 4px;
 }
 
 .notes-label {
@@ -266,48 +273,143 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #666;
+  font-weight: 600;
 }
 
 .notes-toggle {
   background: none;
   border: none;
   font-size: 1rem;
+  font-weight: bold;
   color: #666;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 8px;
+  transition: transform 0.2s ease;
+}
+
+.notes-toggle:hover {
+  color: #333;
 }
 
 .notes-content {
   margin-top: 8px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .notes-textarea {
   width: 100%;
-  min-height: 60px;
-  padding: 8px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
   font-size: 0.875rem;
   resize: vertical;
   margin-bottom: 8px;
+  transition: border 0.2s ease;
+  line-height: 1.5;
 }
 
-.save-notes-button {
+.notes-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.notes-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+}
+
+.notes-actions button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
+  border-radius: 6px;
+  padding: 8px 12px;
   font-size: 0.875rem;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.save-notes-button:disabled {
-  background: #ccc;
+.notes-actions button:hover:not(:disabled) {
+  background: #0069d9;
+  transform: translateY(-1px);
+}
+
+.notes-actions button:disabled {
+  background: #cccccc;
   cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.notes-saved-confirmation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #28a745;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Notes Section - Fixed Button Height */
+.notes-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 36px; /* Fixed height */
+  min-width: 80px; /* Minimum width to prevent shrinking */
+}
+
+/* Loading spinner with consistent dimensions */
+.loading-spinner.small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  margin: 0; /* Remove any default margins */
+}
+
+/* Ensure icon and text alignment */
+.notes-actions button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Make sure text doesn't shift when spinner appears */
+.notes-actions button span {
+  display: inline-block;
+  width: auto;
+}
+/* Loading spinner animation */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Contact Edit Styles */
@@ -391,4 +493,19 @@
 
 .edit-contact-button:hover {
   background: #f1f3f5;
+}
+
+.loading-spinner {
+  width: 8px;
+  height: 8px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
