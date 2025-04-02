@@ -54,15 +54,18 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes, r
   const [isSavingContact, setIsSavingContact] = useState(false);
   const [contactName, setContactName] = useState(contact?.contact_name || contact?.name || "");
   const [contactPhone, setContactPhone] = useState(unformatPhoneNumber(contact?.phone_number || ""));
+  const [localContact, setLocalContact] = useState(contact);
 
   // Refresh data when contact changes
   useEffect(() => {
     if (contact) {
+      setLocalContact(contact);
       setNotes(contact.each_contact_notes || "");
       setContactName(contact.contact_name || contact?.name || "");
       setContactPhone(unformatPhoneNumber(contact.phone_number || ""));
     }
   }, [contact]);
+  
 
   // Memoized status calculation
   const currentStatus = useMemo(
@@ -132,23 +135,29 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes, r
 
 
   const handleSaveContact = useCallback(async () => {
-    if (!contact) return;
+    if (!localContact) return;
   
     setIsSavingContact(true);
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `${constants.API_BASE_URL}/contacts/${contact.ID}`,
+        `${constants.API_BASE_URL}/contacts/${localContact.ID}`,
         {
           contact_name: contactName,
-          phone_number: contactPhone // Save as raw numbers
+          phone_number: contactPhone
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Refresh data
+      // Update local state
+      setLocalContact({
+        ...localContact,
+        contact_name: contactName,
+        phone_number: contactPhone
+      });
+      
+      // Notify parent if needed
       if (refreshContacts) refreshContacts();
-      if (refreshCards) refreshCards();
       
       setIsEditingContact(false);
     } catch (error) {
@@ -157,13 +166,14 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes, r
     } finally {
       setIsSavingContact(false);
     }
-  }, [contact, contactName, contactPhone, refreshContacts, refreshCards]);
+  }, [localContact, contactName, contactPhone, refreshContacts]);
+  
 
   return (
     <div className="card" aria-live="polite">
       {/* Card header */}
       <div className="card-header">
-        <h3 className="card-title">{contact.contact_name}</h3>
+      <h3 className="card-title">{localContact.contact_name}</h3>
         
         <button
           onClick={handleDelete}
@@ -235,7 +245,7 @@ const Card = ({ card, contacts, updateCardStatus, deleteCard, updateCardNotes, r
       <>
         <span className="phone-number">
           <FiPhone className="phone-icon" />
-          {formatPhoneNumber(contact?.phone_number) || "No phone"}  
+          {formatPhoneNumber(localContact?.phone_number) || "No phone"}
           <button 
             onClick={() => setIsEditingContact(true)}
             className="edit-contact-button"
