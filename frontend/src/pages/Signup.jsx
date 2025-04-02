@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./Login.css";
+import { ToastContainer } from 'react-toastify';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
