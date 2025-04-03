@@ -13,7 +13,7 @@ import asyncio
 # Config (could move to settings file)
 CHROMEDRIVER_PATH = "/usr/local/bin/chromedriver"
 PROFILE_BASE_DIR = "/tmp/chrome_profiles"
-DEFAULT_HEADLESS = True
+DEFAULT_HEADLESS = False
 
 logger = logging.getLogger(__name__)
 
