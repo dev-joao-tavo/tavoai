@@ -385,3 +385,78 @@
 .Toastify__toast--success {
   background: #51cf66;
 }
+
+/* Column Status Styles */
+.column-status-indicator {
+  position: absolute;
+  top: 10px;
+  right: 40px;
+}
+
+.status-icon-wrapper {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon-wrapper.status-error {
+  color: #ef4444;
+}
+
+.status-icon-wrapper.status-sending {
+  color: #eab308;
+}
+
+.status-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.status-tooltip .tooltip-text {
+  visibility: hidden;
+  width: 100px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -50px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.status-tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+/* Update these classes to match your statusConfig color classes */
+.status-sending {
+  color: #eab308; /* yellow */
+}
+
+.status-error {
+  color: #ef4444; /* red */
+}
+
+.status-ok {
+  color: #10b981; /* green */
+}
+
+.status-default {
+  color: #6b7280; /* gray */
+}

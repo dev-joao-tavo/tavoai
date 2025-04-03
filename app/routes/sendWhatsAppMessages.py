@@ -1,6 +1,5 @@
 from sanic import Sanic, response
 from db import SessionLocal, get_db_session
-from sqlalchemy import select, update
 from models.models import Card, Contact, Board, User
 from utils.utils import get_user_from_token,get_driver_status_from_user_id,get_driver_status_message
 from sanic.exceptions import Unauthorized
@@ -9,19 +8,14 @@ from routes.configs import initialize_driver,quit_driver
 import asyncio
 import re
 from datetime import datetime
-# Standard library imports
 from typing import Any
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
-# Third-party imports
 from sqlalchemy import select, update, func
 from selenium.webdriver.common.by import By
-from sanic import Sanic, response
-
-# Local application imports
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 import random
-
 from datetime import datetime
 from models.models import MessageHistory  # Make sure this model exists
 
@@ -97,16 +91,13 @@ async def login_check(driver):
         driver.get("https://web.whatsapp.com/send/?phone=+5531995854940")
 
         # Wait dynamically for the message input field
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Digite uma mensagem"]'))
         )
         return True
     except Exception:
         return False  # Return False if element is not found
     
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-
 async def get_wpp_login_code(driver, user_phone_number):
     start_time = time.time()
     try:
@@ -114,6 +105,14 @@ async def get_wpp_login_code(driver, user_phone_number):
         print("Loading WhatsApp Web...")
         driver.get("https://web.whatsapp.com/")
         await asyncio.sleep(10)  # Initial page load
+
+        try:
+            WebDriverWait(driver, 2).until(
+                EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Digite uma mensagem"]'))
+            )
+            return "ALREADY_LOGGED_IN"
+        except:
+            pass
 
         # 2. TAB navigation to open phone login
         actions = ActionChains(driver)
@@ -272,10 +271,38 @@ async def send_whatsapp_messages_async(user_id, contacts, message1, message2, me
                     # Send message logic
                     clean_number = re.sub(r"\D", "", phone)
                     driver.get(f"https://web.whatsapp.com/send/?phone=+55{clean_number}")
-
-                    message_box = WebDriverWait(driver, 20).until(
-                        EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Digite uma mensagem"]'))
-                    )
+                    
+                    try: 
+                        message_box = WebDriverWait(driver, 20).until(
+                            EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Digite uma mensagem"]'))
+                        )
+                    except:
+                        try:
+                            driver.get(f"https://web.whatsapp.com/send/?phone=+5531995854940")
+                            message_box = WebDriverWait(driver, 20).until(
+                                EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Digite uma mensagem"]'))
+                            )
+                            await session.execute(
+                                update(Card)
+                                .where(Card.id == card_id)
+                                .values(
+                                    sending_message_status="ERROR_WRONG_PHONE_NUMBER"
+                                )
+                            )
+                            await session.commit()
+                            continue
+                        except:
+                            quit_driver(driver, user_id)
+                            # Update status to SENDING
+                            await session.execute(
+                                update(Card)
+                                .where(Card.id == card_id)
+                                .values(
+                                    sending_message_status="ERROR_NOT_LOGGED_IN"
+                                )
+                            )
+                            await session.commit()
+                            return
 
                     messages = [msg.replace("@nome", name) 
                               for msg in [message1, message2, message3] if msg]
@@ -387,9 +414,6 @@ async def whats_app_login(request):
         if driver_status!="FREE":
             return response.json({"message": get_driver_status_message(driver_status)},status=400)
 
-    
-    except Unauthorized as e:
-        return response.json({"error": str(e)}, status=401)
     except Exception as e:
         return response.json({"error": "An error occurred: " + str(e)}, status=400)
 
@@ -406,6 +430,20 @@ async def whats_app_login(request):
         user_phone_number = user.user_wpp_phone_number
         code = await get_wpp_login_code(driver, user_phone_number)
         
+        if code == "ÄLREADY_LOGGED_IN":
+            try:
+                async with get_db_session() as session:
+                    await session.execute(
+                        update(Card)
+                        .where(Card.sending_message_status == "ALREADY_LOGGED_IN")
+                        .values(sending_message_status="default")
+                    )
+                    await session.commit()
+                return response.json({"message": "You are already logged in.", "code": "ÄLREADY_LOGGED_IN"}, status=200)
+
+            except:
+                pass
+
         return response.json({"message": "Add this code to your WhatsApp", "code": code})
 
     except Exception as e:
@@ -436,7 +474,7 @@ async def update_last_message(contact_id):
 
 @app.route("/whatsAppLoginCheck", methods=["get"])
 async def whats_app_login_check(request):
-    driver = None  # Ensure driver is always available in the scope
+    driver = None  # Ensure driver is always available in scope
     
     try:
         user_id = get_user_from_token(request)
@@ -444,35 +482,44 @@ async def whats_app_login_check(request):
             raise Unauthorized("Invalid or expired token.")
         
         driver_status = await get_driver_status_from_user_id(user_id)
-        if driver_status!="FREE":
-            return response.json({"message": get_driver_status_message(driver_status)},status=400)
+        if driver_status != "FREE":
+            return response.json({"message": get_driver_status_message(driver_status)}, status=400)
 
-    except Unauthorized as e:
-        return response.json({"error": str(e)}, status=401)
-    except Exception as e:
-        return response.json({"error": "An error occurred: " + str(e)}, status=400)
-
-    try:        
         async with get_db_session() as session:
             result = await session.execute(select(User).filter(User.id == user_id))
             user = result.scalars().first()
         
-        if not user:
-            return response.json({"error": "User not found."}, status=404)
-       
-        driver = await initialize_driver(user_id,new_process_status="CHECKING_WPP_LOGIN")
+            if not user:
+                return response.json({"error": "User not found."}, status=404)
 
-        if not driver:
-            return {"message": "Failed to initialize WebDriver"}
+            driver = await initialize_driver(user_id, new_process_status="CHECKING_WPP_LOGIN")
 
-        is_logged_in = await login_check(driver)
+            if not driver:
+                return response.json({"error": "Failed to initialize WebDriver"}, status=500)
 
-        await quit_driver(user_id, driver)
-        if is_logged_in == True:
-           return response.json({"message": "You are already logged in!", "is_logged_in":is_logged_in},status=200)
-        if is_logged_in == False:
-           return response.json({"message": "You are NOT logged in!", "is_logged_in":is_logged_in},status=200)
+            is_logged_in = await login_check(driver)
 
+            if is_logged_in:
+                await session.execute(
+                    update(Card)
+                    .where(Card.sending_message_status == "ERROR_NOT_LOGGED_IN")
+                    .values(sending_message_status="default")
+                )
+                await session.commit()
+                if driver:
+                    await quit_driver(user_id, driver) 
+                return response.json({"message": "You are already logged in!", "is_logged_in": True}, status=200)
+            else:
+                if driver:
+                    await quit_driver(user_id, driver) 
+                return response.json({"message": "You are NOT logged in!", "is_logged_in": False}, status=200)
+
+    except Unauthorized as e:
+        return response.json({"error": str(e)}, status=401)
     except Exception as e:
-        await quit_driver(user_id, driver)
-        return response.json({"error": str(e)})
+        if driver:
+            await quit_driver(user_id, driver) 
+        return response.json({"error": "An error occurred: " + str(e)}, status=400)
+    finally:
+        if driver:
+            await quit_driver(user_id, driver)  # Ensures driver is closed no matter what

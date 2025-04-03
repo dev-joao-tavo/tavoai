@@ -9,7 +9,45 @@ import { FaEllipsisV } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useLocation } from "react-router-dom";
+import { statusConfig } from './statusConfig'
 
+const ColumnStatusIndicator = ({ status }) => {
+  if (!status) return null;
+
+  const statusInfo = statusConfig[status] || statusConfig.default;
+
+  return (
+    <div className="column-status-indicator">
+      {status === 'ERROR_NOT_LOGGED_IN' ? (
+        <div className="status-tooltip">
+          <div className={`status-icon-wrapper ${statusInfo.color}`}>
+            {statusInfo.icon}
+          </div>
+          <span className="tooltip-text">{statusInfo.label}</span>
+        </div>
+      ) : (
+        <div className={`status-icon-wrapper ${statusInfo.color}`}>
+          {/* Add spinning class only for SENDING status */}
+          {React.cloneElement(statusInfo.icon, {
+            className: `${statusInfo.icon.props.className} ${status === 'SENDING' ? 'spinning' : ''}`
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+// Add this right after ColumnStatusIndicator
+const getColumnStatus = (cards) => {
+  if (cards.some(card => card.status === 'ERROR_NOT_LOGGED_IN')) {
+    return 'ERROR_NOT_LOGGED_IN';
+  }
+  if (cards.some(card => card.status === 'SENDING')) {
+    return 'SENDING';
+  }
+  return null;
+};
 
 const Dashboard = () => {
   // Consolidated state
@@ -564,8 +602,8 @@ const Dashboard = () => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
-  
 
+ 
   return (
     <div className="app-container">
 <ToastContainer 
@@ -601,13 +639,14 @@ const Dashboard = () => {
 
                 return (
                   <div key={status} className="dashboard-column">
-                    <div className="column-header">
-                      <div className="dashboard-title-container">
-                        <h2 className="dashboard-title">
-                          {constants.statusTranslation[status] || status.toUpperCase()}
-                          <span className="card-counter"> ({state.cards[status].length})</span>
-                        </h2>
-                      </div>
+                      <div className="column-header">
+                        <div className="dashboard-title-container">
+                          <h2 className="dashboard-title">
+                            {constants.statusTranslation[status] || status.toUpperCase()}
+                            <span className="card-counter"> ({state.cards[status].length})</span>
+                          </h2>
+                        </div>
+                        <ColumnStatusIndicator status={getColumnStatus(state.cards[status])} />
                       <div className="menu-container">
                         <button 
                           className="options-button"
